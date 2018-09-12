@@ -86,7 +86,7 @@ class FranchiseModel extends Model
         }
         if ($data) {
             try {
-                $franchise = FranchiseModel::where('code', $code)->first();
+                $franchise = FranchiseModel::find($code)->first();
                 return $franchise->$data;
             } catch (\Exception $e) {
                 report($e);
