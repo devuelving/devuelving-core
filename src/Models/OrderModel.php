@@ -99,40 +99,115 @@ class OrderModel extends Model
     }
 
     /**
+     * Función para obtener el total del pedido sin gastos del método de pago
+     *
+     * @return void
+     */
+    public function getSubtotal()
+    {
+        if ($this->getShippingCosts() != null) {
+            return $this->totalAmount() + $this->added_taxes + $this->getShippingCosts();
+        }
+        return $this->totalAmount() + $this->added_taxes;
+    }
+    /**
+     * Función para obtener el total del pedido sin 
+     *
+     * @return void
+     */
+    public function getTotal()
+    {
+        return $this->getSubtotal() + $this->getPaymentCostCost();
+    }
+    /**
      * Función para obtener el método de pago
      *
      * @return void
      */
-    public function paymentMethodName()
+    public function getPaymentMethod()
     {
-        $method = PaymentMethodModel::find($this->payment_method);
-        return $method->name;
+        if (empty($this->payment_method)) {
+            $this->payment_method = 1;
+            $this->save();
+        }
+        return PaymentMethod::find($this->payment_method);
     }
-
     /**
-     * Función para obtener el total del pedido
+     * Función para obtener los gastos de gestión del método de pago
      *
      * @return void
      */
-    public function getTotalOrderCost()
+    public function getPaymentCostCost()
     {
-        return $this->totalAmount() + $this->added_taxes;
+        return ($this->getSubtotal() * ($this->getPaymentMethod()->porcentual / 100)) + $this->getPaymentMethod()->fixed;
     }
-
     /**
-     * Función para obtener los gastos de gestión de paypal
+     * Función para obtener los gastos de envio
      *
      * @return void
      */
-    public function getPayPalCost()
+    public function getShippingCosts()
     {
-        return ($this->getTotalOrderCost() * 0.035) + 0.35;
+        if (!empty($this->address_country)) {
+            $total = 0;
+            if (Region::where('name', $this->address_province)->where('country', $this->address_country)->count() == 1) {
+                $region = Region::where('name', $this->address_province)->where('country', $this->address_country)->first();
+                $shippingFee = ShippingFee::find($region->shipping_fee);
+            } else {
+                $country = Country::where('code', $this->address_country)->first();
+                $shippingFee = ShippingFee::find($country->default_shipping_fee);
+            }
+            $total = $this->getShippingPrice($shippingFee, $this->weight);
+            return $total;
+        }
+        return null;
+    }
+    /**
+     * Función para obtener el precio exacto según la tarifa de envio
+     *
+     * @param ShippingFee $shippingFee
+     * @return void
+     */
+    public function getShippingPrice(ShippingFee $shippingFee, $weight)
+    {
+        switch (true) {
+            case $weight < 2:
+                return $shippingFee->rate_2;
+                break;
+            case $weight < 3:
+                return $shippingFee->rate_3;
+                break;
+            case $weight < 5:
+                return $shippingFee->rate_5;
+                break;
+            case $weight < 7:
+                return $shippingFee->rate_7;
+                break;
+            case $weight < 10:
+                return $shippingFee->rate_10;
+                break;
+            case $weight < 15:
+                return $shippingFee->rate_15;
+                break;
+            case $weight < 20:
+                return $shippingFee->rate_20;
+                break;
+            case $weight < 30:
+                return $shippingFee->rate_30;
+                break;
+            case $weight < 40:
+                return $shippingFee->rate_40;
+                break;
+            case $weight > 40:
+                return $shippingFee->rate_40 + $this->getShippingPrice($shippingFee, $weight - 40);
+                break;
+        }
     }
 
     /**
      * Función para listar los productos de un pedido
      *
-     * @return OrderDetail
+     * @return OrderDetailModel
      */
     public function listProducts()
     {
