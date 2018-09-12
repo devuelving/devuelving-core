@@ -4,8 +4,8 @@
     "type": "library",
     "require": {
         "laravel/framework": ">=5.5",
-        "cviebrock/eloquent-sluggable": ">=5.5",
-        "spatie/laravel-json-api-paginate": ">=5.5"
+        "cviebrock/eloquent-sluggable": ">=4.5",
+        "spatie/laravel-json-api-paginate": ">=1.4"
     },
     "license": "MIT",
     "authors": [
