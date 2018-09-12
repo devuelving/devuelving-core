@@ -57,8 +57,8 @@ class FranchiseModel extends Model
      */
     public static function getFranchise()
     {
-        $franchise = FranchiseModel::where('domain', FranchiseModel::getDomain())->get();
-        return $franchise[0]->code;
+        $franchise = FranchiseModel::where('domain', FranchiseModel::getDomain())->first();
+        return $franchise->id;
     }
 
     /**
