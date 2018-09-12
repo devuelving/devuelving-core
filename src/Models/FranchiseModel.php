@@ -86,10 +86,10 @@ class FranchiseModel extends Model
         }
         if ($data) {
             try {
-                $franchise = FranchiseModel::find($code)->first();
+                $franchise = FranchiseModel::find($code);
                 return $franchise->$data;
             } catch (\Exception $e) {
-                report($e);
+                // report($e);
                 return null;
             }
         }
@@ -106,9 +106,7 @@ class FranchiseModel extends Model
         $code = $this->code;
         if ($data && $code) {
             try {
-                $franchise = FranchiseCustom::where('franchise', $code)
-                ->where('var', $data)
-                ->first();
+                $franchise = FranchiseCustom::where('franchise', $code)->where('var', $data)->first();
                 return $franchise->value;
             } catch (\Exception $e) {
                 // report($e);

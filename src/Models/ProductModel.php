@@ -355,16 +355,16 @@ class ProductModel extends Model
      */
     public function typeCustomPrice()
     {
-        try {
-            $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('code'))->whereNotNull('price')->first();
+        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('code'))->whereNotNull('price');
+        if ($productCustom->count() == 0) {
+            return 0;
+        } else {
+            $productCustom = $productCustom->first();
             if ($productCustom->price_type == 1) {
                 return 1;
             } else if ($productCustom->price_type == 2) {
                 return 2;
             }
-        } catch (\Exception $e) {
-            report($e);
-            return 0;
         }
     }
 
@@ -544,6 +544,7 @@ class ProductModel extends Model
             $productPriceUpdate = DB::table('product_price_update')->where('product', $this->id)->orderBy('id', 'desc')->first();
             $oldPrice = $productPriceUpdate->price;
         } catch (\Exception $e) {
+            // report($e);
             $oldPrice = 0;
         }
         if ($costPrice != $oldPrice) {
