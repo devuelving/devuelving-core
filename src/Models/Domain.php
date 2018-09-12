@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace devuelving\core;
 
 use Carbon\Carbon;
 use DonDominioAPI;

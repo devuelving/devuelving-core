@@ -1,10 +1,10 @@
 <?php
 
-namespace App;
+namespace devuelving\core;
 
-use App\Customer;
+use devuelving\core\Customer;
 use Carbon\Carbon;
-use App\CallAppointment;
+use devuelving\core\CallAppointment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 

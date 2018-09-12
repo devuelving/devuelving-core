@@ -1,14 +1,13 @@
 <?php
 
-namespace App;
+namespace devuelving\core;
 
-use App\Cart;
-use App\Order;
-use App\Franchise;
-use App\Incidents;
-use App\OrderDetail;
-use App\OrderHistory;
-use App\PaymentMethod;
+use devuelving\core\Cart;
+use devuelving\core\Franchise;
+use devuelving\core\Incidents;
+use devuelving\core\OrderDetail;
+use devuelving\core\OrderHistory;
+use devuelving\core\PaymentMethod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 

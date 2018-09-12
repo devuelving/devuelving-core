@@ -1,8 +1,8 @@
 <?php
 
-namespace App;
+namespace devuelving\core;
 
-use App\Franchise;
+use devuelving\core\Franchise;
 use Illuminate\Database\Eloquent\Model;
 
 class FranchiseCustom extends Model

@@ -1,9 +1,9 @@
 <?php
 
-namespace App;
+namespace devuelving\core;
 
 use Carbon\Carbon;
-use App\ProductCustom;
+use devuelving\core\ProductCustom;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Cviebrock\EloquentSluggable\Sluggable;
