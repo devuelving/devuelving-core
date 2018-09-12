@@ -3,6 +3,8 @@
 namespace devuelving\core;
 
 use Carbon\Carbon;
+use devuelving\core\TaxModel;
+use devuelving\core\BrandModel;
 use devuelving\core\ProductModel;
 use devuelving\core\ProductCustom;
 use devuelving\core\ProviderModel;
@@ -163,7 +165,7 @@ class ProductModel extends Model
      */
     public function getBrand($var)
     {
-        $brand = Brand::find($this->brand);
+        $brand = BrandModel::find($this->brand);
         return $brand->$var;
     }
 
@@ -174,7 +176,7 @@ class ProductModel extends Model
      */
     public function getTax()
     {
-        $tax = Tax::find($this->tax);
+        $tax = TaxModel::find($this->tax);
         return $tax->value / 100;
     }
 
