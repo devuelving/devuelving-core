@@ -2,19 +2,10 @@
 
 namespace devuelving\core;
 
-use devuelving\core\Cart;
-use devuelving\core\CartModel;
-use devuelving\core\Franchise;
-use devuelving\core\Incidents;
-use devuelving\core\OrderModel;
-use devuelving\core\OrderDetail;
-use devuelving\core\OrderHistory;
-use devuelving\core\ProductModel;
-use devuelving\core\PaymentMethod;
-use devuelving\core\FranchiseModel;
+use devuelving\core\RegionModel;
 use devuelving\core\IncidentsModel;
 use devuelving\core\OrderDetailModel;
-use devuelving\core\OrderHistoryModel;
+use devuelving\core\ShippingFeeModel;
 use devuelving\core\PaymentMethodModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -130,7 +121,7 @@ class OrderModel extends Model
             $this->payment_method = 1;
             $this->save();
         }
-        return PaymentMethod::find($this->payment_method);
+        return PaymentMethodModel::find($this->payment_method);
     }
     /**
      * Función para obtener los gastos de gestión del método de pago
@@ -150,8 +141,8 @@ class OrderModel extends Model
     {
         if (!empty($this->address_country)) {
             $total = 0;
-            if (Region::where('name', $this->address_province)->where('country', $this->address_country)->count() == 1) {
-                $region = Region::where('name', $this->address_province)->where('country', $this->address_country)->first();
+            if (RegionModel::where('name', $this->address_province)->where('country', $this->address_country)->count() == 1) {
+                $region = RegionModel::where('name', $this->address_province)->where('country', $this->address_country)->first();
                 $shippingFee = ShippingFee::find($region->shipping_fee);
             } else {
                 $country = Country::where('code', $this->address_country)->first();
@@ -165,10 +156,10 @@ class OrderModel extends Model
     /**
      * Función para obtener el precio exacto según la tarifa de envio
      *
-     * @param ShippingFee $shippingFee
+     * @param ShippingFeeModel $shippingFee
      * @return void
      */
-    public function getShippingPrice(ShippingFee $shippingFee, $weight)
+    public function getShippingPrice(ShippingFeeModel $shippingFee, $weight)
     {
         switch (true) {
             case $weight < 2:
