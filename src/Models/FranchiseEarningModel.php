@@ -22,6 +22,6 @@ class FranchiseEarningModel extends Model
      * @var array
      */
     protected $fillable = [
-        'franchise', 'amount', 'status', 'bill_type', 'bill',
+        'franchise', 'amount', 'status', 'bill_type', 'bill_file',
     ];
 }
