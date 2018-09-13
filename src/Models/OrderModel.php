@@ -101,6 +101,7 @@ class OrderModel extends Model
         }
         return $this->totalAmount() + $this->added_taxes;
     }
+
     /**
      * Función para obtener el total del pedido sin 
      *
@@ -110,6 +111,7 @@ class OrderModel extends Model
     {
         return $this->getSubtotal() + $this->getPaymentCostCost();
     }
+
     /**
      * Función para obtener el método de pago
      *
@@ -123,6 +125,7 @@ class OrderModel extends Model
         }
         return PaymentMethodModel::find($this->payment_method);
     }
+
     /**
      * Función para obtener los gastos de gestión del método de pago
      *
@@ -132,6 +135,7 @@ class OrderModel extends Model
     {
         return ($this->getSubtotal() * ($this->getPaymentMethod()->porcentual / 100)) + $this->getPaymentMethod()->fixed;
     }
+
     /**
      * Función para obtener los gastos de envio
      *
@@ -153,6 +157,7 @@ class OrderModel extends Model
         }
         return null;
     }
+    
     /**
      * Función para obtener el precio exacto según la tarifa de envio
      *
