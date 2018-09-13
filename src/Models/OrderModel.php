@@ -237,6 +237,7 @@ class OrderModel extends Model
         $order->franchise = FranchiseModel::getFranchise();
         $order->status = 1;
         $order->amount = 0;
+        $order->boxes = 0;
         $order->customer_name = auth()->user()->name;
         $order->customer_email = auth()->user()->email;
         $order->customer_phone = auth()->user()->phone;
