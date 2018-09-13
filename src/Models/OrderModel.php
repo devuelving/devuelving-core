@@ -147,10 +147,10 @@ class OrderModel extends Model
             $total = 0;
             if (RegionModel::where('name', $this->address_province)->where('country', $this->address_country)->count() == 1) {
                 $region = RegionModel::where('name', $this->address_province)->where('country', $this->address_country)->first();
-                $shippingFee = ShippingFee::find($region->shipping_fee);
+                $shippingFee = ShippingFeeModel::find($region->shipping_fee);
             } else {
                 $country = Country::where('code', $this->address_country)->first();
-                $shippingFee = ShippingFee::find($country->default_shipping_fee);
+                $shippingFee = ShippingFeeModel::find($country->default_shipping_fee);
             }
             $total = $this->getShippingPrice($shippingFee, $this->weight);
             return $total;
