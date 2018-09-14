@@ -36,19 +36,25 @@ class IncidentsModel extends Model
         $string="";
         switch ($type) {
             case 1:
-                $string = "Rotura";
+                $string = "Rotura Parcial";
                 break;
             case 2:
-                $string = "Perdida de paquete parcial";
+                $string = "Rotura Completa";
                 break;
             case 3:
-                $string = "Perdida de paquete completa";
+                $string = "Perdida de paquete parcial";
                 break;
             case 4:
-                $string = "Pedido no entregado";
+                $string = "Perdida de paquete completa";
                 break;
             case 5:
                 $string = "Pedido no contiene todos los productos";
+                break;
+            case 6:
+                $string = "Pedido no entregado";
+                break;
+            case 7:
+                $string = "No hay stock";
                 break;
             default:
                 $string = "Tipo de incidencia no especificado.";
