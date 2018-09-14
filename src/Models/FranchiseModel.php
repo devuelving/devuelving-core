@@ -106,7 +106,7 @@ class FranchiseModel extends Model
         $code = $this->code;
         if ($data && $code) {
             try {
-                $franchise = FranchiseCustom::where('franchise', $code)->where('var', $data)->first();
+                $franchise = FranchiseCustomModel::where('franchise', $code)->where('var', $data)->first();
                 return $franchise->value;
             } catch (\Exception $e) {
                 // report($e);
