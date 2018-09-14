@@ -14,7 +14,7 @@ class IncidentDetailsModel extends Model
      *
      * @var string
      */
-    protected $table = 'incident_details';
+    protected $table = 'incident_detail';
 
     /**
      * The attributes that are mass assignable.
