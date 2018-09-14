@@ -14,6 +14,13 @@ class ShippingCompanyModel extends Model
     protected $table = 'shipping_company';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+    
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
