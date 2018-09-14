@@ -2,10 +2,9 @@
 
 namespace devuelving\core;
 
-use devuelving\core\ProductCategory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProductCategory extends Model
+class ProductCategoryModel extends Model
 {
     /**
      * The table associated with the model.
