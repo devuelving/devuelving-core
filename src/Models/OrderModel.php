@@ -68,23 +68,30 @@ class OrderModel extends Model
     public function orderStatus()
     {
         switch ($this->status) {
+            case 0:
+                return __("Sin finalizar");
+                break;
             case 1:
-                return "Pendiente de pago";
+                if ($this->payment_method == 3 || $this->payment_method == 4) {
+                    return __("En gestión");
+                } else {
+                    return __("Pendiente de pago");
+                }
                 break;
             case 2:
-                return "Pagado";
+                return __("Pagado");
                 break;
             case 3:
-                return "En preparación";
+                return __("En preparación");
                 break;
             case 4:
-                return "Preparado";
+                return __("Preparado");
                 break;
             case 5:
-                return "Enviado";
+                return __("Enviado");
                 break;
             case 6:
-                return "Entregado";
+                return __("Entregado");
                 break;
         }
     }
