@@ -27,7 +27,7 @@ class OrderModel extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'customer', 'franchise', 'status', 'volume', 'weight', 'boxes', 'customer_name', 'customer_email', 'customer_phone', 'amount', 'franchise_earnings', 'added_taxes', 'address_street', 'address_number', 'address_floor', 'address_door', 'address_town', 'address_province', 'address_postal_code', 'address_country', 'payment_method', 'payment_method_data', 'notes', 'cost_price_purchase',
+        'code', 'customer', 'franchise', 'status', 'volume', 'weight', 'boxes', 'amount', 'cost_price_purchase', 'franchise_earnings', 'added_taxes', 'payment_method', 'payment_method_cost', 'payment_method_data', 'discount_voucher', 'discount_voucher_value', 'delivery_term', 'customer_name', 'customer_email', 'customer_phone', 'address_street', 'address_number', 'address_floor', 'address_door', 'address_town', 'address_province', 'address_postal_code', 'address_country', 'comments', 'created_at',
     ];
 
     /**

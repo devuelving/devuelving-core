@@ -59,32 +59,6 @@ class ProductModel extends Model
         ];
     }
 
-    public function toArray()
-    {
-        $stock = $this->getStock();
-        if ($this->getProductProviderData('ean') == null) {
-            $ean = 'Sin Ean';
-        } else {
-            $ean = $this->getProductProviderData('ean');
-        }
-        return [
-            'id' => $this->id,
-            'image' => $this->getDefaultImage(),
-            'images' => $this->getImages(),
-            'measure' => $this->measure,
-            'stock' => $stock,
-            'ean' => $ean,
-            'reference' => (string)$this->getProductProvider(true)->reference,
-            'name' => $this->name,
-            'brand' => $this->getBrand('name'),
-            'cost_price' => number_format($this->getPublicPriceCost(), 2, '.', ''),
-            'our_price' => number_format($this->getProductProvider(true)->cost_price, 2, '.', ''),
-            'stock_type' => $this->stock_type,
-            'edit' => route('product.edit', $this->id),
-            'supply' => route('product.supply', $this->id),
-        ];
-    }
-
     /**
      * Función para obtener los datos de un producto
      *
