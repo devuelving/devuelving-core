@@ -14,11 +14,27 @@ class OrderShipmentModel extends Model
     protected $table = 'order_shipment';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
         'order', 'status', 'shipping_company', 'shipping_tracking', 'shipping_notification'
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at', 'updated_at',
     ];
 }

@@ -15,11 +15,27 @@ class AddressModel extends Model
     protected $table = 'address';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
         'id', 'customer', 'street', 'number', 'floor', 'door', 'town', 'province', 'postal_code', 'country', 'status'
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at', 'updated_at',
     ];
 }

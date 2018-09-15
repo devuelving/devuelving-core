@@ -21,6 +21,13 @@ class FranchiseModel extends Model
     protected $table = 'franchise';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
@@ -35,7 +42,7 @@ class FranchiseModel extends Model
      * @var array
      */
     protected $hidden = [
-        'id',
+        'id', 'created_at', 'updated_at', 'deleted_at',
     ];
     
     /**

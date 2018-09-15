@@ -18,7 +18,7 @@ class ShippingCompanyModel extends Model
      *
      * @var bool
      */
-    public $timestamps = false;
+    public $timestamps = true;
     
     /**
      * The attributes that are mass assignable.
@@ -27,5 +27,14 @@ class ShippingCompanyModel extends Model
      */
     protected $fillable = [
         'name', 'image',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at', 'updated_at',
     ];
 }

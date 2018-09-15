@@ -30,11 +30,11 @@ class ProductModel extends Model
     protected $table = 'product';
 
     /**
-     * Upload image path
+     * Indicates if the model should be timestamped.
      *
-     * @var string
+     * @var bool
      */
-    protected $imagePath = 'http://devuelving-cdn.dom/';
+    public $timestamps = true;
 
     /**
      * The attributes that are mass assignable.
@@ -42,7 +42,16 @@ class ProductModel extends Model
      * @var array
      */
     protected $fillable = [
-        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'weight', 'measure', 'tax', 'brand', 'tags', 'parent', 'franchise', 'promo', 'unavailable', 'discontinued', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords',
+        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'transport', 'weight', 'volume', 'tax', 'brand', 'tags', 'parent', 'franchise', 'promo', 'double_unit', 'liquidation', 'unavailable', 'discontinued', 'highlight', 'shipping_canarias', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at', 'updated_at', 'deleted_at',
     ];
 
     /**
@@ -80,10 +89,10 @@ class ProductModel extends Model
         $return = [];
         $images = DB::table('product_image')->where('product', $this->id)->orderBy('default', 'desc')->get();
         foreach ($images as $image) {
-            $return[] = $this->imagePath . $image->image;
+            $return[] = env('API_URL') . $image->image;
         }
         if (count($return) < 1) {
-            $return[] = $this->imagePath . 'default.png';
+            $return[] = env('API_URL') . 'default.png';
         }
         return $return;
     }

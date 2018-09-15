@@ -14,6 +14,13 @@ class FranchiseNumberModel extends Model
     protected $table = 'franchise_numbers';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array

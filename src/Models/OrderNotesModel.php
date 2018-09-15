@@ -16,12 +16,28 @@ class OrderNotesModel extends Model
     protected $table = 'order_notes';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'order', 'note', 'user',
+        'type', 'order', 'note', 'user',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at', 'updated_at', 'deleted_at',
     ];
 
     /**

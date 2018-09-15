@@ -14,11 +14,27 @@ class SuggestionModel extends Model
     protected $table = 'suggestions';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'id', 'franchise', 'customer', 'subject', 'content', 'status',
+        'customer', 'type', 'status', 'content', 'options',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at', 'updated_at',
     ];
 }

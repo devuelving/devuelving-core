@@ -14,6 +14,13 @@ class CartModel extends Model
     protected $table = 'cart';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
@@ -28,6 +35,6 @@ class CartModel extends Model
      * @var array
      */
     protected $hidden = [
-        'id',
+        'id', 'created_at', 'updated_at',
     ];
 }

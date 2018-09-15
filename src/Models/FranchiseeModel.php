@@ -17,12 +17,19 @@ class FranchiseeModel extends Model
     protected $table = 'franchisee';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'franchise', 'franchise_role',
+        'franchise', 'name', 'surname', 'email', 'password', 'lang', 'type', 'status', 'email_verified_at', 'image', 'product_alert', 'remember_token',
     ];
 
     /**
@@ -31,6 +38,6 @@ class FranchiseeModel extends Model
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token', 'created_at', 'updated_at',
     ];
 }

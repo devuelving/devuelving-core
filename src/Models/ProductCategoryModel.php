@@ -28,4 +28,11 @@ class ProductCategoryModel extends Model
     protected $fillable = [
         'product', 'category',
     ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [];
 }

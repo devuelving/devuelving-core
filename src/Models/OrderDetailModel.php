@@ -18,12 +18,28 @@ class OrderDetailModel extends Model
     protected $table = 'order_details';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'type', 'status', 'order',  'product', 'units', 'unit_price', 'franchise_earning',
+        'type', 'status', 'order', 'product', 'units', 'unit_price', 'franchise_earning',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at', 'updated_at',
     ];
 
     /**
