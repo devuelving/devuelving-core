@@ -2,12 +2,12 @@
 
 namespace devuelving\core;
 
-class Slim
+class SlimModel
 {
     public static function getImages($inputName = 'slim')
     {
 
-        $values = Slim::getPostData($inputName);
+        $values = SlimModel::getPostData($inputName);
 
         // test for errors
         if ($values === false) {
@@ -22,7 +22,7 @@ class Slim
 
         // handle all posted fields
         foreach ($values as $value) {
-            $inputValue = Slim::parseInput($value);
+            $inputValue = SlimModel::parseInput($value);
             if ($inputValue) {
                 array_push($data, $inputValue);
             }
@@ -58,7 +58,7 @@ class Slim
         if (isset($data->input)) {
             $inputData = null;
             if (isset($data->input->image)) {
-                $inputData = Slim::getBase64Data($data->input->image);
+                $inputData = SlimModel::getBase64Data($data->input->image);
             } else if (isset($data->input->field)) {
                 $filename = $_FILES[$data->input->field]['tmp_name'];
                 if ($filename) {
@@ -79,7 +79,7 @@ class Slim
         if (isset($data->output)) {
             $outputDate = null;
             if (isset($data->output->image)) {
-                $outputData = Slim::getBase64Data($data->output->image);
+                $outputData = SlimModel::getBase64Data($data->output->image);
             } else if (isset($data->output->field)) {
                 $filename = $_FILES[$data->output->field]['tmp_name'];
                 if ($filename) {
@@ -144,7 +144,7 @@ class Slim
         }
 
         // Sanitize characters in file name
-        $name = Slim::sanitizeFileName($name);
+        $name = SlimModel::sanitizeFileName($name);
 
         // Let's put a unique id in front of the filename so we don't accidentally overwrite other files
         if ($uid) {
@@ -155,7 +155,7 @@ class Slim
         $path = $path . $name;
 
         // store the file
-        Slim::save($data, $path);
+        SlimModel::save($data, $path);
 
         // return the files new name and location
         return [

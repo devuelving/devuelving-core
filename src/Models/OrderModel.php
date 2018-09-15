@@ -2,19 +2,10 @@
 
 namespace devuelving\core;
 
-use devuelving\core\Cart;
-use devuelving\core\CartModel;
-use devuelving\core\Franchise;
-use devuelving\core\Incidents;
-use devuelving\core\OrderModel;
-use devuelving\core\OrderDetail;
-use devuelving\core\OrderHistory;
-use devuelving\core\ProductModel;
-use devuelving\core\PaymentMethod;
-use devuelving\core\FranchiseModel;
+use devuelving\core\RegionModel;
 use devuelving\core\IncidentsModel;
 use devuelving\core\OrderDetailModel;
-use devuelving\core\OrderHistoryModel;
+use devuelving\core\ShippingFeeModel;
 use devuelving\core\PaymentMethodModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -31,12 +22,28 @@ class OrderModel extends Model
     protected $table = 'orders';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'code', 'customer', 'franchise', 'status', 'volume', 'weight', 'customer_name', 'customer_email', 'customer_phone', 'amount', 'franchise_earnings', 'added_taxes', 'address_street', 'address_number', 'address_floor', 'address_door', 'address_town', 'address_province', 'address_postal_code', 'address_country', 'payment_method', 'payment_method_data', 'notes', 'cost_price_purchase',
+        'code', 'customer', 'franchise', 'status', 'volume', 'weight', 'boxes', 'amount', 'cost_price_purchase', 'franchise_earnings', 'added_taxes', 'payment_method', 'payment_method_cost', 'payment_method_data', 'discount_voucher', 'discount_voucher_value', 'delivery_term', 'customer_name', 'customer_email', 'customer_phone', 'address_street', 'address_number', 'address_floor', 'address_door', 'address_town', 'address_province', 'address_postal_code', 'address_country', 'comments', 'created_at',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'updated_at', 'deleted_at',
     ];
 
     /**
@@ -77,25 +84,55 @@ class OrderModel extends Model
     public function orderStatus()
     {
         switch ($this->status) {
+            case 0:
+                return __("Sin finalizar");
+                break;
             case 1:
-                return "Pendiente de pago";
+                if ($this->payment_method == 3 || $this->payment_method == 4) {
+                    return __("En gestión");
+                } else {
+                    return __("Pendiente de pago");
+                }
                 break;
             case 2:
-                return "Pagado";
+                return __("Pagado");
                 break;
             case 3:
-                return "En preparación";
+                return __("En preparación");
                 break;
             case 4:
-                return "Preparado";
+                return __("Preparado");
                 break;
             case 5:
-                return "Enviado";
+                return __("Enviado");
                 break;
             case 6:
-                return "Entregado";
+                return __("Entregado");
                 break;
         }
+    }
+
+    /**
+     * Función para obtener el total del pedido sin gastos del método de pago
+     *
+     * @return void
+     */
+    public function getSubtotal()
+    {
+        if ($this->getShippingCosts() != null) {
+            return $this->totalAmount() + $this->added_taxes + $this->getShippingCosts();
+        }
+        return $this->totalAmount() + $this->added_taxes;
+    }
+
+    /**
+     * Función para obtener el total del pedido sin 
+     *
+     * @return void
+     */
+    public function getTotal()
+    {
+        return $this->getSubtotal() + $this->getPaymentCostCost();
     }
 
     /**
@@ -103,103 +140,96 @@ class OrderModel extends Model
      *
      * @return void
      */
-    public function paymentMethodName()
+    public function getPaymentMethod()
     {
-        $method = PaymentMethodModel::find($this->payment_method);
-        return $method->name;
+        if (empty($this->payment_method)) {
+            $this->payment_method = 1;
+            $this->save();
+        }
+        return PaymentMethodModel::find($this->payment_method);
     }
 
     /**
-     * Función para obtener el total del pedido
+     * Función para obtener los gastos de gestión del método de pago
      *
      * @return void
      */
-    public function getTotalOrderCost()
+    public function getPaymentCostCost()
     {
-        return $this->totalAmount() + $this->added_taxes;
+        return ($this->getSubtotal() * ($this->getPaymentMethod()->porcentual / 100)) + $this->getPaymentMethod()->fixed;
     }
 
     /**
-     * Función para obtener los gastos de gestión de paypal
+     * Función para obtener los gastos de envio
      *
      * @return void
      */
-    public function getPayPalCost()
+    public function getShippingCosts()
     {
-        return ($this->getTotalOrderCost() * 0.035) + 0.35;
+        if (!empty($this->address_country)) {
+            $total = 0;
+            if (RegionModel::where('name', $this->address_province)->where('country', $this->address_country)->count() == 1) {
+                $region = RegionModel::where('name', $this->address_province)->where('country', $this->address_country)->first();
+                $shippingFee = ShippingFeeModel::find($region->shipping_fee);
+            } else {
+                $country = Country::where('code', $this->address_country)->first();
+                $shippingFee = ShippingFeeModel::find($country->default_shipping_fee);
+            }
+            $total = $this->getShippingPrice($shippingFee, $this->weight);
+            return $total;
+        }
+        return null;
+    }
+    
+    /**
+     * Función para obtener el precio exacto según la tarifa de envio
+     *
+     * @param ShippingFeeModel $shippingFee
+     * @return void
+     */
+    public function getShippingPrice(ShippingFeeModel $shippingFee, $weight)
+    {
+        switch (true) {
+            case $weight < 2:
+                return $shippingFee->rate_2;
+                break;
+            case $weight < 3:
+                return $shippingFee->rate_3;
+                break;
+            case $weight < 5:
+                return $shippingFee->rate_5;
+                break;
+            case $weight < 7:
+                return $shippingFee->rate_7;
+                break;
+            case $weight < 10:
+                return $shippingFee->rate_10;
+                break;
+            case $weight < 15:
+                return $shippingFee->rate_15;
+                break;
+            case $weight < 20:
+                return $shippingFee->rate_20;
+                break;
+            case $weight < 30:
+                return $shippingFee->rate_30;
+                break;
+            case $weight < 40:
+                return $shippingFee->rate_40;
+                break;
+            case $weight > 40:
+                return $shippingFee->rate_40 + $this->getShippingPrice($shippingFee, $weight - 40);
+                break;
+        }
     }
 
     /**
      * Función para listar los productos de un pedido
      *
-     * @return OrderDetail
+     * @return OrderDetailModel
      */
     public function listProducts()
     {
         return OrderDetailModel::where('order', $this->id)->get();
-    }
-
-    /**
-     * Función para iniciar un pedido
-     *
-     * @return string
-     */
-    public static function init()
-    {
-        if (session('priceCost') == '1') {
-            $priceCost = '1';
-        } else {
-            $priceCost = '0';
-        }
-        if (session('equivalenceTax') == '1') {
-            $equivalenceTax = '1';
-        } else {
-            $equivalenceTax = '0';
-        }
-        $addedTaxes = 0;
-        $order = new OrderModel();
-        $order->customer = auth()->user()->id;
-        $order->franchise = FranchiseModel::getFranchise();
-        $order->status = 1;
-        $order->amount = 0;
-        $order->customer_name = auth()->user()->name;
-        $order->customer_email = auth()->user()->email;
-        $order->customer_phone = auth()->user()->phone;
-        $order->save();
-        $orderHistory = new OrderHistoryModel();
-        $orderHistory->order = $order->id;
-        $orderHistory->status = $order->status;
-        $orderHistory->save();
-        $cartProducts = CartModel::where('customer', auth()->user()->id)->get();
-        foreach ($cartProducts as $cartProduct) {
-            $product = ProductModel::find($cartProduct->product);
-            $orderDetail = new OrderDetailModel();
-            $orderDetail->type = 1;
-            $orderDetail->status = 1;
-            $orderDetail->order = $order->id;
-            $orderDetail->customer = $order->customer;
-            $orderDetail->product = $product->id;
-            $orderDetail->units = $cartProduct->units;
-            if ($priceCost == '1') {
-                $orderDetail->unit_price = $product->getPublicPriceCost();
-                $orderDetail->franchise_earning = 0;
-                $addedTaxes += ($product->getPublicPriceCostWithoutIva() * $cartProduct->units) * 0.052;
-            } else {
-                $orderDetail->unit_price = $product->getPrice();
-                $orderDetail->franchise_earning = $product->getProfit() * $cartProduct->units;
-                $addedTaxes += ($product->getPriceWithoutIva() * $cartProduct->units) * 0.052;
-            }
-            $orderDetail->save();
-        }
-        $order->code = "P-" . rand(1000, 9999) . "-" . rand(1000, 9999) . "-" . str_pad((int)$order->id, 6, "0", STR_PAD_LEFT);
-        if ($equivalenceTax == '1') {
-            $order->added_taxes = $addedTaxes;
-        }
-        $order->amount = $order->totalAmount();
-        $order->save();
-        session(['order' => $order->code]);
-        session(['priceCost' => $priceCost]);
-        session(['equivalenceTax' => $equivalenceTax]);
-        return $order->code;
     }
 }

@@ -21,6 +21,13 @@ class FranchiseModel extends Model
     protected $table = 'franchise';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
@@ -35,7 +42,7 @@ class FranchiseModel extends Model
      * @var array
      */
     protected $hidden = [
-        'id',
+        'id', 'created_at', 'updated_at', 'deleted_at',
     ];
     
     /**
@@ -57,8 +64,8 @@ class FranchiseModel extends Model
      */
     public static function getFranchise()
     {
-        $franchise = FranchiseModel::where('domain', FranchiseModel::getDomain())->get();
-        return $franchise[0]->code;
+        $franchise = FranchiseModel::where('domain', FranchiseModel::getDomain())->first();
+        return $franchise->id;
     }
 
     /**
@@ -106,7 +113,7 @@ class FranchiseModel extends Model
         $code = $this->code;
         if ($data && $code) {
             try {
-                $franchise = FranchiseCustom::where('franchise', $code)->where('var', $data)->first();
+                $franchise = FranchiseCustomModel::where('franchise', $code)->where('var', $data)->first();
                 return $franchise->value;
             } catch (\Exception $e) {
                 // report($e);

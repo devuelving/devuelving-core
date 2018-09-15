@@ -14,7 +14,14 @@ class IncidentDetailsModel extends Model
      *
      * @var string
      */
-    protected $table = 'incident_details';
+    protected $table = 'incident_detail';
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
 
     /**
      * The attributes that are mass assignable.
@@ -23,5 +30,14 @@ class IncidentDetailsModel extends Model
      */
     protected $fillable = [
         'incident_id', 'explanation',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at', 'updated_at',
     ];
 }

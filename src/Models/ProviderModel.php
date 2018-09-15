@@ -17,12 +17,28 @@ class ProviderModel extends Model
     protected $table = 'provider';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'name', 'type', 'active', 'profit_margin', 'email', 'phone', 'data', 'web',
+        'name', 'type', 'shipping_type', 'delivery_term', 'active', 'profit_margin', 'email', 'phone', 'data', 'web',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at', 'updated_at',
     ];
 
     /**

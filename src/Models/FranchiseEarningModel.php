@@ -17,11 +17,27 @@ class FranchiseEarningModel extends Model
     protected $table = 'franchise_earnings';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'franchise', 'amount', 'status', 'bill_type', 'bill',
+        'franchise', 'amount', 'status', 'bill_type', 'bill_file',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at', 'updated_at', 'deleted_at',
     ];
 }

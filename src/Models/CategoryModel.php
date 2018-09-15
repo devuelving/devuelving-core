@@ -21,12 +21,28 @@ class CategoryModel extends Model
     protected $table = 'category';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
         'slug', 'name', 'description', 'parent', 'has_products', 'franchise', 'meta_title', 'meta_description', 'meta_keywords',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at', 'updated_at',
     ];
 
     /**

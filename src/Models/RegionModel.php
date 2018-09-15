@@ -18,7 +18,7 @@ class RegionModel extends Model
      *
      * @var bool
      */
-    public $timestamps = false;
+    public $timestamps = true;
 
     /**
      * The attributes that are mass assignable.
@@ -35,6 +35,6 @@ class RegionModel extends Model
      * @var array
      */
     protected $hidden = [
-        'id',
+        'id', 'created_at', 'updated_at',
     ];
 }

@@ -15,6 +15,13 @@ class OrderHistoryModel extends Model
     protected $table = 'order_history';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
@@ -23,6 +30,20 @@ class OrderHistoryModel extends Model
         'order', 'status',
     ];
 
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at', 'updated_at',
+    ];
+
+    /**
+     * Listado de los estados posibles del pedido
+     *
+     * @return void
+     */
     public function statusName()
     {
         switch ($this->status) {

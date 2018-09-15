@@ -1,6 +1,6 @@
 {
     "name": "devuelving/devuelving-core",
-    "description": "devuelving Core",
+    "description": "devuelving core",
     "type": "library",
     "require": {
         "laravel/framework": ">=5.5",

@@ -17,12 +17,19 @@ class CustomerModel extends Model
     protected $table = 'customer';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'name', 'surname', 'email', 'phone', 'nif', 'birthdate', 'gender', 'nationality', 'status', 'advertising', 'image', 'franchise', 'type', 'lang', 'options'
+        'name', 'surname', 'email', 'password', 'phone', 'nif', 'birthdate', 'gender', 'nationality', 'status', 'advertising', 'image', 'franchise', 'type', 'lang', 'options', 'remember_token'
     ];
 
     /**
@@ -31,7 +38,7 @@ class CustomerModel extends Model
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token','created_at', 'updated_at', 'deleted_at',
     ];
 
     /**

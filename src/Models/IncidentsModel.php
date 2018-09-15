@@ -17,12 +17,28 @@ class IncidentsModel extends Model
     protected $table = 'incidents';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'code', 'type', 'status', 'order_id', 'order_code',
+        'code', 'type', 'status', 'order_id',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at', 'updated_at',
     ];
     
     /**
@@ -36,19 +52,25 @@ class IncidentsModel extends Model
         $string="";
         switch ($type) {
             case 1:
-                $string = "Rotura";
+                $string = "Rotura Parcial";
                 break;
             case 2:
-                $string = "Perdida de paquete parcial";
+                $string = "Rotura Completa";
                 break;
             case 3:
-                $string = "Perdida de paquete completa";
+                $string = "Perdida de paquete parcial";
                 break;
             case 4:
-                $string = "Pedido no entregado";
+                $string = "Perdida de paquete completa";
                 break;
             case 5:
                 $string = "Pedido no contiene todos los productos";
+                break;
+            case 6:
+                $string = "Pedido no entregado";
+                break;
+            case 7:
+                $string = "No hay stock";
                 break;
             default:
                 $string = "Tipo de incidencia no especificado.";

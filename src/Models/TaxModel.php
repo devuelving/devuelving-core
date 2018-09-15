@@ -28,4 +28,11 @@ class TaxModel extends Model
     protected $fillable = [
         'name', 'value',
     ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [];
 }

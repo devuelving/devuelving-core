@@ -14,11 +14,27 @@ class ProductStockModel extends Model
     protected $table = 'product_stock';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'id', 'type', 'provider', 'product', 'stock', 'purchase_price',
+        'type', 'provider', 'product', 'stock', 'purchase_price',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at', 'updated_at',
     ];
 }

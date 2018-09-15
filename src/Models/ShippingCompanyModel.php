@@ -4,14 +4,14 @@ namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
 
-class FranchiseNumberModel extends Model
+class ShippingCompanyModel extends Model
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'franchise_numbers';
+    protected $table = 'shipping_company';
 
     /**
      * Indicates if the model should be timestamped.
@@ -19,14 +19,14 @@ class FranchiseNumberModel extends Model
      * @var bool
      */
     public $timestamps = true;
-
+    
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'code', 'headquarter', 'status',
+        'name', 'image',
     ];
 
     /**
@@ -35,6 +35,6 @@ class FranchiseNumberModel extends Model
      * @var array
      */
     protected $hidden = [
-        'id', 'created_at', 'updated_at',
+        'created_at', 'updated_at',
     ];
 }

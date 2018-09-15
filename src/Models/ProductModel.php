@@ -30,11 +30,11 @@ class ProductModel extends Model
     protected $table = 'product';
 
     /**
-     * Upload image path
+     * Indicates if the model should be timestamped.
      *
-     * @var string
+     * @var bool
      */
-    protected $imagePath = 'http://devuelving-cdn.dom/';
+    public $timestamps = true;
 
     /**
      * The attributes that are mass assignable.
@@ -42,7 +42,16 @@ class ProductModel extends Model
      * @var array
      */
     protected $fillable = [
-        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'weight', 'measure', 'tax', 'brand', 'parent', 'franchise', 'promo', 'unavailable', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords',
+        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'transport', 'weight', 'volume', 'tax', 'brand', 'tags', 'parent', 'franchise', 'promo', 'double_unit', 'liquidation', 'unavailable', 'discontinued', 'highlight', 'shipping_canarias', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'created_at', 'updated_at', 'deleted_at',
     ];
 
     /**
@@ -56,32 +65,6 @@ class ProductModel extends Model
             'slug' => [
                 'source' => 'name'
             ]
-        ];
-    }
-
-    public function toArray()
-    {
-        $stock = $this->getStock();
-        if ($this->getProductProviderData('ean') == null) {
-            $ean = 'Sin Ean';
-        } else {
-            $ean = $this->getProductProviderData('ean');
-        }
-        return [
-            'id' => $this->id,
-            'image' => $this->getDefaultImage(),
-            'images' => $this->getImages(),
-            'measure' => $this->measure,
-            'stock' => $stock,
-            'ean' => $ean,
-            'reference' => (string)$this->getProductProvider(true)->reference,
-            'name' => $this->name,
-            'brand' => $this->getBrand('name'),
-            'cost_price' => number_format($this->getPublicPriceCost(), 2, '.', ''),
-            'our_price' => number_format($this->getProductProvider(true)->cost_price, 2, '.', ''),
-            'stock_type' => $this->stock_type,
-            'edit' => route('product.edit', $this->id),
-            'supply' => route('product.supply', $this->id),
         ];
     }
 
@@ -106,10 +89,10 @@ class ProductModel extends Model
         $return = [];
         $images = DB::table('product_image')->where('product', $this->id)->orderBy('default', 'desc')->get();
         foreach ($images as $image) {
-            $return[] = $this->imagePath . $image->image;
+            $return[] = env('API_URL') . $image->image;
         }
         if (count($return) < 1) {
-            $return[] = $this->imagePath . 'default.png';
+            $return[] = env('API_URL') . 'default.png';
         }
         return $return;
     }
