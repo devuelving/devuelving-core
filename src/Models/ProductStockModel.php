@@ -26,7 +26,7 @@ class ProductStockModel extends Model
      * @var array
      */
     protected $fillable = [
-        'type', 'provider', 'product', 'stock', 'purchase_price',
+        'type', 'provider', 'product', 'order','stock', 'purchase_price',
     ];
 
     /**
