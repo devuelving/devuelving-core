@@ -2,6 +2,8 @@
 
 namespace devuelving\core;
 
+use devuelving\core\ProductModel;
+use devuelving\core\CategoryModel;
 use Illuminate\Database\Eloquent\Model;
 
 class ProductCategoryModel extends Model
@@ -35,4 +37,24 @@ class ProductCategoryModel extends Model
      * @var array
      */
     protected $hidden = [];
+
+    /**
+     * Función para obtener el producto
+     *
+     * @return void
+     */
+    public function getProduct()
+    {
+        return ProductModel::find($this->product);
+    }
+
+    /**
+     * Función para obtener la categoria
+     *
+     * @return void
+     */
+    public function getCategory()
+    {
+        return CategoryModel::find($this->category);
+    }
 }

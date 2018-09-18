@@ -13,6 +13,7 @@ use devuelving\core\FranchiseModel;
 use devuelving\core\ProductStockModel;
 use devuelving\core\ProductCustomModel;
 use Illuminate\Database\Eloquent\Model;
+use devuelving\core\ProductCategoryModel;
 use devuelving\core\ProductProviderModel;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -388,6 +389,16 @@ class ProductModel extends Model
             return $price;
         }
         return null;
+    }
+
+    /**
+     * Función para obtener las categorias del producto
+     *
+     * @return void
+     */
+    public function getCategories()
+    {
+        return ProductCategoryModel::where('product', $this->id)->get();
     }
 
     /**
