@@ -146,7 +146,7 @@ class ProductModel extends Model
      *
      * @return void
      */
-    public function getBrand($var)
+    public function getBrand()
     {
         return BrandModel::find($this->brand);
     }
