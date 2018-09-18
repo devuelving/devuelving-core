@@ -89,10 +89,10 @@ class ProductModel extends Model
         $return = [];
         $images = DB::table('product_image')->where('product', $this->id)->orderBy('default', 'desc')->get();
         foreach ($images as $image) {
-            $return[] = env('API_URL') . $image->image;
+            $return[] = config('app.cdn.url') . $image->image;
         }
         if (count($return) < 1) {
-            $return[] = env('API_URL') . 'default.png';
+            $return[] = config('app.cdn.url') . 'default.png';
         }
         return $return;
     }

@@ -79,7 +79,7 @@ class CategoryModel extends Model
                 'name' => $category->name,
                 'parent' => $category->parent,
                 'has_products' => $category->has_products,
-                'image' => env('API_URL') . $category->getImage($category->id),
+                'image' => config('app.cdn.url') . $category->getImage($category->id),
                 'edit' => route('category.edit', $category->id),
                 'child_categories' => $child_categories
             ];
@@ -107,7 +107,7 @@ class CategoryModel extends Model
                 'name' => $category->name,
                 'parent' => $category->parent,
                 'has_products' => $category->has_products,
-                'image' => env('API_URL') . $category->getImage($category->id),
+                'image' => config('app.cdn.url') . $category->getImage($category->id),
                 'edit' => route('own-shop.category.edit', $category->id),
                 'child_categories' => $child_categories
             ];
