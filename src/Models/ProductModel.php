@@ -142,14 +142,13 @@ class ProductModel extends Model
     }
 
     /**
-     * Función para obtener los datos de la marca
+     * Función para obtener la marca
      *
      * @return void
      */
     public function getBrand($var)
     {
-        $brand = BrandModel::find($this->brand);
-        return $brand->$var;
+        return BrandModel::find($this->brand);
     }
 
     /**
