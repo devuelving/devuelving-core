@@ -223,21 +223,26 @@ class ProductModel extends Model
     /**
      * Función para obtener el precio con el margen de beneficio del proveedor
      *
+     * @param boolean $tax
      * @return void
      */
-    public function getPublicPriceCost()
+    public function getPublicPriceCost($tax = true)
     {
         if ($this->franchise === null) {
             if ($this->getProductProviderData('cost_price') != null) {
                 $price = $this->getProductProviderData('cost_price');
                 $provider = ProviderModel::find($this->getProductProviderData('provider'));
                 $total = $price + ($price * ($provider->profit_margin / 100));
-                $total = $total + ($total * $this->getTax());
+                if ($tax) {
+                    $total = $total + ($total * $this->getTax());
+                }
                 return $total;
             }
         } else {
             $price = $this->getProductProviderData('cost_price');
-            $total = $price * $this->getTax();
+            if ($tax) {
+                $total = $price * $this->getTax();
+            }
             return $total;
         }
         return null;
@@ -250,10 +255,7 @@ class ProductModel extends Model
      */
     public function getPublicPriceCostWithoutIva()
     {
-        if ($this->getPublicPriceCost() != null) {
-            return $this->getPublicPriceCost();
-        }
-        return null;
+        return $this->getPublicPriceCost(false);
     }
 
     /**
