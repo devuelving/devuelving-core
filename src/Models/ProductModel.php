@@ -454,45 +454,45 @@ class ProductModel extends Model
     {
         $productCustom = ProductCustomModel::get(FranchiseModel::get('code'), $this->id);
         if ($options['action'] == 'price') {
-            $publicPrice = $options['price'];
-            $costPrice = $this->getPublicPriceCost();
-            $margin = round((($publicPrice - $costPrice) / $costPrice) * 100);
-            if ($margin < 1) {
-                return [
-                    'status' => false,
-                    'message' => 'El precio tiene que tener un beneficio minimo de un 1%',
-                    'custom_price' => $this->checkCustomPrice(),
-                    'type_custom_price' => $this->typeCustomPrice(),
-                    'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
-                    'cost_price_iva' => number_format($this->getPublicPriceCost(), 2, '.', ''),
-                    'recommended_price' => number_format($this->getRecommendedPrice(), 2, '.', ''),
-                    'price' => number_format($this->getPrice(), 2, '.', ''),
-                    'profit_margin' => $this->getProfitMargin(),
-                    'full_price_margin' => $this->getFullPriceMargin(),
-                ];
+            if ($options['price'] == null || $options['price_type'] == null) {
+                $productCustom->price = null;
+                $productCustom->price_type = null;
             } else {
-                if ($options['price'] == null || $options['price_type'] == null) {
-                    $productCustom->price = null;
-                    $productCustom->price_type = null;
+                $publicPrice = $options['price'];
+                $costPrice = $this->getPublicPriceCost();
+                $margin = round((($publicPrice - $costPrice) / $costPrice) * 100);
+                if ($margin < 1) {
+                    return [
+                        'status' => false,
+                        'message' => 'El precio tiene que tener un beneficio minimo de un 1%',
+                        'custom_price' => $this->checkCustomPrice(),
+                        'type_custom_price' => $this->typeCustomPrice(),
+                        'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
+                        'cost_price_iva' => number_format($this->getPublicPriceCost(), 2, '.', ''),
+                        'recommended_price' => number_format($this->getRecommendedPrice(), 2, '.', ''),
+                        'price' => number_format($this->getPrice(), 2, '.', ''),
+                        'profit_margin' => $this->getProfitMargin(),
+                        'full_price_margin' => $this->getFullPriceMargin(),
+                    ];
                 } else {
                     $productCustom->price = number_format($options['price'], 2, '.', '');
                     $productCustom->price_type = $options['price_type'];
                 }
-                $productCustom->save();
-                ProductCustomModel::checkClear($productCustom->id);
-                return [
-                    'status' => true,
-                    'message' => 'Se ha actualizado el precio correctamente',
-                    'custom_price' => $this->checkCustomPrice(),
-                    'type_custom_price' => $this->typeCustomPrice(),
-                    'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
-                    'cost_price_iva' => number_format($this->getPublicPriceCost(), 2, '.', ''),
-                    'recommended_price' => number_format($this->getRecommendedPrice(), 2, '.', ''),
-                    'price' => number_format($this->getPrice(), 2, '.', ''),
-                    'profit_margin' => $this->getProfitMargin(),
-                    'full_price_margin' => $this->getFullPriceMargin(),
-                ];
             }
+            $productCustom->save();
+            ProductCustomModel::checkClear($productCustom->id);
+            return [
+                'status' => true,
+                'message' => 'Se ha actualizado el precio correctamente',
+                'custom_price' => $this->checkCustomPrice(),
+                'type_custom_price' => $this->typeCustomPrice(),
+                'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
+                'cost_price_iva' => number_format($this->getPublicPriceCost(), 2, '.', ''),
+                'recommended_price' => number_format($this->getRecommendedPrice(), 2, '.', ''),
+                'price' => number_format($this->getPrice(), 2, '.', ''),
+                'profit_margin' => $this->getProfitMargin(),
+                'full_price_margin' => $this->getFullPriceMargin(),
+            ];
         } else if ($options['action'] == 'promotion') {
             $productCustom->promotion = $options['promotion'];
             $productCustom->save();
