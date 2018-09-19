@@ -126,6 +126,22 @@ class OrderModel extends Model
     }
 
     /**
+     * Checks if the order has meat products
+     *
+     * @return boolean
+     */
+    public function hasMeat()
+    {
+        $products = $this->listProducts();
+        foreach ($products as $product) {
+            if($product->getProductProviderData('shipping_type') == 3) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
      * Función para obtener el total del pedido sin 
      *
      * @return void
