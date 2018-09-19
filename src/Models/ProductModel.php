@@ -576,11 +576,11 @@ class ProductModel extends Model
     public function getMetaData($type)
     {
         $productCustom = ProductCustomModel::get(FranchiseModel::get('id'), $this->id);
-        if (!empty($productCustom->meta_ . $type)) {
-            return $productCustom->meta_ . $type;
-        } else if (!empty($this->meta_ . $type)) {
-            return $this->meta_ . $type;
-        } else if ($type == 'name') {
+        if (!empty($productCustom->$type)) {
+            return $productCustom->$type;
+        } else if (!empty($this->$type)) {
+            return $this->$type;
+        } else if ($type == 'meta_title') {
             return $this->getName();
         } else {
             return null;
