@@ -417,14 +417,23 @@ class ProductModel extends Model
     }
 
     /**
-     * Función para obtener el beneficio real del producto
+     * Función para obtener el margen beneficio real del producto
      *
+     * @param boolean $front
      * @return void
      */
-    public function getProfitMargin()
+    public function getProfitMargin($front = false)
     {
         if ($this->getProfit() != null) {
-            return round($this->getProfit() * 100);
+            if ($front == false) {
+                return round($this->getProfit() * 100);
+            } else {
+                if (($this->getProfit() * 100) > $this->getFullPriceMargin()) {
+                    return 0;
+                } else {
+                    return round($this->getProfit() * 100);
+                }
+            }
         }
         return null;
     }
