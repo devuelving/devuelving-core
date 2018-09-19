@@ -325,7 +325,7 @@ class ProductModel extends Model
      */
     public function checkCustomPrice()
     {
-        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('code'))->whereNotNull('price')->get();
+        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->whereNotNull('price')->get();
         if (count($productCustom) == 0) {
             return false;
         } else {
@@ -340,7 +340,7 @@ class ProductModel extends Model
      */
     public function typeCustomPrice()
     {
-        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('code'))->whereNotNull('price');
+        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->whereNotNull('price');
         if ($productCustom->count() == 0) {
             return 0;
         } else {
@@ -360,7 +360,7 @@ class ProductModel extends Model
      */
     public function checkPromotion()
     {
-        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('code'))->whereNotNull('promotion')->get();
+        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->whereNotNull('promotion')->get();
         if (count($productCustom) == 0) {
             return false;
         } else {
@@ -377,7 +377,7 @@ class ProductModel extends Model
     {
         if ($this->getProductProviderData('default_price') != null) {
             if ($this->checkCustomPrice()) {
-                $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('code'))->first();
+                $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->first();
                 if ($productCustom->price_type == 1) {
                     $price = $productCustom->price;
                 } else {
@@ -473,7 +473,7 @@ class ProductModel extends Model
      */
     public function productCustom($options = [])
     {
-        $productCustom = ProductCustomModel::get(FranchiseModel::get('code'), $this->id);
+        $productCustom = ProductCustomModel::get(FranchiseModel::get('id'), $this->id);
         if ($options['action'] == 'price') {
             if ($options['price'] == null || $options['price_type'] == null) {
                 $productCustom->price = null;
@@ -544,7 +544,7 @@ class ProductModel extends Model
      */
     public function getName()
     {
-        $productCustom = ProductCustomModel::get(FranchiseModel::get('code'), $this->id);
+        $productCustom = ProductCustomModel::get(FranchiseModel::get('id'), $this->id);
         if ($productCustom->name == null) {
             return $this->name;
         } else {
@@ -559,11 +559,31 @@ class ProductModel extends Model
      */
     public function getDescription()
     {
-        $productCustom = ProductCustomModel::get(FranchiseModel::get('code'), $this->id);
+        $productCustom = ProductCustomModel::get(FranchiseModel::get('id'), $this->id);
         if ($productCustom->description == null) {
             return $this->description;
         } else {
             return $productCustom->description;
+        }
+    }
+    
+    /**
+     * Función para obtener las etiquetas meta personalizadas
+     *
+     * @param string $type
+     * @return void
+     */
+    public function getMetaData($type)
+    {
+        $productCustom = ProductCustomModel::get(FranchiseModel::get('id'), $this->id);
+        if (!empty($productCustom->meta_ . $type)) {
+            return $productCustom->meta_ . $type;
+        } else if (!empty($this->meta_ . $type)) {
+            return $this->meta_ . $type;
+        } else if ($type == 'name') {
+            return $this->getName();
+        } else {
+            return null;
         }
     }
 
