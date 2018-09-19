@@ -439,6 +439,18 @@ class ProductModel extends Model
     }
 
     /**
+     * Función para obtener el descuento entre el precio de venta y el PVPR
+     *
+     * @return void
+     */
+    public function getPublicMarginProfit()
+    {
+        $publicPrice = $this->getPrice();
+        $recommendedPrice = $this->getRecommendedPrice();
+        return round((($recommendedPrice - $publicPrice) / $publicPrice) * 100);
+    }
+
+    /**
      * Función para obtener el beneficio entre el precio de coste y el pvpr
      *
      * @return void
