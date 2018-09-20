@@ -494,7 +494,7 @@ class ProductModel extends Model
                 $publicPrice = $options['price'];
                 $costPrice = $this->getPublicPriceCost();
                 $margin = round((($publicPrice - $costPrice) / $costPrice) * 100);
-                if ($margin < 1) {
+                if ($margin < 1 && $options['price_type'] == 1) {
                     return [
                         'status' => false,
                         'message' => 'El precio tiene que tener un beneficio minimo de un 1%',
