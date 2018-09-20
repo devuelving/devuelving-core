@@ -171,7 +171,7 @@ class ProductModel extends Model
      */
     public function getProvider($cheapest = false)
     {
-        $provider = ProviderModel::find($this->productProviderData('provider'));
+        $provider = ProviderModel::find($this->getProductProviderData('provider'));
     }
     
     /**
