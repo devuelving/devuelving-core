@@ -164,6 +164,47 @@ class ProductModel extends Model
     }
 
     /**
+     * Returns Provider for the product
+     *
+     * @param boolean $cheapest
+     * @return void
+     */
+    public function getProvider($cheapest = false)
+    {
+        try {
+            if ($this->franchise === null) {
+                if (! $cheapest) {
+                    if ($this->price_rules == 1) {
+                        $rule = 'asc';
+                    } else {
+                        $rule = 'desc';
+                    }
+                } else {
+                    $rule = 'asc';
+                }
+                $productProvider = ProductProviderModel::join('provider', 'product_provider.provider', '=', 'provider.id')
+                ->where('product_provider.product', $this->id)
+                ->where('provider.active', 1)
+                ->orderBy('product_provider.cost_price', $rule)
+                ->select('product_provider.*', 'provider.name')
+                ->first();
+            } else {
+                if (! $cheapest) {
+                    $rule = 'desc';
+                } else {
+                    $rule = 'asc';
+                }
+                $productProvider = ProductProviderModel::where('product', $this->id)->orderBy('product_provider.cost_price', $rule)->first();
+            }
+            $provider = ProviderModel::find($productProvider->provider);
+            return $provider;
+        } catch (\Exception $e) {
+            // report($e);
+            return null;
+        }
+    }
+    
+    /**
      * Función para obtene el producto proveedor
      *
      * @param boolean $cheapest
