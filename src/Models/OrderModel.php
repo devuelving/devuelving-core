@@ -263,6 +263,24 @@ class OrderModel extends Model
     }
 
     /**
+     * Gets the weight of the items from a given provider
+     *
+     * @param int $provider
+     * @return void
+     */
+    public function getProviderWeight($provider)
+    {
+        $weight = 0;
+        $products = $this->listProducts();
+        foreach ($products as $product) {
+            if ($product->getProduct()->getProvider() == $provider) {
+                $weight = $weight + $product->getProduct()->weight;
+            }
+        }
+        return $weight;
+    }
+
+    /**
      * Función para listar los productos de un pedido
      *
      * @return OrderDetailModel
