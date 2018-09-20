@@ -130,11 +130,11 @@ class OrderModel extends Model
      *
      * @return boolean
      */
-    public function hasMeat()
+    public function hasDropshipping()
     {
         $products = $this->listProducts();
         foreach ($products as $product) {
-            if($product->getProductProviderData('shipping_type') == 3) {
+            if($product->getProduct()->getProductProviderData('shipping_type') == 3) {
                 return true;
             }
         }
@@ -192,11 +192,34 @@ class OrderModel extends Model
                 $shippingFee = ShippingFeeModel::find($country->default_shipping_fee);
             }
             $total = $this->getShippingPrice($shippingFee, $this->weight);
+            if ($this->hasDropshipping()) {
+                $total = $total + $this->getDropshippingPrice();
+            }
             return $total;
         }
         return null;
     }
     
+    /**
+     * Calcultes the price that is added by each of the dropshipping providers
+     *
+     * @return float
+     */
+    public function getDropshippingPrice()
+    {
+        $total = 0;
+        $products = ProductModel::join('order_details', 'product.id', '=', 'order_details.product')
+        ->where('order', $this->id)
+        ->groupBy('product.provider')
+        ->sum('weight');
+        foreach ($products as $product) {
+            if($product->getProductProviderData('shipping_type') == 3) {
+                $total = $total + $this->getShippingPrice(ShippingFeeModel::find($product->getProductProviderData('shipping_method')), $product->weight);
+            }
+        }
+        return $total;
+    }
+
     /**
      * Función para obtener el precio exacto según la tarifa de envio
      *
