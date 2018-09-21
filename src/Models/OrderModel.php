@@ -6,6 +6,7 @@ use devuelving\core\RegionModel;
 use devuelving\core\IncidentsModel;
 use devuelving\core\OrderDetailModel;
 use devuelving\core\ShippingFeeModel;
+use devuelving\core\OrderDiscountModel;
 use devuelving\core\PaymentMethodModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -173,6 +174,27 @@ class OrderModel extends Model
     public function getPaymentCostCost()
     {
         return ($this->getSubtotal() * ($this->getPaymentMethod()->porcentual / 100)) + $this->getPaymentMethod()->fixed;
+    }
+
+    /**
+     * Returns the earnings that the franchisee has made with the order
+     *
+     * @return void
+     */
+    public function getEarnings()
+    {
+        $earnings = 0;
+        $details = OrderDetailModel::where('order', $this->id)->get();
+        foreach ($details as $detail) {
+            $earnings = $earnings + $detail->franchise_earning;
+        }
+        $discounts = 0;
+        if(OrderDiscountModel::where('order', $this->id)->exists()){
+            $voucher = OrderDiscountModel::where('order', $this->id)->first();
+            $discounts = $voucher->discount_value;
+        }
+        $earnings = $earnings - $this->shipping_costs_franchise;
+        return $earnings;
     }
 
     /**
