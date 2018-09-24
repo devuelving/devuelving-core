@@ -3,6 +3,7 @@
 namespace devuelving\core;
 
 use devuelving\core\RegionModel;
+use devuelving\core\CountryModel;
 use devuelving\core\IncidentsModel;
 use devuelving\core\OrderDetailModel;
 use devuelving\core\ShippingFeeModel;
@@ -210,7 +211,7 @@ class OrderModel extends Model
                 $region = RegionModel::where('name', $this->address_province)->where('country', $this->address_country)->first();
                 $shippingFee = ShippingFeeModel::find($region->shipping_fee);
             } else {
-                $country = Country::where('code', $this->address_country)->first();
+                $country = CountryModel::where('code', $this->address_country)->first();
                 $shippingFee = ShippingFeeModel::find($country->default_shipping_fee);
             }
             $total = $this->getShippingPrice($shippingFee, $this->weight);
