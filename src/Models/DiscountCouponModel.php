@@ -30,7 +30,7 @@ class DiscountCouponModel extends Model
      * @var array
      */
     protected $fillable = [
-        'id', 'franchise', 'code', 'status', 'type', 'amount', 'first_purchase', 'start_date', 'end_date', 'minimum_amount', 'limit_user', 'limit_purchase', 'clients', 'products', 'created_at', 'updated_at',
+        'id', 'franchise', 'code', 'status', 'type', 'amount', 'first_purchase', 'start_date', 'end_date', 'minimum_amount', 'limit_user', 'limit_purchase', 'clients', 'products'
     ];
 
     /**
@@ -39,24 +39,6 @@ class DiscountCouponModel extends Model
      * @var array
      */
     protected $hidden = [
-        'deleted_at',
+        'created_at', 'updated_at', 'deleted_at',
     ];
-    
-    public function toArray()
-    {
-        return [
-            'code' => $this->code, 
-            'status' => $this->status, 
-            'type' => $this->type, 
-            'amount' => $this->amount, 
-            'first_purchase' => $this->first_purchase, 
-            'start_date' => $this->start_date, 
-            'end_date' => $this->end_date, 
-            'minimum_amount' => $this->minimum_amount, 
-            'limit_user' => $this->limit_user, 
-            'limit_purchase' => $this->limit_purchase, 
-            'clients' => $this->clients, 
-            'products' => $this->products
-        ];
-    }
 }
