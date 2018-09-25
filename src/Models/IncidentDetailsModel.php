@@ -29,7 +29,7 @@ class IncidentDetailsModel extends Model
      * @var array
      */
     protected $fillable = [
-        'incident_id', 'explanation',
+        'incident', 'explanation',
     ];
 
     /**

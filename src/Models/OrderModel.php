@@ -36,7 +36,7 @@ class OrderModel extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'customer', 'franchise', 'status', 'volume', 'weight', 'boxes', 'amount', 'cost_price_purchase', 'franchise_earnings', 'added_taxes', 'payment_method', 'payment_method_cost', 'payment_method_data', 'shipping_costs', 'shipping_costs_customer', 'shipping_costs_franchise', 'delivery_term', 'customer_name', 'customer_email', 'customer_phone', 'address_street', 'address_number', 'address_floor', 'address_door', 'address_town', 'address_province', 'address_postal_code', 'address_country', 'comments', 'created_at',
+        'code', 'customer', 'franchise', 'status', 'volume', 'weight', 'boxes', 'amount', 'is_cost_price', 'franchise_earnings', 'added_taxes', 'payment_method', 'payment_method_cost', 'payment_method_data', 'shipping_costs', 'shipping_costs_customer', 'shipping_costs_franchise', 'delivery_term', 'customer_name', 'customer_email', 'customer_phone', 'address_street', 'address_number', 'address_floor', 'address_door', 'address_town', 'address_province', 'address_postal_code', 'address_country', 'comments',
     ];
 
     /**
@@ -55,7 +55,7 @@ class OrderModel extends Model
      */
     public function hasIncidents()
     {
-        $incidents = IncidentsModel::where('order_id', '=', $this->id);
+        $incidents = IncidentsModel::where('order', '=', $this->id);
         if ($incidents->count()) {
             return true;
         } else {
@@ -212,7 +212,7 @@ class OrderModel extends Model
                 $shippingFee = ShippingFeeModel::find($region->shipping_fee);
             } else {
                 $country = CountryModel::where('code', $this->address_country)->first();
-                $shippingFee = ShippingFeeModel::find($country->default_shipping_fee);
+                $shippingFee = ShippingFeeModel::find($country->ipping_fee);
             }
             $total = $this->getShippingPrice($shippingFee, $this->weight);
             if ($this->hasDropshipping()) {

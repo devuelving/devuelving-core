@@ -28,7 +28,7 @@ class OrderNotesModel extends Model
      * @var array
      */
     protected $fillable = [
-        'type', 'order', 'note', 'user',
+        'type', 'order', 'note', 'agent',
     ];
 
     /**
@@ -47,7 +47,7 @@ class OrderNotesModel extends Model
      */
     public function userName()
     {
-        $user = User::find($this->user);
+        $user = User::find($this->agent);
         return $user->name;
     }
 }

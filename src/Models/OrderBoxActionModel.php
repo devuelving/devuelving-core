@@ -29,7 +29,7 @@ class OrderBoxActionModel extends Model
      * @var array
      */
     protected $fillable = [
-        'order', 'product', 'units', 'user',
+        'order', 'product', 'units', 'agent',
     ];
 
     /**

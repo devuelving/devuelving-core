@@ -29,7 +29,7 @@ class IncidentsModel extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'type', 'status', 'order_id',
+        'code', 'type', 'status', 'order',
     ];
 
     /**

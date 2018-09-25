@@ -29,7 +29,7 @@ class ProviderModel extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'type', 'shipping_type', 'delivery_term', 'minimum_purchase', 'shipping_method', 'active', 'profit_margin', 'maximum_discount', 'email', 'phone', 'data', 'web',
+        'name', 'type', 'shipping_type', 'shipping_extra_cost', 'shipping_locations', 'delivery_term', 'minimum_purchase', 'active', 'profit_margin', 'maximum_discount', 'email', 'phone', 'data', 'web',
     ];
 
     /**

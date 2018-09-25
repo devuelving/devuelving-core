@@ -43,7 +43,7 @@ class ProductModel extends Model
      * @var array
      */
     protected $fillable = [
-        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'transport', 'weight', 'volume', 'tax', 'brand', 'tags', 'parent', 'franchise', 'promo', 'double_unit', 'liquidation', 'unavailable', 'discontinued', 'highlight', 'shipping_canarias', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords',
+        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'transport', 'weight', 'volume', 'tax', 'brand', 'tags', 'parent', 'franchise', 'promo', 'double_unit', 'discount_50', 'discount_progressive', 'units_limit', 'liquidation', 'unavailable', 'discontinued', 'highlight', 'price_edit', 'shipping_canarias', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords',
     ];
 
     /**
@@ -598,13 +598,15 @@ class ProductModel extends Model
             return null;
         }
     }
-
+    
     /**
      * Función para añadir un registro de actualizaciones de precios
      *
+     * @param integer $costPrice
+     * @param integer $oldPrice
      * @return void
      */
-    public function addUpdatePrice($costPrice)
+    public function addUpdatePrice($costPrice, $oldPrice = null)
     {
         try {
             $productPriceUpdate = DB::table('product_price_update')->where('product', $this->id)->orderBy('id', 'desc')->first();
@@ -618,6 +620,7 @@ class ProductModel extends Model
             ->insert([
                 'product' => $this->id,
                 'price' => $costPrice,
+                'old_price' => $oldPrice,
                 'created_at' => Carbon::now()->toDateTimeString(),
                 'updated_at' => Carbon::now()->toDateTimeString()
             ]);

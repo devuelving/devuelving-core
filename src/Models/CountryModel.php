@@ -26,7 +26,7 @@ class CountryModel extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'name', 'default_shipping_fee', 'default_delivery_term',
+        'code', 'name', 'shipping_fee', 'delivery_term',
     ];
 
     /**
