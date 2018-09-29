@@ -144,13 +144,17 @@ class OrderModel extends Model
     }
     
     /**
-     * Función para obtener el total del pedido 
+     * Función para obtener el total del pedido con el vale de descuento restado
      *
      * @return void
      */
     public function getTotal()
     {
-        return $this->getSubtotal() + $this->getPaymentCostCost();
+        if ($this->getDiscountCoupon() != null) {
+            return ($this->getSubtotal() + $this->getPaymentCostCost()) - $this->getDiscountCoupon()->discount_value;
+        } else {
+            return $this->getSubtotal() + $this->getPaymentCostCost();
+        }
     }
 
     /**
