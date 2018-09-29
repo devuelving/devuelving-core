@@ -144,7 +144,7 @@ class OrderModel extends Model
     }
     
     /**
-     * Función para obtener el total del pedido sin 
+     * Función para obtener el total del pedido 
      *
      * @return void
      */
@@ -311,5 +311,25 @@ class OrderModel extends Model
     public function listProducts()
     {
         return OrderDetailModel::where('order', $this->id)->get();
+    }
+
+    /**
+     * Metodo para obtener el vale descuento que se ha aplicado al pedido
+     *
+     * @return void
+     */
+    public function getDiscountCoupon()
+    {
+        return OrderDiscountModel::where('order', $this->id)->where('type', 1)->first();
+    }
+
+    /**
+     * Metodo para obtener los otros descuentos
+     *
+     * @return void
+     */
+    public function getOthersDiscounts()
+    {
+        return OrderDiscountModel::where('order', $this->id)->where('type', '!=', 1)->get();
     }
 }
