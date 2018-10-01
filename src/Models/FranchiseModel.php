@@ -133,7 +133,7 @@ class FranchiseModel extends Model
      */
     public function getBooking($type = null, $date = null, $format = null)
     {
-        $callAppointment = CallAppointmentModel::where('franchise', $this->code);
+        $callAppointment = CallAppointmentModel::where('franchise', $this->id);
         if ($type != null) {
             $callAppointment->where('type', $type);
         }
