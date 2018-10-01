@@ -123,7 +123,7 @@ class CategoryModel extends Model
      */
     public function getImage($category)
     {
-        $categoryImage = DB::table('category_image')->where('category', $category)->where('franchise', 0)->get();
+        $categoryImage = DB::table('category_image')->where('category', $category)->whereNull('franchise')->get();
         foreach ($categoryImage as $category) {
             return $category->image;
         }
