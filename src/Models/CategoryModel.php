@@ -68,7 +68,7 @@ class CategoryModel extends Model
     public function arrayCategories($parent = 0)
     {
         $return = [];
-        $categories = CategoryModel::where('franchise', null)->where('parent', $parent)->get();
+        $categories = CategoryModel::whereNull('franchise')->where('parent', $parent)->get();
         foreach ($categories as $category) {
             $child_categories = [];
             if ($category->has_products == 0) {
