@@ -128,7 +128,7 @@ class CategoryModel extends Model
                 return $category->image;
             }
         } else {
-            return config('app.cdn.url') . 'default.png';
+            return 'default.png';
         }
     }
 
