@@ -216,7 +216,7 @@ class OrderModel extends Model
                 $shippingFee = ShippingFeeModel::find($region->shipping_fee);
             } else {
                 $country = CountryModel::where('code', $this->address_country)->first();
-                $shippingFee = ShippingFeeModel::find($country->ipping_fee);
+                $shippingFee = ShippingFeeModel::find($country->shipping_fee);
             }
             $total = $this->getShippingPrice($shippingFee, $this->weight);
             if ($this->hasDropshipping()) {
