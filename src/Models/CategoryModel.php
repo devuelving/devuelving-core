@@ -79,7 +79,7 @@ class CategoryModel extends Model
                 'name' => $category->name,
                 'parent' => $category->parent,
                 'has_products' => $category->has_products,
-                'image' => config('app.cdn.url') . $category->getImage($category->id),
+                'image' => config('app.cdn.url') . $category->getImage(),
                 'edit' => route('category.edit', $category->id),
                 'child_categories' => $child_categories
             ];
@@ -107,7 +107,7 @@ class CategoryModel extends Model
                 'name' => $category->name,
                 'parent' => $category->parent,
                 'has_products' => $category->has_products,
-                'image' => config('app.cdn.url') . $category->getImage($category->id),
+                'image' => config('app.cdn.url') . $category->getImage(),
                 'edit' => route('own-shop.category.edit', $category->id),
                 'child_categories' => $child_categories
             ];
@@ -116,33 +116,30 @@ class CategoryModel extends Model
     }
 
     /**
-     * Función para obtener la imagen de una categoría
+     * Método para devolver la imagen de la categoria
      *
-     * @param int $category
      * @return void
      */
-    public function getImage($category)
+    public function getImage()
     {
-        $categoryImage = DB::table('category_image')->where('category', $category)->whereNull('franchise')->get();
-        foreach ($categoryImage as $category) {
-            return $category->image;
+        $categoryImage = DB::table('category_image')->where('category', $this->category)->whereNull('franchise');
+        if ($categoryImage->count() < 1) {
+            foreach ($categoryImage->get() as $category) {
+                return $category->image;
+            }
+        } else {
+            return config('app.cdn.url') . 'default.png';
         }
     }
 
     /**
-     * Función para obtener el nombre de la categoría padre
+     * Método para devolver la categoria padre
      *
-     * @param int $parent
      * @return void
      */
-    public function getParent($parent)
+    public function getParent()
     {
-        if ($parent == '0') {
-            return __('Categoría Principal');
-        } else {
-            $category = CategoryModel::find($parent);
-            return $category->name;
-        }
+        return CategoryModel::find($this->parent);
     }
 
     /**
@@ -167,6 +164,7 @@ class CategoryModel extends Model
      */
     public function print()
     {
-        return view('modules.catalog.category');
+        $category = CategoryModel::find($this->id);
+        return view('modules.catalog.category', compact('category'));
     }
 }
