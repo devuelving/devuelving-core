@@ -122,8 +122,8 @@ class CategoryModel extends Model
      */
     public function getImage()
     {
-        $categoryImage = DB::table('category_image')->where('category', $this->category)->whereNull('franchise');
-        if ($categoryImage->count() < 1) {
+        $categoryImage = DB::table('category_image')->where('category', $this->id)->whereNull('franchise');
+        if ($categoryImage->count() > 0) {
             foreach ($categoryImage->get() as $category) {
                 return $category->image;
             }
@@ -151,7 +151,7 @@ class CategoryModel extends Model
      */
     public function listCategoriesName($parent, $icon = "<i class='fas fa-angle-double-right'></i>")
     {
-        if ($parent != '0') {
+        if ($parent != 0) {
             $category = CategoryModel::find($parent);
             return $category->listCategoriesName($category->parent) . ' ' . $icon . ' ' . $category->name;
         }
