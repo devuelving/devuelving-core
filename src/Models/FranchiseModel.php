@@ -64,8 +64,7 @@ class FranchiseModel extends Model
      */
     public static function getFranchise()
     {
-        $franchise = FranchiseModel::where('domain', FranchiseModel::getDomain())->first();
-        return $franchise->id;
+        return FranchiseModel::where('domain', FranchiseModel::getDomain())->first();
     }
 
     /**
@@ -89,7 +88,7 @@ class FranchiseModel extends Model
         if (!empty(auth()->user()->franchise)) {
             $id = auth()->user()->franchise;
         } else {
-            $id = FranchiseModel::getFranchise();
+            $id = FranchiseModel::getFranchise()->id;
         }
         if ($data) {
             try {
@@ -113,7 +112,7 @@ class FranchiseModel extends Model
         if (!empty(auth()->user()->franchise)) {
             $id = auth()->user()->franchise;
         } else {
-            $id = FranchiseModel::getFranchise();
+            $id = FranchiseModel::getFranchise()->id;
         }
         try {
             $franchise = FranchiseCustomModel::where('franchise', $id)->where('var', $data)->first();
