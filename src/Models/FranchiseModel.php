@@ -75,7 +75,7 @@ class FranchiseModel extends Model
      */
     public function countClients()
     {
-        $clients = CustomerModel::where('franchise', $this->code)->get();
+        $clients = CustomerModel::where('franchise', $this->id)->get();
         return count($clients) - 1;
     }
     
@@ -87,20 +87,20 @@ class FranchiseModel extends Model
     public static function get($data = null)
     {
         if (!empty(auth()->user()->franchise)) {
-            $code = auth()->user()->franchise;
+            $id = auth()->user()->franchise;
         } else {
-            $code = FranchiseModel::getFranchise();
+            $id = FranchiseModel::getFranchise();
         }
         if ($data) {
             try {
-                $franchise = FranchiseModel::find($code);
+                $franchise = FranchiseModel::find($id);
                 return $franchise->$data;
             } catch (\Exception $e) {
                 // report($e);
                 return null;
             }
         }
-        return $code;
+        return $id;
     }
     
     /**
@@ -110,10 +110,10 @@ class FranchiseModel extends Model
      */
     public function getCustom($data = null)
     {
-        $code = $this->code;
-        if ($data && $code) {
+        $id = $this->id;
+        if ($data && $id) {
             try {
-                $franchise = FranchiseCustomModel::where('franchise', $code)->where('var', $data)->first();
+                $franchise = FranchiseCustomModel::where('franchise', $id)->where('var', $data)->first();
                 return $franchise->value;
             } catch (\Exception $e) {
                 // report($e);
