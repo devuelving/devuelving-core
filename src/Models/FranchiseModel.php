@@ -110,17 +110,18 @@ class FranchiseModel extends Model
      */
     public function getCustom($data = null)
     {
-        $id = $this->id;
-        if ($data && $id) {
-            try {
-                $franchise = FranchiseCustomModel::where('franchise', $id)->where('var', $data)->first();
-                return $franchise->value;
-            } catch (\Exception $e) {
-                // report($e);
-                return null;
-            }
+        if (!empty(auth()->user()->franchise)) {
+            $id = auth()->user()->franchise;
+        } else {
+            $id = FranchiseModel::getFranchise();
         }
-        return "No existe";
+        try {
+            $franchise = FranchiseCustomModel::where('franchise', $id)->where('var', $data)->first();
+            return $franchise->value;
+        } catch (\Exception $e) {
+            report($e);
+            return null;
+        }
     }
 
     /**
