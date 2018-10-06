@@ -75,7 +75,7 @@ class OrderModel extends Model
         foreach ($order_details as $order_detail) {
             $order_price = $order_price + ($order_detail->units * $order_detail->unit_price);
         }
-        return $order_price;
+        return number_format($order_price, 2, '.', '');
     }
 
     /**
@@ -124,7 +124,7 @@ class OrderModel extends Model
         if ($this->getShippingCosts() != null) {
             return $this->totalAmount() + $this->added_taxes + $this->getShippingCosts();
         }
-        return $this->totalAmount() + $this->added_taxes;
+        return number_format($this->totalAmount() + $this->added_taxes, 2, '.', '');
     }
 
     /**
@@ -151,9 +151,9 @@ class OrderModel extends Model
     public function getTotal()
     {
         if ($this->getDiscountCoupon() != null) {
-            return ($this->getSubtotal() + $this->getPaymentCostCost()) - $this->getDiscountCoupon()->discount_value;
+            return number_format(($this->getSubtotal() + $this->getPaymentCostCost()) - $this->getDiscountCoupon()->discount_value, 2, '.', '');
         } else {
-            return $this->getSubtotal() + $this->getPaymentCostCost();
+            return number_format($this->getSubtotal() + $this->getPaymentCostCost(), 2, '.', '');
         }
     }
 
@@ -178,7 +178,7 @@ class OrderModel extends Model
      */
     public function getPaymentCostCost()
     {
-        return ($this->getSubtotal() * ($this->getPaymentMethod()->porcentual / 100)) + $this->getPaymentMethod()->fixed;
+        return number_format(($this->getSubtotal() * ($this->getPaymentMethod()->porcentual / 100)) + $this->getPaymentMethod()->fixed, 2, '.', '');
     }
 
     /**
@@ -199,7 +199,7 @@ class OrderModel extends Model
             $discounts = $voucher->discount_value;
         }
         $earnings = $earnings - $this->shipping_costs_franchise;
-        return $earnings;
+        return number_format($earnings, 2, '.', '');
     }
 
     /**
@@ -222,7 +222,7 @@ class OrderModel extends Model
             if ($this->hasDropshipping()) {
                 $total = $total + $this->getDropshippingPrice();
             }
-            return $total;
+            return number_format($total, 2, '.', '');
         }
         return null;
     }
@@ -244,7 +244,7 @@ class OrderModel extends Model
                 $total = $total + $this->getShippingPrice(ShippingFeeModel::find($product->getProductProviderData('shipping_method')), $product->weight);
             }
         }
-        return $total;
+        return number_format($total, 2, '.', '');
     }
 
     /**
@@ -257,34 +257,34 @@ class OrderModel extends Model
     {
         switch (true) {
             case $weight < 2:
-                return $shippingFee->rate_2;
+                return number_format($shippingFee->rate_2, 2, '.', '');
                 break;
             case $weight < 3:
-                return $shippingFee->rate_3;
+                return number_format($shippingFee->rate_3, 2, '.', '');
                 break;
             case $weight < 5:
-                return $shippingFee->rate_5;
+                return number_format($shippingFee->rate_5, 2, '.', '');
                 break;
             case $weight < 7:
-                return $shippingFee->rate_7;
+                return number_format($shippingFee->rate_7, 2, '.', '');
                 break;
             case $weight < 10:
-                return $shippingFee->rate_10;
+                return number_format($shippingFee->rate_10, 2, '.', '');
                 break;
             case $weight < 15:
-                return $shippingFee->rate_15;
+                return number_format($shippingFee->rate_15, 2, '.', '');
                 break;
             case $weight < 20:
-                return $shippingFee->rate_20;
+                return number_format($shippingFee->rate_20, 2, '.', '');
                 break;
             case $weight < 30:
-                return $shippingFee->rate_30;
+                return number_format($shippingFee->rate_30, 2, '.', '');
                 break;
             case $weight < 40:
-                return $shippingFee->rate_40;
+                return number_format($shippingFee->rate_40, 2, '.', '');
                 break;
             case $weight > 40:
-                return $shippingFee->rate_40 + $this->getShippingPrice($shippingFee, $weight - 40);
+                return number_format($shippingFee->rate_40 + $this->getShippingPrice($shippingFee, $weight - 40), 2, '.', '');
                 break;
         }
     }
@@ -305,6 +305,40 @@ class OrderModel extends Model
             }
         }
         return $weight;
+    }
+    
+    /**
+     * Método para obtener el resumen 
+     * 
+     * @return array
+     */
+    public function getResume()
+    {
+        return [
+            'products' => $this->totalAmount(),
+            'payment_method' => $this->payment_method_cost,
+            'amount' => $this->getTotal(),
+        ];
+    }
+
+    /**
+     * Método para contar los productos de un pedido
+     *
+     * @return void
+     */
+    public function countProducts()
+    {
+        return OrderDetailModel::where('order', $this->id)->count();
+    }
+
+    /**
+     * Método para obtener los datos del método de pago
+     *
+     * @return void
+     */
+    public function getPaymentMethodData()
+    {
+        return json_decode($this->payment_method_data);
     }
 
     /**
