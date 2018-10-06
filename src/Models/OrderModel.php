@@ -109,7 +109,19 @@ class OrderModel extends Model
                 return __("Enviado");
                 break;
             case 6:
+                return __("En transito");
+                break;
+            case 7:
+                return __("En reparto");
+                break;
+            case 8:
                 return __("Entregado");
+                break;
+            case 9:
+                return __("Devuelto");
+                break;
+            case 10:
+                return __("Cancelado");
                 break;
         }
     }
