@@ -123,6 +123,9 @@ class OrderModel extends Model
             case 10:
                 return __("Cancelado");
                 break;
+            case 11:
+                return __("Incidencia");
+                break;
         }
     }
 
