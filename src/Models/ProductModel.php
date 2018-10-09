@@ -174,7 +174,7 @@ class ProductModel extends Model
         $provider = ProviderModel::find($this->getProductProviderData('provider'));
         return $provider;
     }
-    
+
     /**
      * Función para obtene el producto proveedor
      *
@@ -185,7 +185,7 @@ class ProductModel extends Model
     {
         try {
             if ($this->franchise === null) {
-                if (! $cheapest) {
+                if (!$cheapest) {
                     if ($this->price_rules == 1) {
                         $rule = 'asc';
                     } else {
@@ -195,13 +195,13 @@ class ProductModel extends Model
                     $rule = 'asc';
                 }
                 $productProvider = ProductProviderModel::join('provider', 'product_provider.provider', '=', 'provider.id')
-                ->where('product_provider.product', $this->id)
-                ->where('provider.active', 1)
-                ->orderBy('product_provider.cost_price', $rule)
-                ->select('product_provider.*', 'provider.name')
-                ->first();
+                    ->where('product_provider.product', $this->id)
+                    ->where('provider.active', 1)
+                    ->orderBy('product_provider.cost_price', $rule)
+                    ->select('product_provider.*', 'provider.name')
+                    ->first();
             } else {
-                if (! $cheapest) {
+                if (!$cheapest) {
                     $rule = 'desc';
                 } else {
                     $rule = 'asc';
@@ -578,7 +578,7 @@ class ProductModel extends Model
             return $productCustom->description;
         }
     }
-    
+
     /**
      * Función para obtener las etiquetas meta personalizadas
      *
@@ -598,7 +598,7 @@ class ProductModel extends Model
             return null;
         }
     }
-    
+
     /**
      * Función para añadir un registro de actualizaciones de precios
      *
@@ -617,13 +617,13 @@ class ProductModel extends Model
         }
         if ($costPrice != $oldPrice) {
             DB::table('product_price_update')
-            ->insert([
-                'product' => $this->id,
-                'price' => $costPrice,
-                'old_price' => $oldPrice,
-                'created_at' => Carbon::now()->toDateTimeString(),
-                'updated_at' => Carbon::now()->toDateTimeString()
-            ]);
+                ->insert([
+                    'product' => $this->id,
+                    'price' => $costPrice,
+                    'old_price' => $oldPrice,
+                    'created_at' => Carbon::now()->toDateTimeString(),
+                    'updated_at' => Carbon::now()->toDateTimeString()
+                ]);
         }
     }
 
@@ -634,15 +634,15 @@ class ProductModel extends Model
      */
     public function getStock()
     {
-        if (! $this->unavailable) {
+        if (!$this->unavailable) {
             if ($this->stock_type == 1) {
                 $additions = ProductStockModel::where('product_stock.type', '=', 2)
-                ->where('product_stock.product', '=', $this->id)
-                ->sum('stock');
+                    ->where('product_stock.product', '=', $this->id)
+                    ->sum('stock');
                 $subtractions = ProductStockModel::where('product_stock.type', '=', 1)
-                ->where('product_stock.product', '=', $this->id)
-                ->sum('stock');
-                return $additions-$subtractions;
+                    ->where('product_stock.product', '=', $this->id)
+                    ->sum('stock');
+                return $additions - $subtractions;
             } else {
                 return true;
             }

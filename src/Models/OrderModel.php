@@ -151,13 +151,13 @@ class OrderModel extends Model
     {
         $products = $this->listProducts();
         foreach ($products as $product) {
-            if($product->getProduct()->getProductProviderData('shipping_type') == 3) {
+            if ($product->getProduct()->getProductProviderData('shipping_type') == 3) {
                 return true;
             }
         }
         return false;
     }
-    
+
     /**
      * Función para obtener el total del pedido con el vale de descuento restado
      *
@@ -209,7 +209,7 @@ class OrderModel extends Model
             $earnings = $earnings + $detail->franchise_earning;
         }
         $discounts = 0;
-        if(OrderDiscountModel::where('order', $this->id)->exists()){
+        if (OrderDiscountModel::where('order', $this->id)->exists()) {
             $voucher = OrderDiscountModel::where('order', $this->id)->first();
             $discounts = $voucher->discount_value;
         }
@@ -241,7 +241,7 @@ class OrderModel extends Model
         }
         return null;
     }
-    
+
     /**
      * Calcultes the price that is added by each of the dropshipping providers
      *
@@ -251,11 +251,11 @@ class OrderModel extends Model
     {
         $total = 0;
         $products = ProductModel::join('order_details', 'product.id', '=', 'order_details.product')
-        ->where('order', $this->id)
-        ->groupBy('product.provider')
-        ->sum('weight');
+            ->where('order', $this->id)
+            ->groupBy('product.provider')
+            ->sum('weight');
         foreach ($products as $product) {
-            if($product->getProductProviderData('shipping_type') == 3) {
+            if ($product->getProductProviderData('shipping_type') == 3) {
                 $total = $total + $this->getShippingPrice(ShippingFeeModel::find($product->getProductProviderData('shipping_method')), $product->weight);
             }
         }
@@ -321,7 +321,7 @@ class OrderModel extends Model
         }
         return $weight;
     }
-    
+
     /**
      * Método para obtener el resumen 
      * 

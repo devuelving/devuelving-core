@@ -44,7 +44,7 @@ class FranchiseModel extends Model
     protected $hidden = [
         'id', 'created_at', 'updated_at', 'deleted_at',
     ];
-    
+
     /**
      * Método para obtener el dominio de la franquicia actual
      *
@@ -77,7 +77,7 @@ class FranchiseModel extends Model
         $clients = CustomerModel::where('franchise', $this->id)->get();
         return count($clients) - 1;
     }
-    
+
     /**
      * Función para obtener datos de la franquicia
      *
@@ -101,7 +101,7 @@ class FranchiseModel extends Model
         }
         return $id;
     }
-    
+
     /**
      * Función para obtener las variables perosnalizadas de la franquicia
      *
@@ -118,7 +118,7 @@ class FranchiseModel extends Model
             $franchise = FranchiseCustomModel::where('franchise', $id)->where('var', $data)->first();
             return $franchise->value;
         } catch (\Exception $e) {
-            report($e);
+            // report($e);
             return null;
         }
     }
