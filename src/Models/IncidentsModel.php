@@ -29,7 +29,7 @@ class IncidentsModel extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'type', 'status', 'order_id',
+        'code', 'type', 'status', 'order',
     ];
 
     /**
@@ -40,7 +40,7 @@ class IncidentsModel extends Model
     protected $hidden = [
         'created_at', 'updated_at',
     ];
-    
+
     /**
      * Returns a string based on the int it receives
      *
@@ -49,7 +49,7 @@ class IncidentsModel extends Model
      */
     public function typeString($type)
     {
-        $string="";
+        $string = "";
         switch ($type) {
             case 1:
                 $string = "Rotura Parcial";
@@ -77,7 +77,7 @@ class IncidentsModel extends Model
         }
         return $string;
     }
-    
+
     /**
      * Returns a string based on the int it receives
      *
@@ -86,7 +86,7 @@ class IncidentsModel extends Model
      */
     public function statusString($status)
     {
-        $string="";
+        $string = "";
         switch ($status) {
             case 1:
                 $string = "Iniciada";

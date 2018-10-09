@@ -27,7 +27,7 @@ class AddressModel extends Model
      * @var array
      */
     protected $fillable = [
-        'id', 'customer', 'street', 'number', 'floor', 'door', 'town', 'province', 'postal_code', 'country', 'status'
+        'customer', 'street', 'number', 'floor', 'door', 'town', 'province', 'postal_code', 'country', 'status'
     ];
 
     /**

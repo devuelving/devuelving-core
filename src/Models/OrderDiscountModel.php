@@ -4,14 +4,14 @@ namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
 
-class OrderShipmentModel extends Model
+class OrderDiscountModel extends Model
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'order_shipment';
+    protected $table = 'order_discounts';
 
     /**
      * Indicates if the model should be timestamped.
@@ -26,7 +26,7 @@ class OrderShipmentModel extends Model
      * @var array
      */
     protected $fillable = [
-        'order', 'type', 'franchise_cost', 'customer_cost', 'status', 'shipping_company', 'shipping_tracking', 'shipping_notification'
+        'order', 'type', 'discount_voucher', 'discount_value',
     ];
 
     /**

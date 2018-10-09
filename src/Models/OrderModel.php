@@ -3,9 +3,11 @@
 namespace devuelving\core;
 
 use devuelving\core\RegionModel;
+use devuelving\core\CountryModel;
 use devuelving\core\IncidentsModel;
 use devuelving\core\OrderDetailModel;
 use devuelving\core\ShippingFeeModel;
+use devuelving\core\OrderDiscountModel;
 use devuelving\core\PaymentMethodModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -34,7 +36,7 @@ class OrderModel extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'customer', 'franchise', 'status', 'volume', 'weight', 'boxes', 'amount', 'cost_price_purchase', 'franchise_earnings', 'added_taxes', 'payment_method', 'payment_method_cost', 'payment_method_data', 'discount_voucher', 'discount_voucher_value', 'delivery_term', 'customer_name', 'customer_email', 'customer_phone', 'address_street', 'address_number', 'address_floor', 'address_door', 'address_town', 'address_province', 'address_postal_code', 'address_country', 'comments', 'created_at',
+        'code', 'customer', 'franchise', 'status', 'volume', 'weight', 'boxes', 'amount', 'is_cost_price', 'franchise_earnings', 'added_taxes', 'payment_method', 'payment_method_cost', 'payment_method_data', 'shipping_costs', 'shipping_costs_customer', 'shipping_costs_franchise', 'delivery_term', 'customer_name', 'customer_email', 'customer_phone', 'address_street', 'address_number', 'address_floor', 'address_door', 'address_town', 'address_province', 'address_postal_code', 'address_country', 'comments',
     ];
 
     /**
@@ -53,7 +55,7 @@ class OrderModel extends Model
      */
     public function hasIncidents()
     {
-        $incidents = IncidentsModel::where('order_id', '=', $this->id);
+        $incidents = IncidentsModel::where('order', '=', $this->id);
         if ($incidents->count()) {
             return true;
         } else {
@@ -73,7 +75,7 @@ class OrderModel extends Model
         foreach ($order_details as $order_detail) {
             $order_price = $order_price + ($order_detail->units * $order_detail->unit_price);
         }
-        return $order_price;
+        return number_format($order_price, 2, '.', '');
     }
 
     /**
@@ -107,7 +109,22 @@ class OrderModel extends Model
                 return __("Enviado");
                 break;
             case 6:
+                return __("En transito");
+                break;
+            case 7:
+                return __("En reparto");
+                break;
+            case 8:
                 return __("Entregado");
+                break;
+            case 9:
+                return __("Devuelto");
+                break;
+            case 10:
+                return __("Cancelado");
+                break;
+            case 11:
+                return __("Incidencia");
                 break;
         }
     }
@@ -122,17 +139,37 @@ class OrderModel extends Model
         if ($this->getShippingCosts() != null) {
             return $this->totalAmount() + $this->added_taxes + $this->getShippingCosts();
         }
-        return $this->totalAmount() + $this->added_taxes;
+        return number_format($this->totalAmount() + $this->added_taxes, 2, '.', '');
     }
 
     /**
-     * Función para obtener el total del pedido sin 
+     * Checks if the order has meat products
+     *
+     * @return boolean
+     */
+    public function hasDropshipping()
+    {
+        $products = $this->listProducts();
+        foreach ($products as $product) {
+            if ($product->getProduct()->getProductProviderData('shipping_type') == 3) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Función para obtener el total del pedido con el vale de descuento restado
      *
      * @return void
      */
     public function getTotal()
     {
-        return $this->getSubtotal() + $this->getPaymentCostCost();
+        if ($this->getDiscountCoupon() != null) {
+            return number_format(($this->getSubtotal() + $this->getPaymentCostCost()) - $this->getDiscountCoupon()->discount_value, 2, '.', '');
+        } else {
+            return number_format($this->getSubtotal() + $this->getPaymentCostCost(), 2, '.', '');
+        }
     }
 
     /**
@@ -156,7 +193,28 @@ class OrderModel extends Model
      */
     public function getPaymentCostCost()
     {
-        return ($this->getSubtotal() * ($this->getPaymentMethod()->porcentual / 100)) + $this->getPaymentMethod()->fixed;
+        return number_format(($this->getSubtotal() * ($this->getPaymentMethod()->porcentual / 100)) + $this->getPaymentMethod()->fixed, 2, '.', '');
+    }
+
+    /**
+     * Returns the earnings that the franchisee has made with the order
+     *
+     * @return void
+     */
+    public function getEarnings()
+    {
+        $earnings = 0;
+        $details = OrderDetailModel::where('order', $this->id)->get();
+        foreach ($details as $detail) {
+            $earnings = $earnings + $detail->franchise_earning;
+        }
+        $discounts = 0;
+        if (OrderDiscountModel::where('order', $this->id)->exists()) {
+            $voucher = OrderDiscountModel::where('order', $this->id)->first();
+            $discounts = $voucher->discount_value;
+        }
+        $earnings = $earnings - $this->shipping_costs_franchise;
+        return number_format($earnings, 2, '.', '');
     }
 
     /**
@@ -172,15 +230,38 @@ class OrderModel extends Model
                 $region = RegionModel::where('name', $this->address_province)->where('country', $this->address_country)->first();
                 $shippingFee = ShippingFeeModel::find($region->shipping_fee);
             } else {
-                $country = Country::where('code', $this->address_country)->first();
-                $shippingFee = ShippingFeeModel::find($country->default_shipping_fee);
+                $country = CountryModel::where('code', $this->address_country)->first();
+                $shippingFee = ShippingFeeModel::find($country->shipping_fee);
             }
             $total = $this->getShippingPrice($shippingFee, $this->weight);
-            return $total;
+            if ($this->hasDropshipping()) {
+                $total = $total + $this->getDropshippingPrice();
+            }
+            return number_format($total, 2, '.', '');
         }
         return null;
     }
-    
+
+    /**
+     * Calcultes the price that is added by each of the dropshipping providers
+     *
+     * @return float
+     */
+    public function getDropshippingPrice()
+    {
+        $total = 0;
+        $products = ProductModel::join('order_details', 'product.id', '=', 'order_details.product')
+            ->where('order', $this->id)
+            ->groupBy('product.provider')
+            ->sum('weight');
+        foreach ($products as $product) {
+            if ($product->getProductProviderData('shipping_type') == 3) {
+                $total = $total + $this->getShippingPrice(ShippingFeeModel::find($product->getProductProviderData('shipping_method')), $product->weight);
+            }
+        }
+        return number_format($total, 2, '.', '');
+    }
+
     /**
      * Función para obtener el precio exacto según la tarifa de envio
      *
@@ -191,36 +272,88 @@ class OrderModel extends Model
     {
         switch (true) {
             case $weight < 2:
-                return $shippingFee->rate_2;
+                return number_format($shippingFee->rate_2, 2, '.', '');
                 break;
             case $weight < 3:
-                return $shippingFee->rate_3;
+                return number_format($shippingFee->rate_3, 2, '.', '');
                 break;
             case $weight < 5:
-                return $shippingFee->rate_5;
+                return number_format($shippingFee->rate_5, 2, '.', '');
                 break;
             case $weight < 7:
-                return $shippingFee->rate_7;
+                return number_format($shippingFee->rate_7, 2, '.', '');
                 break;
             case $weight < 10:
-                return $shippingFee->rate_10;
+                return number_format($shippingFee->rate_10, 2, '.', '');
                 break;
             case $weight < 15:
-                return $shippingFee->rate_15;
+                return number_format($shippingFee->rate_15, 2, '.', '');
                 break;
             case $weight < 20:
-                return $shippingFee->rate_20;
+                return number_format($shippingFee->rate_20, 2, '.', '');
                 break;
             case $weight < 30:
-                return $shippingFee->rate_30;
+                return number_format($shippingFee->rate_30, 2, '.', '');
                 break;
             case $weight < 40:
-                return $shippingFee->rate_40;
+                return number_format($shippingFee->rate_40, 2, '.', '');
                 break;
             case $weight > 40:
-                return $shippingFee->rate_40 + $this->getShippingPrice($shippingFee, $weight - 40);
+                return number_format($shippingFee->rate_40 + $this->getShippingPrice($shippingFee, $weight - 40), 2, '.', '');
                 break;
         }
+    }
+
+    /**
+     * Gets the weight of the items from a given provider
+     *
+     * @param int $provider
+     * @return void
+     */
+    public function getProviderWeight($provider)
+    {
+        $weight = 0;
+        $products = $this->listProducts();
+        foreach ($products as $product) {
+            if ($product->getProduct()->getProvider() == $provider) {
+                $weight = $weight + $product->getProduct()->weight;
+            }
+        }
+        return $weight;
+    }
+
+    /**
+     * Método para obtener el resumen 
+     * 
+     * @return array
+     */
+    public function getResume()
+    {
+        return [
+            'products' => $this->totalAmount(),
+            'payment_method' => $this->payment_method_cost,
+            'amount' => $this->getTotal(),
+        ];
+    }
+
+    /**
+     * Método para contar los productos de un pedido
+     *
+     * @return void
+     */
+    public function countProducts()
+    {
+        return OrderDetailModel::where('order', $this->id)->count();
+    }
+
+    /**
+     * Método para obtener los datos del método de pago
+     *
+     * @return void
+     */
+    public function getPaymentMethodData()
+    {
+        return json_decode($this->payment_method_data);
     }
 
     /**
@@ -231,5 +364,25 @@ class OrderModel extends Model
     public function listProducts()
     {
         return OrderDetailModel::where('order', $this->id)->get();
+    }
+
+    /**
+     * Metodo para obtener el vale descuento que se ha aplicado al pedido
+     *
+     * @return void
+     */
+    public function getDiscountCoupon()
+    {
+        return OrderDiscountModel::where('order', $this->id)->where('type', 1)->first();
+    }
+
+    /**
+     * Metodo para obtener los otros descuentos
+     *
+     * @return void
+     */
+    public function getOthersDiscounts()
+    {
+        return OrderDiscountModel::where('order', $this->id)->where('type', '!=', 1)->get();
     }
 }

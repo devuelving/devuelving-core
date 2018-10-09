@@ -26,7 +26,7 @@ class OrderBillsModel extends Model
      * @var array
      */
     protected $fillable = [
-        'order', 'full_name', 'nif', 'address', 'concept',
+        'order', 'full_name', 'nif', 'address',
     ];
 
     /**

@@ -2,6 +2,7 @@
 
 namespace devuelving\core;
 
+use devuelving\core\FranchiseModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -38,7 +39,7 @@ class CustomerModel extends Model
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token','created_at', 'updated_at', 'deleted_at',
+        'password', 'remember_token', 'created_at', 'updated_at', 'deleted_at',
     ];
 
     /**
@@ -50,5 +51,15 @@ class CustomerModel extends Model
     public function getData($data)
     {
         return $this->$data;
+    }
+
+    /**
+     * Método para obtener los datos de la franquicia
+     *
+     * @return void
+     */
+    public function franchise()
+    {
+        return FranchiseModel::find($this->franchise);
     }
 }

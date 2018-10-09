@@ -3,15 +3,19 @@
 namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class OrderShipmentModel extends Model
+class DiscountCouponModel extends Model
 {
+
+    use SoftDeletes;
+
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'order_shipment';
+    protected $table = 'discount_coupons';
 
     /**
      * Indicates if the model should be timestamped.
@@ -26,7 +30,7 @@ class OrderShipmentModel extends Model
      * @var array
      */
     protected $fillable = [
-        'order', 'type', 'franchise_cost', 'customer_cost', 'status', 'shipping_company', 'shipping_tracking', 'shipping_notification'
+        'id', 'franchise', 'code', 'status', 'type', 'amount', 'first_purchase', 'start_date', 'end_date', 'minimum_amount', 'limit_user', 'limit_purchase', 'clients', 'products'
     ];
 
     /**
@@ -35,6 +39,6 @@ class OrderShipmentModel extends Model
      * @var array
      */
     protected $hidden = [
-        'created_at', 'updated_at',
+        'created_at', 'updated_at', 'deleted_at',
     ];
 }

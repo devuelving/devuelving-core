@@ -1,5 +1,5 @@
 <p align="center">
-<img src="devuelving.png"  height="100">
+<img src="devuelving.png"  height="90">
 </p>
 
 <p align="center">
@@ -8,7 +8,7 @@
 <a href="https://packagist.org/packages/devuelving/devuelving-core"><img src="https://poser.pugx.org/devuelving/devuelving-core/license.svg" alt="License"></a>
 </p>
 
-<h1 align="center">devuelving CORE</h1>
+<h1 align="center">devuelving core</h1>
 
 ## Installation
 

@@ -44,7 +44,7 @@ class FranchiseModel extends Model
     protected $hidden = [
         'id', 'created_at', 'updated_at', 'deleted_at',
     ];
-    
+
     /**
      * Método para obtener el dominio de la franquicia actual
      *
@@ -64,8 +64,7 @@ class FranchiseModel extends Model
      */
     public static function getFranchise()
     {
-        $franchise = FranchiseModel::where('domain', FranchiseModel::getDomain())->first();
-        return $franchise->id;
+        return FranchiseModel::where('domain', FranchiseModel::getDomain())->first();
     }
 
     /**
@@ -75,10 +74,10 @@ class FranchiseModel extends Model
      */
     public function countClients()
     {
-        $clients = CustomerModel::where('franchise', $this->code)->get();
+        $clients = CustomerModel::where('franchise', $this->id)->get();
         return count($clients) - 1;
     }
-    
+
     /**
      * Función para obtener datos de la franquicia
      *
@@ -87,22 +86,22 @@ class FranchiseModel extends Model
     public static function get($data = null)
     {
         if (!empty(auth()->user()->franchise)) {
-            $code = auth()->user()->franchise;
+            $id = auth()->user()->franchise;
         } else {
-            $code = FranchiseModel::getFranchise();
+            $id = FranchiseModel::getFranchise()->id;
         }
         if ($data) {
             try {
-                $franchise = FranchiseModel::find($code);
+                $franchise = FranchiseModel::find($id);
                 return $franchise->$data;
             } catch (\Exception $e) {
                 // report($e);
                 return null;
             }
         }
-        return $code;
+        return $id;
     }
-    
+
     /**
      * Función para obtener las variables perosnalizadas de la franquicia
      *
@@ -110,17 +109,18 @@ class FranchiseModel extends Model
      */
     public function getCustom($data = null)
     {
-        $code = $this->code;
-        if ($data && $code) {
-            try {
-                $franchise = FranchiseCustomModel::where('franchise', $code)->where('var', $data)->first();
-                return $franchise->value;
-            } catch (\Exception $e) {
-                // report($e);
-                return null;
-            }
+        if (!empty(auth()->user()->franchise)) {
+            $id = auth()->user()->franchise;
+        } else {
+            $id = FranchiseModel::getFranchise()->id;
         }
-        return "No existe";
+        try {
+            $franchise = FranchiseCustomModel::where('franchise', $id)->where('var', $data)->first();
+            return $franchise->value;
+        } catch (\Exception $e) {
+            // report($e);
+            return null;
+        }
     }
 
     /**
@@ -133,7 +133,7 @@ class FranchiseModel extends Model
      */
     public function getBooking($type = null, $date = null, $format = null)
     {
-        $callAppointment = CallAppointmentModel::where('franchise', $this->code);
+        $callAppointment = CallAppointmentModel::where('franchise', $this->id);
         if ($type != null) {
             $callAppointment->where('type', $type);
         }

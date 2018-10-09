@@ -27,7 +27,7 @@ class OrderHistoryModel extends Model
      * @var array
      */
     protected $fillable = [
-        'order', 'status',
+        'order', 'status', 'comments', 'agent',
     ];
 
     /**

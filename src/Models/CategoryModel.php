@@ -68,7 +68,7 @@ class CategoryModel extends Model
     public function arrayCategories($parent = 0)
     {
         $return = [];
-        $categories = CategoryModel::where('franchise', 0)->where('parent', $parent)->get();
+        $categories = CategoryModel::whereNull('franchise')->where('parent', $parent)->get();
         foreach ($categories as $category) {
             $child_categories = [];
             if ($category->has_products == 0) {
@@ -79,7 +79,7 @@ class CategoryModel extends Model
                 'name' => $category->name,
                 'parent' => $category->parent,
                 'has_products' => $category->has_products,
-                'image' => env('API_URL') . $category->getImage($category->id),
+                'image' => config('app.cdn.url') . $category->getImage(),
                 'edit' => route('category.edit', $category->id),
                 'child_categories' => $child_categories
             ];
@@ -107,7 +107,7 @@ class CategoryModel extends Model
                 'name' => $category->name,
                 'parent' => $category->parent,
                 'has_products' => $category->has_products,
-                'image' => env('API_URL') . $category->getImage($category->id),
+                'image' => config('app.cdn.url') . $category->getImage(),
                 'edit' => route('own-shop.category.edit', $category->id),
                 'child_categories' => $child_categories
             ];
@@ -116,33 +116,30 @@ class CategoryModel extends Model
     }
 
     /**
-     * Función para obtener la imagen de una categoría
+     * Método para devolver la imagen de la categoria
      *
-     * @param int $category
      * @return void
      */
-    public function getImage($category)
+    public function getImage()
     {
-        $categoryImage = DB::table('category_image')->where('category', $category)->where('franchise', 0)->get();
-        foreach ($categoryImage as $category) {
-            return $category->image;
+        $categoryImage = DB::table('category_image')->where('category', $this->id)->whereNull('franchise');
+        if ($categoryImage->count() > 0) {
+            foreach ($categoryImage->get() as $category) {
+                return $category->image;
+            }
+        } else {
+            return 'default.png';
         }
     }
 
     /**
-     * Función para obtener el nombre de la categoría padre
+     * Método para devolver la categoria padre
      *
-     * @param int $parent
      * @return void
      */
-    public function getParent($parent)
+    public function getParent()
     {
-        if ($parent == '0') {
-            return __('Categoría Principal');
-        } else {
-            $category = CategoryModel::find($parent);
-            return $category->name;
-        }
+        return CategoryModel::find($this->parent);
     }
 
     /**
@@ -154,7 +151,7 @@ class CategoryModel extends Model
      */
     public function listCategoriesName($parent, $icon = "<i class='fas fa-angle-double-right'></i>")
     {
-        if ($parent != '0') {
+        if ($parent != 0) {
             $category = CategoryModel::find($parent);
             return $category->listCategoriesName($category->parent) . ' ' . $icon . ' ' . $category->name;
         }
@@ -167,6 +164,7 @@ class CategoryModel extends Model
      */
     public function print()
     {
-        return view('modules.catalog.category');
+        $category = CategoryModel::find($this->id);
+        return view('modules.catalog.category', compact('category'));
     }
 }
