@@ -27,7 +27,7 @@ class ProductCustomModel extends Model
      * @var array
      */
     protected $fillable = [
-        'product', 'franchise', 'promotion', 'price', 'price_type', 'name', 'description', 'meta_title', 'meta_description', 'meta_keywords', 'hidden',
+        'product', 'franchise', 'promotion', 'free_shipping', 'price', 'price_type', 'name', 'description', 'meta_title', 'meta_description', 'meta_keywords', 'hidden',
     ];
 
     /**
@@ -70,7 +70,7 @@ class ProductCustomModel extends Model
     public static function checkClear($id)
     {
         $productCustom = ProductCustomModel::find($id);
-        if ($productCustom->name == null && $productCustom->description == null && $productCustom->promotion == null && $productCustom->price == null) {
+        if ($productCustom->promotion == null && $productCustom->free_shipping == null && $productCustom->price == null && $productCustom->price_type == null && $productCustom->name == null && $productCustom->description == null && $productCustom->meta_title == null && $productCustom->meta_description == null && $productCustom->meta_keywords == null && $productCustom->hidden == null) {
             $productCustom->delete();
         }
     }

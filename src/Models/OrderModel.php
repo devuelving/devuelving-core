@@ -36,7 +36,7 @@ class OrderModel extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'customer', 'franchise', 'status', 'volume', 'weight', 'boxes', 'amount', 'is_cost_price', 'franchise_earnings', 'added_taxes', 'payment_method', 'payment_method_cost', 'payment_method_data', 'shipping_costs', 'shipping_costs_customer', 'shipping_costs_franchise', 'delivery_term', 'customer_name', 'customer_email', 'customer_phone', 'address_street', 'address_number', 'address_floor', 'address_door', 'address_town', 'address_province', 'address_postal_code', 'address_country', 'comments',
+        'code', 'customer', 'franchise', 'status', 'volume', 'weight', 'boxes', 'amount', 'is_cost_price', 'franchise_earnings', 'added_taxes', 'payment_method', 'payment_method_cost', 'payment_method_data', 'shipping_costs', 'shipping_costs_customer', 'shipping_costs_franchise', 'delivery_term', 'customer_nif', 'customer_name', 'customer_email', 'customer_phone', 'address_street', 'address_number', 'address_floor', 'address_door', 'address_town', 'address_province', 'address_postal_code', 'address_country', 'comments',
     ];
 
     /**
@@ -166,9 +166,9 @@ class OrderModel extends Model
     public function getTotal()
     {
         if ($this->getDiscountCoupon() != null) {
-            return number_format(($this->getSubtotal() + $this->getPaymentCostCost()) - $this->getDiscountCoupon()->discount_value, 2, '.', '');
+            return number_format(($this->getSubtotal() + $this->getPaymentCost()) - $this->getDiscountCoupon()->discount_value, 2, '.', '');
         } else {
-            return number_format($this->getSubtotal() + $this->getPaymentCostCost(), 2, '.', '');
+            return number_format($this->getSubtotal() + $this->getPaymentCost(), 2, '.', '');
         }
     }
 
@@ -191,7 +191,7 @@ class OrderModel extends Model
      *
      * @return void
      */
-    public function getPaymentCostCost()
+    public function getPaymentCost()
     {
         return number_format(($this->getSubtotal() * ($this->getPaymentMethod()->porcentual / 100)) + $this->getPaymentMethod()->fixed, 2, '.', '');
     }
@@ -331,7 +331,7 @@ class OrderModel extends Model
     {
         return [
             'products' => $this->totalAmount(),
-            'payment_method' => $this->payment_method_cost,
+            'payment_method' => $this->getPaymentCost(),
             'amount' => $this->getTotal(),
         ];
     }
@@ -384,5 +384,15 @@ class OrderModel extends Model
     public function getOthersDiscounts()
     {
         return OrderDiscountModel::where('order', $this->id)->where('type', '!=', 1)->get();
+    }
+
+    /**
+     * Método para obtener el listado de estados de un pedido
+     *
+     * @return void
+     */
+    public function getOrderShipmentStatus()
+    {
+        return OrderShipmentStatusModel::where('order', $this->id)->get();
     }
 }
