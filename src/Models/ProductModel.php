@@ -43,7 +43,7 @@ class ProductModel extends Model
      * @var array
      */
     protected $fillable = [
-        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'transport', 'weight', 'volume', 'tax', 'brand', 'tags', 'parent', 'franchise', 'promo', 'double_unit', 'discount_50', 'discount_progressive', 'units_limit', 'liquidation', 'unavailable', 'discontinued', 'highlight', 'price_edit', 'shipping_canarias', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords',
+        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'transport', 'weight', 'volume', 'tax', 'brand', 'tags', 'parent', 'franchise', 'promotion', 'free_shipping', 'double_unit', 'discount_50', 'discount_progressive', 'units_limit', 'liquidation', 'unavailable', 'discontinued', 'highlight', 'price_edit', 'shipping_canarias', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords',
     ];
 
     /**

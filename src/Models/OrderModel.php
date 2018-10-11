@@ -36,7 +36,7 @@ class OrderModel extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'customer', 'franchise', 'status', 'volume', 'weight', 'boxes', 'amount', 'is_cost_price', 'franchise_earnings', 'added_taxes', 'payment_method', 'payment_method_cost', 'payment_method_data', 'shipping_costs', 'shipping_costs_customer', 'shipping_costs_franchise', 'delivery_term', 'customer_name', 'customer_email', 'customer_phone', 'address_street', 'address_number', 'address_floor', 'address_door', 'address_town', 'address_province', 'address_postal_code', 'address_country', 'comments',
+        'code', 'customer', 'franchise', 'status', 'volume', 'weight', 'boxes', 'amount', 'is_cost_price', 'franchise_earnings', 'added_taxes', 'payment_method', 'payment_method_cost', 'payment_method_data', 'shipping_costs', 'shipping_costs_customer', 'shipping_costs_franchise', 'delivery_term', 'customer_nif', 'customer_name', 'customer_email', 'customer_phone', 'address_street', 'address_number', 'address_floor', 'address_door', 'address_town', 'address_province', 'address_postal_code', 'address_country', 'comments',
     ];
 
     /**
@@ -384,5 +384,15 @@ class OrderModel extends Model
     public function getOthersDiscounts()
     {
         return OrderDiscountModel::where('order', $this->id)->where('type', '!=', 1)->get();
+    }
+
+    /**
+     * Método para obtener el listado de estados de un pedido
+     *
+     * @return void
+     */
+    public function getOrderShipmentStatus()
+    {
+        return OrderShipmentStatusModel::where('order', $this->id)->get();
     }
 }
