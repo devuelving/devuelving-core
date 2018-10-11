@@ -331,7 +331,7 @@ class OrderModel extends Model
     {
         return [
             'products' => $this->totalAmount(),
-            'payment_method' => $this->payment_method_cost,
+            'payment_method' => $this->getPaymentCost(),
             'amount' => $this->getTotal(),
         ];
     }
