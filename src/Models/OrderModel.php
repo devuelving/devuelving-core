@@ -166,9 +166,9 @@ class OrderModel extends Model
     public function getTotal()
     {
         if ($this->getDiscountCoupon() != null) {
-            return number_format(($this->getSubtotal() + $this->getPaymentCostCost()) - $this->getDiscountCoupon()->discount_value, 2, '.', '');
+            return number_format(($this->getSubtotal() + $this->getPaymentCost()) - $this->getDiscountCoupon()->discount_value, 2, '.', '');
         } else {
-            return number_format($this->getSubtotal() + $this->getPaymentCostCost(), 2, '.', '');
+            return number_format($this->getSubtotal() + $this->getPaymentCost(), 2, '.', '');
         }
     }
 
@@ -191,7 +191,7 @@ class OrderModel extends Model
      *
      * @return void
      */
-    public function getPaymentCostCost()
+    public function getPaymentCost()
     {
         return number_format(($this->getSubtotal() * ($this->getPaymentMethod()->porcentual / 100)) + $this->getPaymentMethod()->fixed, 2, '.', '');
     }
