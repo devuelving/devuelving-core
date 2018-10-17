@@ -70,7 +70,7 @@ class ProductCustomModel extends Model
     public static function checkClear($id)
     {
         $productCustom = ProductCustomModel::find($id);
-        if ($productCustom->promotion == null && $productCustom->free_shipping == null && $productCustom->price == null && $productCustom->price_type == null && $productCustom->name == null && $productCustom->description == null && $productCustom->meta_title == null && $productCustom->meta_description == null && $productCustom->meta_keywords == null && $productCustom->hidden == null) {
+        if ($productCustom->promotion == null && $productCustom->free_shipping == null && $productCustom->price == null && $productCustom->price_type == null && $productCustom->name == null && $productCustom->description == null && $productCustom->meta_title == null && $productCustom->meta_description == null && $productCustom->meta_keywords == null && $productCustom->removed == 0) {
             $productCustom->delete();
         }
     }
