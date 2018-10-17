@@ -27,7 +27,7 @@ class ProductCustomModel extends Model
      * @var array
      */
     protected $fillable = [
-        'product', 'franchise', 'promotion', 'free_shipping', 'price', 'price_type', 'name', 'description', 'meta_title', 'meta_description', 'meta_keywords', 'hidden',
+        'product', 'franchise', 'promotion', 'free_shipping', 'price', 'price_type', 'name', 'description', 'meta_title', 'meta_description', 'meta_keywords', 'removed',
     ];
 
     /**
