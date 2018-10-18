@@ -567,8 +567,9 @@ class ProductModel extends Model
         if ($productCustom->count() == 0) {
             return $this->name;
         } else {
-            if ($productCustom->first()->name != null) {
-                $productCustom->first()->name;
+            $productCustom = $productCustom->first();
+            if ($productCustom->name != null) {
+                return $productCustom->name;
             } else {
                 return $this->name;
             }
@@ -586,8 +587,9 @@ class ProductModel extends Model
         if ($productCustom->count() == 0) {
             return $this->description;
         } else {
-            if ($productCustom->first()->description != null) {
-                $productCustom->first()->description;
+            $productCustom = $productCustom->first();
+            if ($productCustom->description != null) {
+                return $productCustom->description;
             } else {
                 return $this->description;
             }
@@ -643,8 +645,8 @@ class ProductModel extends Model
                     return $this->getShortDescription(250);
                 }
             } else if ($type == 'meta_keywords') {
-                if ($productCustom->meta_description != null) {
-                    return $productCustom->meta_description;
+                if ($productCustom->meta_keywords != null) {
+                    return $productCustom->meta_keywords;
                 } else {
                     return null;
                 }
