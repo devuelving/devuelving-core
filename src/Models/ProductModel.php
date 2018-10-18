@@ -485,7 +485,14 @@ class ProductModel extends Model
      */
     public function productCustom($options = [])
     {
-        $productCustom = ProductCustomModel::get(FranchiseModel::get('id'), $this->id);
+        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
+        if ($productCustom->count() == 0) {
+            $productCustom = new ProductCustomModel();
+            $productCustom->product = $this->id;
+            $productCustom->franchise = FranchiseModel::get('id');
+        } else {
+            $productCustom = $productCustom->first();
+        }
         if ($options['action'] == 'price') {
             if ($options['price'] == null || $options['price_type'] == null) {
                 $productCustom->price = null;
@@ -513,7 +520,7 @@ class ProductModel extends Model
                 }
             }
             $productCustom->save();
-            ProductCustomModel::checkClear($productCustom->id);
+            $productCustom->checkClear();
             return [
                 'status' => true,
                 'message' => 'Se ha actualizado el precio correctamente',
@@ -529,7 +536,7 @@ class ProductModel extends Model
         } else if ($options['action'] == 'promotion') {
             $productCustom->promotion = $options['promotion'];
             $productCustom->save();
-            ProductCustomModel::checkClear($productCustom->id);
+            $productCustom->checkClear();
             if ($options['promotion'] == 1) {
                 return [
                     'status' => true,
@@ -556,11 +563,15 @@ class ProductModel extends Model
      */
     public function getName()
     {
-        $productCustom = ProductCustomModel::get(FranchiseModel::get('id'), $this->id);
-        if ($productCustom->name == null) {
+        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
+        if ($productCustom->count() == 0) {
             return $this->name;
         } else {
-            return $productCustom->name;
+            if ($productCustom->first()->name != null) {
+                $productCustom->first()->name;
+            } else {
+                return $this->name;
+            }
         }
     }
 
@@ -571,11 +582,32 @@ class ProductModel extends Model
      */
     public function getDescription()
     {
-        $productCustom = ProductCustomModel::get(FranchiseModel::get('id'), $this->id);
-        if ($productCustom->description == null) {
+        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
+        if ($productCustom->count() == 0) {
             return $this->description;
         } else {
-            return $productCustom->description;
+            if ($productCustom->first()->description != null) {
+                $productCustom->first()->description;
+            } else {
+                return $this->description;
+            }
+        }
+    }
+
+    /**
+     * Método para obtener la descripción corta
+     *
+     * @param integer $maxLength
+     * @return void
+     */
+    public function getShortDescription($maxLength = 440)
+    {
+        $string = strip_tags($this->getDescription());
+        $substring = substr($string, 0, $maxLength);
+        if (strlen($string) > strlen($substring)) {
+            return $substring . '...';
+        } else {
+            return $substring;
         }
     }
 
@@ -587,15 +619,36 @@ class ProductModel extends Model
      */
     public function getMetaData($type)
     {
-        $productCustom = ProductCustomModel::get(FranchiseModel::get('id'), $this->id);
-        if (!empty($productCustom->$type)) {
-            return $productCustom->$type;
-        } else if (!empty($this->$type)) {
-            return $this->$type;
-        } else if ($type == 'meta_title') {
-            return $this->getName();
+        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
+        if ($productCustom->count() == 0) {
+            if ($type == 'meta_title') {
+                return $this->getName();
+            } else if ($type == 'meta_description') {
+                return $this->getShortDescription(250);
+            } else if ($type == 'meta_keywords') {
+                return null;
+            }
         } else {
-            return null;
+            $productCustom = $productCustom->first();
+            if ($type == 'meta_title') {
+                if ($productCustom->meta_title != null) {
+                    return $productCustom->meta_title;
+                } else {
+                    return $this->getName();
+                }
+            } else if ($type == 'meta_description') {
+                if ($productCustom->meta_description != null) {
+                    return $productCustom->meta_description;
+                } else {
+                    return $this->getShortDescription(250);
+                }
+            } else if ($type == 'meta_keywords') {
+                if ($productCustom->meta_description != null) {
+                    return $productCustom->meta_description;
+                } else {
+                    return null;
+                }
+            }
         }
     }
 
@@ -616,14 +669,13 @@ class ProductModel extends Model
             $oldPrice = 0;
         }
         if ($costPrice != $oldPrice) {
-            DB::table('product_price_update')
-                ->insert([
-                    'product' => $this->id,
-                    'price' => $costPrice,
-                    'old_price' => $oldPrice,
-                    'created_at' => Carbon::now()->toDateTimeString(),
-                    'updated_at' => Carbon::now()->toDateTimeString()
-                ]);
+            DB::table('product_price_update')->insert([
+                'product' => $this->id,
+                'price' => $costPrice,
+                'old_price' => $oldPrice,
+                'created_at' => Carbon::now()->toDateTimeString(),
+                'updated_at' => Carbon::now()->toDateTimeString()
+            ]);
         }
     }
 

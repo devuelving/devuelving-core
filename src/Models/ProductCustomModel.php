@@ -40,38 +40,14 @@ class ProductCustomModel extends Model
     ];
 
     /**
-     * Función para devolver el modelo de ProductCustom segun si ya hay un registro o no
-     *
-     * @param int $franchise
-     * @param int $product
-     * @return void
-     */
-    public static function get($franchise, $product)
-    {
-        $productCustom = ProductCustomModel::where('product', $product)->where('franchise', $franchise)->get();
-        if (count($productCustom) == 0) {
-            $productCustom = new ProductCustomModel();
-            $productCustom->franchise = $franchise;
-            $productCustom->product = $product;
-            $productCustom->save();
-            return ProductCustomModel::find($productCustom->id);
-        } else {
-            $productCustom = ProductCustomModel::where('product', $product)->where('franchise', $franchise)->first();
-            return ProductCustomModel::find($productCustom->id);
-        }
-    }
-
-    /**
      * Función para eliminar el registro de la base de datos, si no hay ningun elemento personalizado
      *
-     * @param int $id
      * @return void
      */
-    public static function checkClear($id)
+    public function checkClear()
     {
-        $productCustom = ProductCustomModel::find($id);
-        if ($productCustom->promotion == null && $productCustom->free_shipping == null && $productCustom->price == null && $productCustom->price_type == null && $productCustom->name == null && $productCustom->description == null && $productCustom->meta_title == null && $productCustom->meta_description == null && $productCustom->meta_keywords == null && $productCustom->removed == 0) {
-            $productCustom->delete();
+        if ($this->promotion == null && $this->free_shipping == null && $this->price == null && $this->price_type == null && $this->name == null && $this->description == null && $this->meta_title == null && $this->meta_description == null && $this->meta_keywords == null && $this->removed == 0) {
+            $this->delete();
         }
     }
 }
