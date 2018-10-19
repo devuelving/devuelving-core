@@ -4,6 +4,7 @@
     "type": "library",
     "require": {
         "laravel/framework": ">=5.5",
+        "dirape/token": ">=2.0",
         "cviebrock/eloquent-sluggable": ">=4.5",
         "spatie/laravel-json-api-paginate": ">=1.4"
     },
