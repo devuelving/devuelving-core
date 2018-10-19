@@ -40,11 +40,29 @@ class ProductCustomModel extends Model
     ];
 
     /**
+     * The "booting" method of the model.
+     *
+     * @return void
+     */
+    public static function boot()
+    {
+        parent::boot();
+        
+        self::created(function($productCustom){
+            $productCustom->checkClear();
+        });
+
+        self::updated(function($productCustom){
+            $productCustom->checkClear();
+        });
+    }
+
+    /**
      * Función para eliminar el registro de la base de datos, si no hay ningun elemento personalizado
      *
      * @return void
      */
-    public function checkClear()
+    protected function checkClear()
     {
         if ($this->promotion == null && $this->free_shipping == null && $this->price == null && $this->price_type == null && $this->name == null && $this->description == null && $this->meta_title == null && $this->meta_description == null && $this->meta_keywords == null && $this->removed == 0) {
             $this->delete();

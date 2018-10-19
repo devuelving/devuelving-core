@@ -2,6 +2,8 @@
 
 namespace devuelving\core;
 
+use devuelving\core\ProductModel;
+use devuelving\core\ProviderModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -29,7 +31,7 @@ class ProductProviderModel extends Model
      * @var array
      */
     protected $fillable = [
-        'product', 'ean', 'reference', 'cost_price', 'recommended_price', 'default_price', 'provider',
+        'product', 'ean', 'reference', 'cost_price', 'provider',
     ];
 
     /**
@@ -40,4 +42,44 @@ class ProductProviderModel extends Model
     protected $hidden = [
         'created_at', 'updated_at', 'deleted_at',
     ];
+
+    /**
+     * The "booting" method of the model.
+     *
+     * @return void
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        self::creating(function ($productProvider) {
+            $product = ProductModel::find($productProvider->product);
+            $product->addUpdatePrice();
+        });
+
+        self::created(function ($productProvider) {
+            $product = ProductModel::find($productProvider->product);
+            $product->updatePrice();
+        });
+
+        self::updating(function ($productProvider) {
+            $product = ProductModel::find($productProvider->product);
+            $product->addUpdatePrice();
+        });
+
+        self::updated(function ($productProvider) {
+            $product = ProductModel::find($productProvider->product);
+            $product->updatePrice();
+        });
+    }
+
+    /**
+     * Obtiene el proveedor
+     *
+     * @return void
+     */
+    public function getProvider()
+    {
+        return ProviderModel::find($this->provider);
+    }
 }

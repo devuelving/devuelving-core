@@ -43,7 +43,7 @@ class ProductModel extends Model
      * @var array
      */
     protected $fillable = [
-        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'transport', 'weight', 'volume', 'tax', 'brand', 'tags', 'parent', 'franchise', 'promotion', 'free_shipping', 'double_unit', 'discount_50', 'discount_progressive', 'units_limit', 'liquidation', 'unavailable', 'discontinued', 'highlight', 'price_edit', 'shipping_canarias', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords',
+        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'transport', 'weight', 'volume', 'tax', 'brand', 'tags', 'parent', 'franchise', 'promotion', 'free_shipping', 'double_unit', 'discount_50', 'discount_progressive', 'units_limit', 'liquidation', 'unavailable', 'discontinued', 'highlight', 'price_edit', 'shipping_canarias', 'cost_price', 'recommended_price', 'default_price', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords',
     ];
 
     /**
@@ -67,6 +67,59 @@ class ProductModel extends Model
                 'source' => 'name'
             ]
         ];
+    }
+
+    /**
+     * Actualiza los precios del producto en la tabla de productos
+     *
+     * @return void
+     */
+    public function updatePrice()
+    {
+        // Obtenemos la regla del precio establecida
+        if ($this->price_rules == 1) {
+            $rule = 'asc';
+        } else {
+            $rule = 'desc';
+        }
+        // Obtenemos el product provider
+        $productProvider = $this->getProductProvider();
+        // Obtenemos el proveedor del producto
+        $provider = $productProvider->getProvider();
+        // Obtenemos el precio de coste y le sumamos el margen de beneficio del proveedor
+        $cost_price = $productProvider->cost_price + ($productProvider->cost_price * ($provider->profit_margin / 100));
+        // Actualizamos los precios de los productos
+        DB::table($this->table)->where('id', $this->id)->update([
+            'cost_price' => $cost_price,
+            'default_price' => $cost_price * ((rand(10, 25) / 100) + 1),
+        ]);
+    }
+
+    /**
+     * Añade una actualización del precio del producto
+     *
+     * @return void
+     */
+    public function addUpdatePrice()
+    {
+        // Obtenemos el anterior precio del producto
+        try {
+            $productPriceUpdate = DB::table('product_price_update')->where('product', $this->id)->orderBy('id', 'desc')->first();
+            $oldPrice = $productPriceUpdate->price;
+        } catch (\Exception $e) {
+            // report($e);
+            $oldPrice = 0;
+        }
+        // Comprobación de que el precio no es el mismo
+        if ($this->cost_price != $oldPrice) {
+            // Se añade un nuevo registro con el nuevo precio del producto
+            DB::table('product_price_update')->insert([
+                'product' => $this->id,
+                'price' => $this->cost_price,
+                'created_at' => Carbon::now()->toDateTimeString(),
+                'updated_at' => Carbon::now()->toDateTimeString()
+            ]);
+        }
     }
 
     /**
@@ -171,8 +224,7 @@ class ProductModel extends Model
      */
     public function getProvider($cheapest = false)
     {
-        $provider = ProviderModel::find($this->getProductProviderData('provider'));
-        return $provider;
+        return $this->getProductProvider($cheapest)->getProvider();
     }
 
     /**
@@ -241,24 +293,11 @@ class ProductModel extends Model
      */
     public function getPublicPriceCost($tax = true)
     {
-        if ($this->franchise === null) {
-            if ($this->getProductProviderData('cost_price') != null) {
-                $price = $this->getProductProviderData('cost_price');
-                $provider = ProviderModel::find($this->getProductProviderData('provider'));
-                $total = $price + ($price * ($provider->profit_margin / 100));
-                if ($tax) {
-                    $total = $total + ($total * $this->getTax());
-                }
-                return $total;
-            }
-        } else {
-            $price = $this->getProductProviderData('cost_price');
-            if ($tax) {
-                $total = $price * $this->getTax();
-            }
-            return $total;
+        $price = $this->cost_price;
+        if ($tax) {
+            $total = $price * $this->getTax();
         }
-        return null;
+        return $total;
     }
 
     /**
@@ -291,15 +330,8 @@ class ProductModel extends Model
      */
     public function getOldPublicPriceCost()
     {
-        if ($this->getProductProviderData('cost_price') != null) {
-            $productPriceUpdate = DB::table('product_price_update')->where('product', $this->id)->orderBy('id', 'desc')->first();
-            $price = $productPriceUpdate->price;
-            $provider = ProviderModel::find($this->getProductProviderData('provider'));
-            $total = $price + ($price * ($provider->profit_margin / 100));
-            $total = $total + ($total * $this->getTax());
-            return $total;
-        }
-        return null;
+        $productPriceUpdate = DB::table('product_price_update')->where('product', $this->id)->orderBy('id', 'desc')->first();
+        return $productPriceUpdate->price + ($productPriceUpdate->price * $this->getTax());
     }
 
     /**
@@ -323,11 +355,7 @@ class ProductModel extends Model
      */
     public function getRecommendedPrice()
     {
-        if ($this->getProductProviderData('recommended_price') != null) {
-            $price = $this->getProductProviderData('recommended_price');
-            return $price;
-        }
-        return null;
+        return $this->recommended_price;
     }
 
     /**
@@ -387,20 +415,18 @@ class ProductModel extends Model
      */
     public function getPrice()
     {
-        if ($this->getProductProviderData('default_price') != null) {
-            if ($this->checkCustomPrice()) {
-                $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->first();
-                if ($productCustom->price_type == 1) {
-                    $price = $productCustom->price;
-                } else {
-                    $price = $this->getPublicPriceCost() + ($this->getPublicPriceCost() * ($productCustom->price / 100));
-                }
+        $price = 0;
+        if ($this->checkCustomPrice()) {
+            $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->first();
+            if ($productCustom->price_type == 1) {
+                $price = $productCustom->price;
             } else {
-                $price = $this->getProductProviderData('default_price');
+                $price = $this->getPublicPriceCost() + ($this->getPublicPriceCost() * ($productCustom->price / 100));
             }
-            return $price;
+        } else {
+            $price = $this->default_price;
         }
-        return null;
+        return $price;
     }
 
     /**
@@ -651,33 +677,6 @@ class ProductModel extends Model
                     return null;
                 }
             }
-        }
-    }
-
-    /**
-     * Función para añadir un registro de actualizaciones de precios
-     *
-     * @param integer $costPrice
-     * @param integer $oldPrice
-     * @return void
-     */
-    public function addUpdatePrice($costPrice, $oldPrice = null)
-    {
-        try {
-            $productPriceUpdate = DB::table('product_price_update')->where('product', $this->id)->orderBy('id', 'desc')->first();
-            $oldPrice = $productPriceUpdate->price;
-        } catch (\Exception $e) {
-            // report($e);
-            $oldPrice = 0;
-        }
-        if ($costPrice != $oldPrice) {
-            DB::table('product_price_update')->insert([
-                'product' => $this->id,
-                'price' => $costPrice,
-                'old_price' => $oldPrice,
-                'created_at' => Carbon::now()->toDateTimeString(),
-                'updated_at' => Carbon::now()->toDateTimeString()
-            ]);
         }
     }
 
