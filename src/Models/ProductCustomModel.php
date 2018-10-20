@@ -27,7 +27,7 @@ class ProductCustomModel extends Model
      * @var array
      */
     protected $fillable = [
-        'product', 'franchise', 'promotion', 'free_shipping', 'price', 'price_type', 'name', 'description', 'meta_title', 'meta_description', 'meta_keywords', 'hidden',
+        'product', 'franchise', 'promotion', 'free_shipping', 'price', 'price_type', 'name', 'description', 'meta_title', 'meta_description', 'meta_keywords', 'removed',
     ];
 
     /**
@@ -40,38 +40,32 @@ class ProductCustomModel extends Model
     ];
 
     /**
-     * Función para devolver el modelo de ProductCustom segun si ya hay un registro o no
+     * The "booting" method of the model.
      *
-     * @param int $franchise
-     * @param int $product
      * @return void
      */
-    public static function get($franchise, $product)
+    public static function boot()
     {
-        $productCustom = ProductCustomModel::where('product', $product)->where('franchise', $franchise)->get();
-        if (count($productCustom) == 0) {
-            $productCustom = new ProductCustomModel();
-            $productCustom->franchise = $franchise;
-            $productCustom->product = $product;
-            $productCustom->save();
-            return ProductCustomModel::find($productCustom->id);
-        } else {
-            $productCustom = ProductCustomModel::where('product', $product)->where('franchise', $franchise)->first();
-            return ProductCustomModel::find($productCustom->id);
-        }
+        parent::boot();
+        
+        self::created(function($productCustom){
+            $productCustom->checkClear();
+        });
+
+        self::updated(function($productCustom){
+            $productCustom->checkClear();
+        });
     }
 
     /**
      * Función para eliminar el registro de la base de datos, si no hay ningun elemento personalizado
      *
-     * @param int $id
      * @return void
      */
-    public static function checkClear($id)
+    protected function checkClear()
     {
-        $productCustom = ProductCustomModel::find($id);
-        if ($productCustom->promotion == null && $productCustom->free_shipping == null && $productCustom->price == null && $productCustom->price_type == null && $productCustom->name == null && $productCustom->description == null && $productCustom->meta_title == null && $productCustom->meta_description == null && $productCustom->meta_keywords == null && $productCustom->hidden == null) {
-            $productCustom->delete();
+        if ($this->promotion == null && $this->free_shipping == null && $this->price == null && $this->price_type == null && $this->name == null && $this->description == null && $this->meta_title == null && $this->meta_description == null && $this->meta_keywords == null && $this->removed == 0) {
+            $this->delete();
         }
     }
 }
