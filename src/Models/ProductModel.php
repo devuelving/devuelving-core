@@ -293,11 +293,11 @@ class ProductModel extends Model
      */
     public function getPublicPriceCost($tax = true)
     {
-        $price = $this->cost_price;
         if ($tax) {
-            $total = $price * $this->getTax();
+           return $this->cost_price * ($this->getTax() + 1);
+        } else {
+            return $this->cost_price;
         }
-        return $total;
     }
 
     /**
@@ -421,12 +421,12 @@ class ProductModel extends Model
             if ($productCustom->price_type == 1) {
                 $price = $productCustom->price;
             } else {
-                $price = $this->getPublicPriceCost() + ($this->getPublicPriceCost() * ($productCustom->price / 100));
+                $price = $this->default_price + ($this->default_price * ($productCustom->price / 100));
             }
         } else {
             $price = $this->default_price;
         }
-        return $price;
+        return $price * ($this->getTax() + 1);
     }
 
     /**
