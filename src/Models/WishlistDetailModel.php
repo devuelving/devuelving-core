@@ -4,14 +4,14 @@ namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ProductParentModel extends Model
+class WishlistDetailModel extends Model
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'product_parent';
+    protected $table = 'wishlists';
 
     /**
      * Indicates if the model should be timestamped.
@@ -26,7 +26,7 @@ class ProductParentModel extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'franchise',
+        'wishlist', 'product', 'units',
     ];
 
     /**
@@ -35,6 +35,6 @@ class ProductParentModel extends Model
      * @var array
      */
     protected $hidden = [
-        'created_at', 'updated_at',
+        'id', 'created_at', 'updated_at',
     ];
 }
