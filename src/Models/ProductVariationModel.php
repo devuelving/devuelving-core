@@ -26,7 +26,7 @@ class ProductVariationModel extends Model
      * @var array
      */
     protected $fillable = [
-        'product', 'variation', 'price', 'related_image',
+        'product', 'variation', 'price', 'related_image', 'ean', 'status',
     ];
 
     /**

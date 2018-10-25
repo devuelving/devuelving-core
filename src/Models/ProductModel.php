@@ -43,7 +43,7 @@ class ProductModel extends Model
      * @var array
      */
     protected $fillable = [
-        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'transport', 'weight', 'volume', 'tax', 'brand', 'tags', 'parent', 'franchise', 'promotion', 'free_shipping', 'double_unit', 'discount_50', 'discount_progressive', 'units_limit', 'liquidation', 'unavailable', 'discontinued', 'highlight', 'price_edit', 'shipping_canarias', 'cost_price', 'recommended_price', 'default_price', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords',
+        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'transport', 'weight', 'volume', 'tax', 'brand', 'tags', 'variations', 'franchise', 'promotion', 'free_shipping', 'double_unit', 'discount_50', 'discount_progressive', 'units_limit', 'liquidation', 'unavailable', 'discontinued', 'highlight', 'price_edit', 'shipping_canarias', 'cost_price', 'recommended_price', 'default_price', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords',
     ];
 
     /**
@@ -246,12 +246,12 @@ class ProductModel extends Model
                 } else {
                     $rule = 'asc';
                 }
-                $productProvider = ProductProviderModel::join('provider', 'product_provider.provider', '=', 'provider.id')
-                    ->where('product_provider.product', $this->id)
-                    ->where('provider.active', 1)
-                    ->orderBy('product_provider.cost_price', $rule)
-                    ->select('product_provider.*', 'provider.name')
-                    ->first();
+                $productProvider = ProductProviderModel::join('provider', 'product_provider.provider', '=', 'provider.id');
+                $productProvider->where('product_provider.product', $this->id);
+                $productProvider->where('provider.active', 1);
+                $productProvider->orderBy('product_provider.cost_price', $rule);
+                $productProvider->select('product_provider.*', 'provider.name');
+                $productProvider = $productProvider->first();
             } else {
                 if (!$cheapest) {
                     $rule = 'desc';
@@ -400,8 +400,22 @@ class ProductModel extends Model
      */
     public function checkPromotion()
     {
-        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->whereNotNull('promotion')->get();
+        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->whereNotNull('promotion')->first();
         if (count($productCustom) == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Comprueba si el producto esta en promociones por defecto
+     *
+     * @return void
+     */
+    public function checkSuperPromo()
+    {
+        if ($this->promotion == 1) {
             return false;
         } else {
             return true;
@@ -689,12 +703,12 @@ class ProductModel extends Model
     {
         if (!$this->unavailable) {
             if ($this->stock_type == 1) {
-                $additions = ProductStockModel::where('product_stock.type', '=', 2)
-                    ->where('product_stock.product', '=', $this->id)
-                    ->sum('stock');
-                $subtractions = ProductStockModel::where('product_stock.type', '=', 1)
-                    ->where('product_stock.product', '=', $this->id)
-                    ->sum('stock');
+                $additions = ProductStockModel::where('product_stock.type', '=', 2);
+                $additions->where('product_stock.product', '=', $this->id);
+                $additions->sum('stock');
+                $subtractions = ProductStockModel::where('product_stock.type', '=', 1);
+                $subtractions->where('product_stock.product', '=', $this->id);
+                $subtractions->sum('stock');
                 return $additions - $subtractions;
             } else {
                 return true;

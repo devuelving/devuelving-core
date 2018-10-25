@@ -26,7 +26,7 @@ class CartModel extends Model
      * @var array
      */
     protected $fillable = [
-        'customer', 'product', 'units',
+        'customer', 'product', 'variation', 'units',
     ];
 
     /**

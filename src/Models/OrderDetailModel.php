@@ -30,7 +30,7 @@ class OrderDetailModel extends Model
      * @var array
      */
     protected $fillable = [
-        'type', 'status', 'order', 'product', 'units', 'unit_price', 'franchise_earning',
+        'type', 'status', 'order', 'product', 'variation', 'units', 'unit_price', 'tax', 'tax_value', 'franchise_earning',
     ];
 
     /**
@@ -39,7 +39,7 @@ class OrderDetailModel extends Model
      * @var array
      */
     protected $hidden = [
-        'created_at', 'updated_at',
+        'id', 'created_at', 'updated_at', 'deleted_at',
     ];
 
     /**

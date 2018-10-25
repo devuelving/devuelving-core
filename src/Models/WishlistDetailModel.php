@@ -4,7 +4,7 @@ namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
 
-class WishlistLineModel extends Model
+class WishlistDetailModel extends Model
 {
     /**
      * The table associated with the model.
@@ -26,7 +26,7 @@ class WishlistLineModel extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'customer', 'type', 'name',
+        'wishlist', 'product', 'units',
     ];
 
     /**
