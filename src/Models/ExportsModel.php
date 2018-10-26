@@ -40,7 +40,7 @@ class ExportsModel extends Model
     ];
 
     /**
-     * FUnción para obtener los filtros
+     * Función para obtener los filtros
      *
      * @return void
      */

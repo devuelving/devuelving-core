@@ -423,6 +423,34 @@ class ProductModel extends Model
     }
 
     /**
+     * Comprueba que el producto esta en liquidación
+     *
+     * @return void
+     */
+    public function checkLiquidation()
+    {
+        if ($this->liquidation == 1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Comprobamos si los productos tiene la oferta 2x1
+     *
+     * @return void
+     */
+    public function checkDoubleUnit()
+    {
+        if ($this->double_unit == 1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
      * Función para obtener el precio de venta al publico
      *
      * @return void
@@ -454,18 +482,16 @@ class ProductModel extends Model
     }
 
     /**
-     * FUnción para obtener el beneficio de un producto
+     * Función para obtener el beneficio de un producto
      *
      * @return void
      */
     public function getProfit()
     {
         if ($this->getPrice() != null) {
-            $publicPrice = $this->getPrice();
-            $costPrice = $this->getPublicPriceCost();
-            return ($publicPrice - $costPrice) / $costPrice;
+            return $this->getPrice() - $this->getPublicPriceCost();
         }
-        return null;
+        return 0;
     }
 
     /**
@@ -487,7 +513,7 @@ class ProductModel extends Model
                 }
             }
         }
-        return null;
+        return 0;
     }
 
     /**
