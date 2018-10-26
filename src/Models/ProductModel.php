@@ -400,8 +400,7 @@ class ProductModel extends Model
      */
     public function checkPromotion()
     {
-        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->whereNotNull('promotion')->first();
-        if (count($productCustom) == 0) {
+        if (ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->whereNotNull('promotion')->count() == 0) {
             return false;
         } else {
             return true;
@@ -416,9 +415,9 @@ class ProductModel extends Model
     public function checkSuperPromo()
     {
         if ($this->promotion == 1) {
-            return false;
-        } else {
             return true;
+        } else {
+            return false;
         }
     }
 
@@ -430,9 +429,9 @@ class ProductModel extends Model
     public function checkLiquidation()
     {
         if ($this->liquidation == 1) {
-            return false;
-        } else {
             return true;
+        } else {
+            return false;
         }
     }
 
@@ -444,9 +443,9 @@ class ProductModel extends Model
     public function checkDoubleUnit()
     {
         if ($this->double_unit == 1) {
-            return false;
-        } else {
             return true;
+        } else {
+            return false;
         }
     }
 
