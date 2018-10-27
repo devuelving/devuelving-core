@@ -585,7 +585,6 @@ class ProductModel extends Model
                 }
             }
             $productCustom->save();
-            $productCustom->checkClear();
             return [
                 'status' => true,
                 'message' => 'Se ha actualizado el precio correctamente',
@@ -601,7 +600,6 @@ class ProductModel extends Model
         } else if ($options['action'] == 'promotion') {
             $productCustom->promotion = $options['promotion'];
             $productCustom->save();
-            $productCustom->checkClear();
             if ($options['promotion'] == 1) {
                 return [
                     'status' => true,
