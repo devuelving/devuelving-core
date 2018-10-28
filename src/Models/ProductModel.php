@@ -522,9 +522,14 @@ class ProductModel extends Model
      */
     public function getPublicMarginProfit()
     {
-        $publicPrice = $this->getPrice();
-        $recommendedPrice = $this->getRecommendedPrice();
-        return round((($recommendedPrice - $publicPrice) / $publicPrice) * 100);
+        try {
+            $publicPrice = $this->getPrice();
+            $recommendedPrice = $this->getRecommendedPrice();
+            return round((($recommendedPrice - $publicPrice) / $publicPrice) * 100);
+        } catch (\Exception $e) {
+            report($e);
+            return 0;
+        }
     }
 
     /**
