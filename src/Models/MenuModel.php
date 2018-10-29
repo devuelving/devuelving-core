@@ -9,7 +9,7 @@ class MenuModel
      *
      * @return void
      */
-    public function getDefaultMenu()
+    public static function getDefaultMenu()
     {
         return  [
             ['type' => 0, 'text' => 'Inicio'],
