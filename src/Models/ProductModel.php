@@ -91,7 +91,7 @@ class ProductModel extends Model
         // Actualizamos los precios de los productos
         DB::table($this->table)->where('id', $this->id)->update([
             'cost_price' => $cost_price,
-            'default_price' => $cost_price * ((rand(10, 25) / 100) + 1),
+            'default_price' => $cost_price * ((rand(10, 25) / 100) + 1) * ((TaxModel::find($this->tax)->value / 100) + 1),
         ]);
     }
 
