@@ -318,7 +318,7 @@ class ProductModel extends Model
     public function getPriceWithoutIva()
     {
         if ($this->getPrice() != null) {
-            return $this->getPrice() / ($this->getTax() + 1);
+            return $this->getPrice();
         }
         return null;
     }
@@ -467,7 +467,7 @@ class ProductModel extends Model
         } else {
             $price = $this->default_price;
         }
-        return $price * ($this->getTax() + 1);
+        return $price;
     }
 
     /**
