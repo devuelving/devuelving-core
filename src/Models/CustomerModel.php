@@ -45,6 +45,8 @@ class CustomerModel extends Model
     /**
      * Función para obtener los datos de un cliente
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param string $data
      * @return void
      */
@@ -56,6 +58,8 @@ class CustomerModel extends Model
     /**
      * Método para obtener los datos de la franquicia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function franchise()

@@ -132,6 +132,8 @@ class OrderModel extends Model
     /**
      * Función para obtener el total del pedido sin gastos del método de pago
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getSubtotal()
@@ -161,6 +163,8 @@ class OrderModel extends Model
     /**
      * Función para obtener el total del pedido con el vale de descuento restado
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getTotal()
@@ -175,6 +179,8 @@ class OrderModel extends Model
     /**
      * Función para obtener el método de pago
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getPaymentMethod()
@@ -189,6 +195,8 @@ class OrderModel extends Model
     /**
      * Función para obtener los gastos de gestión del método de pago
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getPaymentCost()
@@ -199,6 +207,8 @@ class OrderModel extends Model
     /**
      * Returns the earnings that the franchisee has made with the order
      *
+     * @since 3.0.0
+     * @author Aaron <aaron@devuelving.com>
      * @return void
      */
     public function getEarnings()
@@ -220,6 +230,8 @@ class OrderModel extends Model
     /**
      * Función para obtener los gastos de envio
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getShippingCosts()
@@ -240,6 +252,31 @@ class OrderModel extends Model
             return number_format($total, 2, '.', '');
         }
         return null;
+    }
+
+    /**
+     * Método para obtener los datos del envio
+     *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @return void
+     */
+    public function getShippingData()
+    {
+        return [
+            'customer_nif' => $this->customer_nif,
+            'customer_name' => $this->customer_name,
+            'customer_email' => $this->customer_email,
+            'customer_phone' => $this->customer_phone,
+            'address_street' => $this->address_street,
+            'address_number' => $this->address_number,
+            'address_floor' => $this->address_floor,
+            'address_door' => $this->address_door,
+            'address_town' => $this->address_town,
+            'address_province' => $this->address_province,
+            'address_postal_code' => $this->address_postal_code,
+            'address_country' => CountryModel::where('code', $this->address_country)->first(),
+        ];
     }
 
     /**
@@ -265,6 +302,8 @@ class OrderModel extends Model
     /**
      * Función para obtener el precio exacto según la tarifa de envio
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param ShippingFeeModel $shippingFee
      * @return void
      */
@@ -325,6 +364,8 @@ class OrderModel extends Model
     /**
      * Método para obtener el resumen 
      * 
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return array
      */
     public function getResume()
@@ -339,6 +380,8 @@ class OrderModel extends Model
     /**
      * Método para contar los productos de un pedido
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function countProducts()
@@ -349,6 +392,8 @@ class OrderModel extends Model
     /**
      * Método para obtener los datos del método de pago
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getPaymentMethodData()
@@ -359,6 +404,8 @@ class OrderModel extends Model
     /**
      * Función para listar los productos de un pedido
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return OrderDetailModel
      */
     public function listProducts()
@@ -369,6 +416,8 @@ class OrderModel extends Model
     /**
      * Metodo para obtener el vale descuento que se ha aplicado al pedido
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getDiscountCoupon()
@@ -379,6 +428,8 @@ class OrderModel extends Model
     /**
      * Metodo para obtener los otros descuentos
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getOthersDiscounts()
@@ -389,6 +440,8 @@ class OrderModel extends Model
     /**
      * Método para obtener el listado de estados de un pedido
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getOrderShipmentStatus()

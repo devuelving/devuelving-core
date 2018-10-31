@@ -72,6 +72,8 @@ class ProductModel extends Model
     /**
      * Actualiza los precios del producto en la tabla de productos
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function updatePrice()
@@ -98,6 +100,8 @@ class ProductModel extends Model
     /**
      * Añade una actualización del precio del producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function addUpdatePrice()
@@ -125,6 +129,8 @@ class ProductModel extends Model
     /**
      * Función para obtener los datos de un producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param string $data
      * @return void
      */
@@ -136,6 +142,8 @@ class ProductModel extends Model
     /**
      * Función para obtener todas las imagenes de un producto ordenadas por preferencia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getImages()
@@ -154,6 +162,8 @@ class ProductModel extends Model
     /**
      * Función para obtener la imagen destacada
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getDefaultImage()
@@ -164,6 +174,8 @@ class ProductModel extends Model
     /**
      * Función para obtener los ean del producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getEan()
@@ -179,6 +191,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el ean en un string
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function eanToString()
@@ -198,6 +212,8 @@ class ProductModel extends Model
     /**
      * Función para obtener la marca
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getBrand()
@@ -208,6 +224,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el valor del iva de este producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getTax()
@@ -230,6 +248,8 @@ class ProductModel extends Model
     /**
      * Función para obtene el producto proveedor
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param boolean $cheapest
      * @return void
      */
@@ -270,6 +290,8 @@ class ProductModel extends Model
     /**
      * Función para obtener datos de producto proveedor
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param string $data
      * @param boolean $cheapest
      * @return void
@@ -288,6 +310,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el precio con el margen de beneficio del proveedor
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param boolean $tax
      * @return void
      */
@@ -303,6 +327,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el precio de coste sin IVA
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getPublicPriceCostWithoutIva()
@@ -313,6 +339,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el precio sin IVA
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getPriceWithoutIva()
@@ -326,6 +354,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el precio con el margen de beneficio del proveedor anterior al cambio
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getOldPublicPriceCost()
@@ -337,6 +367,8 @@ class ProductModel extends Model
     /**
      * Función para obtener la fecha de la ultima actualización de los precios de un producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getLastPriceUpdate()
@@ -351,6 +383,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el precio recomendado
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getRecommendedPrice()
@@ -361,6 +395,8 @@ class ProductModel extends Model
     /**
      * Función para comprobar si tiene un precio customizado
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function checkCustomPrice()
@@ -376,6 +412,8 @@ class ProductModel extends Model
     /**
      * Función para comprobar el tipo de precio custom del precio
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function typeCustomPrice()
@@ -396,6 +434,8 @@ class ProductModel extends Model
     /**
      * Función para comprobar si el producto esta en promocion
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function checkPromotion()
@@ -410,6 +450,8 @@ class ProductModel extends Model
     /**
      * Comprueba si el producto esta en promociones por defecto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function checkSuperPromo()
@@ -424,6 +466,8 @@ class ProductModel extends Model
     /**
      * Comprueba que el producto esta en liquidación
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function checkLiquidation()
@@ -438,6 +482,8 @@ class ProductModel extends Model
     /**
      * Comprobamos si los productos tiene la oferta 2x1
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function checkDoubleUnit()
@@ -452,6 +498,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el precio de venta al publico
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getPrice()
@@ -473,6 +521,8 @@ class ProductModel extends Model
     /**
      * Función para obtener las categorias del producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getCategories()
@@ -483,6 +533,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el beneficio de un producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getProfit()
@@ -496,6 +548,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el margen beneficio real del producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param boolean $front
      * @return void
      */
@@ -518,6 +572,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el descuento entre el precio de venta y el PVPR
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getPublicMarginProfit()
@@ -535,6 +591,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el beneficio entre el precio de coste y el pvpr
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getFullPriceMargin()
@@ -550,6 +608,8 @@ class ProductModel extends Model
     /**
      * Función para poner la unidad customizada al producto para la franquicia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param array $options
      * @return void
      */
@@ -627,6 +687,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el nombre del producto segun la franquicia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getName()
@@ -647,6 +709,8 @@ class ProductModel extends Model
     /**
      * Función para obtener la descripción del producto segun la franquicia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getDescription()
@@ -667,6 +731,8 @@ class ProductModel extends Model
     /**
      * Método para obtener la descripción corta
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param integer $maxLength
      * @return void
      */
@@ -684,6 +750,8 @@ class ProductModel extends Model
     /**
      * Función para obtener las etiquetas meta personalizadas
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param string $type
      * @return void
      */
@@ -725,6 +793,8 @@ class ProductModel extends Model
     /**
      * Devuelve stock actual, true si no mantenemos stock o false si está agotado.
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return boolean
      */
     public function getStock()
@@ -749,6 +819,8 @@ class ProductModel extends Model
     /**
      * Función para imprimir un banner del producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function print()

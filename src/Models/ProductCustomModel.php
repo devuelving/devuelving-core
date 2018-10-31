@@ -60,6 +60,8 @@ class ProductCustomModel extends Model
     /**
      * Función para eliminar el registro de la base de datos, si no hay ningun elemento personalizado
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     protected function checkClear()

@@ -42,37 +42,48 @@ class OrderHistoryModel extends Model
     /**
      * Listado de los estados posibles del pedido
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function statusName()
     {
         switch ($this->status) {
+            case 0:
+                return __("Sin finalizar");
+                break;
             case 1:
-                return "Recibido";
+                return __("Pendiente de pago");
                 break;
             case 2:
-                return "En preparación";
+                return __("Pagado");
                 break;
             case 3:
-                return "Preparado";
+                return __("En preparación");
                 break;
             case 4:
-                return "Pendiente de envío";
+                return __("Preparado");
                 break;
             case 5:
-                return "Enviado";
+                return __("Enviado");
                 break;
             case 6:
-                return "En transito";
+                return __("En transito");
                 break;
             case 7:
-                return "En reparto";
+                return __("En reparto");
                 break;
             case 8:
-                return "Entregado";
+                return __("Entregado");
                 break;
             case 9:
-                return "Incidencia";
+                return __("Devuelto");
+                break;
+            case 10:
+                return __("Cancelado");
+                break;
+            case 11:
+                return __("Incidencia");
                 break;
         }
     }

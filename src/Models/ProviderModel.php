@@ -44,6 +44,8 @@ class ProviderModel extends Model
     /**
      * Función para obtener los datos desde la columna data que esta en formato json
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param string $data
      * @return void
      */

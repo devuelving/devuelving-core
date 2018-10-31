@@ -48,6 +48,8 @@ class FranchiseModel extends Model
     /**
      * Método para obtener el dominio de la franquicia actual
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public static function getDomain()
@@ -60,6 +62,8 @@ class FranchiseModel extends Model
     /**
      * Método para obtener la franquicia por el dominio
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public static function getFranchise()
@@ -70,6 +74,8 @@ class FranchiseModel extends Model
     /**
      * Función para obtener la lista de clientes de la franquicia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function countClients()
@@ -81,6 +87,8 @@ class FranchiseModel extends Model
     /**
      * Función para obtener datos de la franquicia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public static function get($data = null)
@@ -105,6 +113,8 @@ class FranchiseModel extends Model
     /**
      * Función para obtener las variables perosnalizadas de la franquicia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getCustom($data = null)
@@ -126,6 +136,8 @@ class FranchiseModel extends Model
     /**
      * Función para obtener las citas telefonicas de la franquicia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param string $type
      * @param date $date
      * @param string $date

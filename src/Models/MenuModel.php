@@ -7,6 +7,8 @@ class MenuModel
     /**
      * Devuelve la estructura base del menú
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public static function getDefaultMenu()
