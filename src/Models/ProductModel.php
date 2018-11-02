@@ -540,7 +540,7 @@ class ProductModel extends Model
     public function getProfit()
     {
         if ($this->getPrice() != null) {
-            return $this->getPrice() - $this->getPublicPriceCost();
+            return ($this->getPrice() - $this->getPublicPriceCost()) / $this->getPublicPriceCost();
         }
         return 0;
     }
@@ -581,7 +581,7 @@ class ProductModel extends Model
         try {
             $publicPrice = $this->getPrice();
             $recommendedPrice = $this->getRecommendedPrice();
-            return round((($recommendedPrice - $publicPrice) / $publicPrice) * 100);
+            return round((($recommendedPrice - $publicPrice) / $recommendedPrice) * 100);
         } catch (\Exception $e) {
             report($e);
             return 0;
@@ -600,7 +600,7 @@ class ProductModel extends Model
         if ($this->getRecommendedPrice() != null) {
             $recommendedPrice = $this->getRecommendedPrice();
             $costPrice = $this->getPublicPriceCost();
-            return round((($recommendedPrice - $costPrice) / $costPrice) * 100);
+            return round((($costPrice - $recommendedPrice) / $costPrice) * 100);
         }
         return null;
     }
