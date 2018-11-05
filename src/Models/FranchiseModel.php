@@ -46,6 +46,42 @@ class FranchiseModel extends Model
     ];
 
     /**
+     * Método para obtener el logo de la franquicia
+     *
+     * @return void
+     */
+    public static function getLogo()
+    {
+        try {
+            $franchise = new FranchiseModel();
+            if ($franchise->getCustom('logo') != null) {
+                return config('app.cdn.url') . $franchise->getCustom('logo');
+            }
+            return asset('images/app/brand/logo.png');
+        } catch (\Exception $e) {
+            return asset('images/app/brand/logo.png');
+        }
+    }
+
+    /**
+     * Método para obtener el icono de la franquicia
+     *
+     * @return void
+     */
+    public static function getIcon()
+    {
+        try {
+            $franchise = new FranchiseModel();
+            if ($franchise->getCustom('icon') != null) {
+                return config('app.cdn.url') . $franchise->getCustom('icon');
+            }
+            return asset('images/app/brand/icon.png');
+        } catch (\Exception $e) {
+            return asset('images/app/brand/icon.png');
+        }
+    }
+
+    /**
      * Método para obtener el dominio de la franquicia actual
      *
      * @since 3.0.0
