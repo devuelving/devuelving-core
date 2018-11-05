@@ -794,19 +794,15 @@ class ProductModel extends Model
      * Devuelve stock actual, true si no mantenemos stock o false si está agotado.
      *
      * @since 3.0.0
-     * @author David Cortés <david@devuelving.com>
+     * @author Aaron Bujalance <aaron@devuelving.com>
      * @return boolean
      */
     public function getStock()
     {
         if (!$this->unavailable) {
             if ($this->stock_type == 1) {
-                $additions = ProductStockModel::where('product_stock.type', '=', 2);
-                $additions->where('product_stock.product', '=', $this->id);
-                $additions->sum('stock');
-                $subtractions = ProductStockModel::where('product_stock.type', '=', 1);
-                $subtractions->where('product_stock.product', '=', $this->id);
-                $subtractions->sum('stock');
+                $additions = ProductStockModel::where('product_stock.type', '=', 2)->where('product_stock.product', '=', $this->id)->sum('stock');
+                $subtractions = ProductStockModel::where('product_stock.type', '=', 1)->where('product_stock.product', '=', $this->id)->sum('stock');
                 return $additions - $subtractions;
             } else {
                 return true;
