@@ -362,7 +362,7 @@ class OrderModel extends Model
     }
 
     /**
-     * Método para obtener el resumen 
+     * Obtener el resumen del pedido
      * 
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
@@ -374,7 +374,24 @@ class OrderModel extends Model
             'products' => $this->totalAmount(),
             'payment_method' => $this->getPaymentCost(),
             'amount' => $this->getTotal(),
+            'cost' => $this->getCost(),
         ];
+    }
+
+    /**
+     * Obtiene el coste total del pedido
+     *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @return void
+     */
+    public function getCost()
+    {
+        $total = 0;
+        foreach ($this->listProducts() as $orderDetail) {
+            $total += ($orderDetail->unit_price * $orderDetail->units) - $orderDetail->franchise_earning;
+        }
+        return number_format($total, 2, '.', '');
     }
 
     /**
