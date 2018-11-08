@@ -26,7 +26,7 @@ class OrderDiscountModel extends Model
      * @var array
      */
     protected $fillable = [
-        'order', 'type', 'discount_voucher', 'discount_value',
+        'order', 'type', 'discount_voucher_data', 'discount_value',
     ];
 
     /**
