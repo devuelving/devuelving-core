@@ -102,6 +102,8 @@ class ProductModel extends Model
             'cost_price' => $cost_price,
             'default_price' => $default_price,
         ]);
+        // Añadimos el registro de la nueva actualización del precio
+        $this->addUpdatePrice($cost_price);
     }
 
     /**
@@ -109,24 +111,37 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
+     * @param float $cost_price
      * @return void
      */
-    public function addUpdatePrice()
+    public function addUpdatePrice($cost_price)
     {
         // Obtenemos el anterior precio del producto
         try {
             $productPriceUpdate = DB::table('product_price_update')->where('product', $this->id)->orderBy('id', 'desc')->first();
-            $oldPrice = $productPriceUpdate->price;
+            $oldPrice = $productPriceUpdate->new_price_cost;
+            $oldType = $productPriceUpdate->type;
         } catch (\Exception $e) {
             // report($e);
             $oldPrice = 0;
+            $oldType = 1;
+        }
+        // Obtenemos el tipo de actualización del precio del producto
+        if ($oldPrice == 0 || ($oldType == 3 && ($this->unavailable == 0 || $this->discontinued == 0))) {
+            $type = 1; // Nuevo producto
+        } else if ($this->unavailable == 1 || $this->discontinued == 1) {
+            $type = 3; // Eliminación producto
+        } else {
+            $type = 2; // Actualización del precio
         }
         // Comprobación de que el precio no es el mismo
-        if ($this->cost_price != $oldPrice) {
+        if ($cost_price != $oldPrice) {
             // Se añade un nuevo registro con el nuevo precio del producto
             DB::table('product_price_update')->insert([
                 'product' => $this->id,
-                'price' => $this->cost_price,
+                'type' => $type,
+                'new_price_cost' => $cost_price,
+                'old_price_cost' => $oldPrice,
                 'created_at' => Carbon::now()->toDateTimeString(),
                 'updated_at' => Carbon::now()->toDateTimeString()
             ]);

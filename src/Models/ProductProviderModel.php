@@ -52,19 +52,9 @@ class ProductProviderModel extends Model
     {
         parent::boot();
 
-        self::creating(function ($productProvider) {
-            $product = ProductModel::find($productProvider->product);
-            $product->addUpdatePrice();
-        });
-
         self::created(function ($productProvider) {
             $product = ProductModel::find($productProvider->product);
             $product->updatePrice();
-        });
-
-        self::updating(function ($productProvider) {
-            $product = ProductModel::find($productProvider->product);
-            $product->addUpdatePrice();
         });
 
         self::updated(function ($productProvider) {
