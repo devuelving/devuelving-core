@@ -90,10 +90,17 @@ class ProductModel extends Model
         $provider = $productProvider->getProvider();
         // Obtenemos el precio de coste y le sumamos el margen de beneficio del proveedor
         $cost_price = $productProvider->cost_price + ($productProvider->cost_price * ($provider->profit_margin / 100));
+        if ($provider->id == 5 || $provider->id == 6) {
+            // Obtenemos el precio recomendado y le restamos el 10% que es el precio minimo de venta
+            $default_price = $this->getRecommendedPrice() / 1.10;
+        } else {
+            // Obtenemos el precio de coste y le sumamos el beneficio del franquiciado por defecto
+            $default_price = $cost_price + ($productProvider->cost_price * ($provider->franchise_profit_margin / 100)) * ((TaxModel::find($this->tax)->value / 100) + 1);
+        }
         // Actualizamos los precios de los productos
         DB::table($this->table)->where('id', $this->id)->update([
             'cost_price' => $cost_price,
-            'default_price' => $cost_price * ((rand(10, 25) / 100) + 1) * ((TaxModel::find($this->tax)->value / 100) + 1),
+            'default_price' => $default_price,
         ]);
     }
 
@@ -308,7 +315,7 @@ class ProductModel extends Model
     }
 
     /**
-     * Función para obtener el precio con el margen de beneficio del proveedor
+     * Función para obtener el precio de coste
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
@@ -322,6 +329,12 @@ class ProductModel extends Model
         } else {
             return $this->cost_price;
         }
+    }
+
+    public function getDiscountTarget()
+    {
+        // Ir a franchise_custom y obtener el target de descuento
+        // Aplicar el descuento que esta en %
     }
 
     /**
@@ -799,7 +812,7 @@ class ProductModel extends Model
      */
     public function getStock()
     {
-        if (!$this->unavailable) {
+        if (!$this->unavailable && !$this->discontinued) {
             if ($this->stock_type == 1) {
                 $additions = ProductStockModel::where('product_stock.type', '=', 2)->where('product_stock.product', '=', $this->id)->sum('stock');
                 $subtractions = ProductStockModel::where('product_stock.type', '=', 1)->where('product_stock.product', '=', $this->id)->sum('stock');
