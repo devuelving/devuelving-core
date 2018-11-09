@@ -168,6 +168,29 @@ class FranchiseModel extends Model
             return null;
         }
     }
+    
+    /**
+     * Método para obtener variables customizadas de la franquicia
+     *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @param string $var
+     * @param string $default
+     * @return void
+     */
+    public static function custom($var, $default = null)
+    {
+        try {
+            $franchise = new FranchiseModel();
+            if ($franchise->getCustom($var) != null) {
+                return $franchise->getCustom($var);
+            } else {
+                return $default;
+            }
+        } catch (\Exception $e) {
+            return $default;
+        }
+    }
 
     /**
      * Función para obtener las citas telefonicas de la franquicia

@@ -846,6 +846,22 @@ class ProductModel extends Model
     }
 
     /**
+     * Método para comprobar si se muestran los precios visibles
+     *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @return void
+     */
+    public function visiblePrice()
+    {
+        if (! auth()->check() && (!FranchiseModel::custom('visible_price', 'false') == 'true')) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
      * Función para imprimir un banner del producto
      *
      * @since 3.0.0
