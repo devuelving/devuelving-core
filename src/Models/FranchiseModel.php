@@ -96,7 +96,7 @@ class FranchiseModel extends Model
     }
 
     /**
-     * Método para obtener la franquicia por el dominio
+     * Método para obtener la franquicia por el dominio o usuario
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
@@ -104,7 +104,33 @@ class FranchiseModel extends Model
      */
     public static function getFranchise()
     {
-        return FranchiseModel::where('domain', FranchiseModel::getDomain())->first();
+        if (!empty(auth()->user()->franchise)) {
+            return FranchiseModel::find(auth()->user()->franchise);
+        } else {
+            return FranchiseModel::where('domain', FranchiseModel::getDomain())->first();
+        }
+    }
+
+    /**
+     * Función para obtener datos de la franquicia
+     *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @return void
+     */
+    public static function get($data = null)
+    {
+        $id = FranchiseModel::getFranchise()->id;
+        if ($data) {
+            try {
+                $franchise = FranchiseModel::find($id);
+                return $franchise->$data;
+            } catch (\Exception $e) {
+                // report($e);
+                return null;
+            }
+        }
+        return $id;
     }
 
     /**
@@ -118,32 +144,6 @@ class FranchiseModel extends Model
     {
         $clients = CustomerModel::where('franchise', $this->id)->get();
         return count($clients) - 1;
-    }
-
-    /**
-     * Función para obtener datos de la franquicia
-     *
-     * @since 3.0.0
-     * @author David Cortés <david@devuelving.com>
-     * @return void
-     */
-    public static function get($data = null)
-    {
-        if (!empty(auth()->user()->franchise)) {
-            $id = auth()->user()->franchise;
-        } else {
-            $id = FranchiseModel::getFranchise()->id;
-        }
-        if ($data) {
-            try {
-                $franchise = FranchiseModel::find($id);
-                return $franchise->$data;
-            } catch (\Exception $e) {
-                // report($e);
-                return null;
-            }
-        }
-        return $id;
     }
 
     /**
