@@ -374,7 +374,7 @@ class OrderModel extends Model
             'products' => $this->totalAmount(),
             'payment_method' => $this->getPaymentCost(),
             'amount' => $this->getTotal(),
-            'earnings' => $this->getEarnings(),
+            'earnings' => $this->franchise_earnings,
             'cost' => $this->getCost(),
         ];
     }
