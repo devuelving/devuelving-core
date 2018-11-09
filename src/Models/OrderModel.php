@@ -2,6 +2,7 @@
 
 namespace devuelving\core;
 
+use devuelving\core\TaxModel;
 use devuelving\core\RegionModel;
 use devuelving\core\CountryModel;
 use devuelving\core\IncidentsModel;
@@ -249,6 +250,7 @@ class OrderModel extends Model
             if ($this->hasDropshipping()) {
                 $total = $total + $this->getDropshippingPrice();
             }
+            $total += $total * (TaxModel::find(1)->value / 100);
             return number_format($total, 2, '.', '');
         }
         return null;
