@@ -858,7 +858,7 @@ class ProductModel extends Model
      */
     public function visiblePrice()
     {
-        if (! auth()->check() && (!FranchiseModel::custom('visible_price', 'false') == 'true')) {
+        if (! auth()->check() && !(FranchiseModel::custom('visible_price', 'false') == 'true')) {
             return false;
         } else {
             return true;
