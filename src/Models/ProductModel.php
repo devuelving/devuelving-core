@@ -340,9 +340,9 @@ class ProductModel extends Model
     public function getPublicPriceCost($tax = true)
     {
         if ($tax) {
-           return $this->cost_price * ($this->getTax() + 1);
+           return ($this->cost_price * getDiscountTarget()) * ($this->getTax() + 1);
         } else {
-            return $this->cost_price;
+            return ($this->cost_price * getDiscountTarget());
         }
     }
 
@@ -353,8 +353,13 @@ class ProductModel extends Model
      */
     public function getDiscountTarget()
     {
-        // Ir a franchise_custom y obtener el target de descuento
-        // Aplicar el descuento que esta en %
+        $discount = 1;
+        if (DiscountTargetModel::whereIn('target', $this->id)->exists() && FranchiseCustomModel::where('franchise', FranchiseModel::get('id'))->where('var','discount1')->exists()) {
+            $discount = DiscountTargetModel::whereIn('target', $this->id)->first()->discount;
+        } else if (FranchiseCustomModel::where('franchise', FranchiseModel::get('id'))->where('var','discount2')->exists() && DiscountTargetModel::whereIn('target', $this->getProvider()->id)){
+            $discount = DiscountTargetModel::whereIn('target', $this->getProvider()->id)->discount;
+        }
+        return $discount;            
     }
 
     /**
