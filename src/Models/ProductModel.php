@@ -100,7 +100,7 @@ class ProductModel extends Model
             $default_price = $costPrice + ($productProvider->cost_price * ($provider->franchise_profit_margin / 100)) * ((TaxModel::find($this->tax)->value / 100) + 1);
         }
         // Actualizamos los precios de los productos
-        $product = Productr::find($this->id);
+        $product = Product::find($this->id);
         $oldCostPrice = $product->cost_price;
         $product->cost_price = $costPrice;
         $product->default_price = $default_price;
