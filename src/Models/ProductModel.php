@@ -91,21 +91,25 @@ class ProductModel extends Model
         // Obtenemos el proveedor del producto
         $provider = $productProvider->getProvider();
         // Obtenemos el precio de coste y le sumamos el margen de beneficio del proveedor
-        $cost_price = $productProvider->cost_price + ($productProvider->cost_price * ($provider->profit_margin / 100));
+        $costPrice = $productProvider->cost_price + ($productProvider->cost_price * ($provider->profit_margin / 100));
         if ($provider->id == 5 || $provider->id == 6) {
             // Obtenemos el precio recomendado y le restamos el 10% que es el precio minimo de venta
             $default_price = $this->getRecommendedPrice() / 1.10;
         } else {
             // Obtenemos el precio de coste y le sumamos el beneficio del franquiciado por defecto
-            $default_price = $cost_price + ($productProvider->cost_price * ($provider->franchise_profit_margin / 100)) * ((TaxModel::find($this->tax)->value / 100) + 1);
+            $default_price = $costPrice + ($productProvider->cost_price * ($provider->franchise_profit_margin / 100)) * ((TaxModel::find($this->tax)->value / 100) + 1);
         }
         // Actualizamos los precios de los productos
-        DB::table($this->table)->where('id', $this->id)->update([
-            'cost_price' => $cost_price,
-            'default_price' => $default_price,
-        ]);
-        // Añadimos el registro de la nueva actualización del precio
-        $this->addUpdatePrice($cost_price);
+        $product = Productr::find($this->id);
+        $oldCostPrice = $product->cost_price;
+        $product->cost_price = $costPrice;
+        $product->default_price = $default_price;
+        $product->save();
+        // Comprobación de que el precio no es el mismo
+        if (number_format($costPrice, 2) != number_format($oldCostPrice, 2)) {
+            // Añadimos el registro de la nueva actualización del precio
+            $this->addUpdatePrice($costPrice, $oldCostPrice);
+        }
     }
 
     /**
@@ -113,23 +117,22 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @param float $cost_price
+     * @param float $costPrice
+     * @param float $oldCostPrice
      * @return void
      */
-    public function addUpdatePrice($cost_price)
+    public function addUpdatePrice($costPrice, $oldCostPrice)
     {
         // Obtenemos el anterior precio del producto
         try {
             $productPriceUpdate = DB::table('product_price_update')->where('product', $this->id)->orderBy('id', 'desc')->first();
-            $oldPrice = $productPriceUpdate->new_price_cost;
             $oldType = $productPriceUpdate->type;
         } catch (\Exception $e) {
             // report($e);
-            $oldPrice = 0;
             $oldType = 1;
         }
         // Obtenemos el tipo de actualización del precio del producto
-        if ($oldPrice == 0 || ($oldType == 3 && ($this->unavailable == 0 || $this->discontinued == 0))) {
+        if ($oldCostPrice == 0 || ($oldType == 3 && ($this->unavailable == 0 || $this->discontinued == 0))) {
             $type = 1; // Nuevo producto
         } else if ($this->unavailable == 1 || $this->discontinued == 1) {
             $type = 3; // Eliminación producto
@@ -137,13 +140,13 @@ class ProductModel extends Model
             $type = 2; // Actualización del precio
         }
         // Comprobación de que el precio no es el mismo
-        if ($cost_price != $oldPrice) {
+        if (number_format($costPrice, 2) != number_format($oldCostPrice, 2)) {
             // Se añade un nuevo registro con el nuevo precio del producto
             DB::table('product_price_update')->insert([
                 'product' => $this->id,
                 'type' => $type,
-                'new_price_cost' => $cost_price,
-                'old_price_cost' => $oldPrice,
+                'new_price_cost' => $costPrice,
+                'old_price_cost' => $oldCostPrice,
                 'created_at' => Carbon::now()->toDateTimeString(),
                 'updated_at' => Carbon::now()->toDateTimeString()
             ]);
