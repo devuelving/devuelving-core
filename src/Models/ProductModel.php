@@ -342,9 +342,9 @@ class ProductModel extends Model
     public function getPublicPriceCost($tax = true)
     {
         if ($tax) {
-           return ($this->cost_price * getDiscountTarget()) * ($this->getTax() + 1);
+           return ($this->cost_price * $this->getDiscountTarget()) * ($this->getTax() + 1);
         } else {
-            return ($this->cost_price * getDiscountTarget());
+            return ($this->cost_price * $this->getDiscountTarget());
         }
     }
 
