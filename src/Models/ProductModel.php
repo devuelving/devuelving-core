@@ -13,6 +13,8 @@ use devuelving\core\FranchiseModel;
 use devuelving\core\ProductStockModel;
 use devuelving\core\ProductCustomModel;
 use Illuminate\Database\Eloquent\Model;
+use devuelving\core\DiscountTargetsModel;
+use devuelving\core\FranchiseCustomModel;
 use devuelving\core\ProductCategoryModel;
 use devuelving\core\ProductProviderModel;
 use Cviebrock\EloquentSluggable\Sluggable;
@@ -354,10 +356,10 @@ class ProductModel extends Model
     public function getDiscountTarget()
     {
         $discount = 1;
-        if (DiscountTargetModel::whereIn('target', $this->id)->exists() && FranchiseCustomModel::where('franchise', FranchiseModel::get('id'))->where('var','discount1')->exists()) {
-            $discount = DiscountTargetModel::whereIn('target', $this->id)->first()->discount;
-        } else if (FranchiseCustomModel::where('franchise', FranchiseModel::get('id'))->where('var','discount2')->exists() && DiscountTargetModel::whereIn('target', $this->getProvider()->id)){
-            $discount = DiscountTargetModel::whereIn('target', $this->getProvider()->id)->discount;
+        if (DiscountTargetsModel::whereIn('target', $this->id)->exists() && FranchiseCustomModel::where('franchise', FranchiseModel::get('id'))->where('var','discount1')->exists()) {
+            $discount = DiscountTargetsModel::whereIn('target', $this->id)->first()->discount;
+        } else if (FranchiseCustomModel::where('franchise', FranchiseModel::get('id'))->where('var','discount2')->exists() && DiscountTargetsModel::whereIn('target', $this->getProvider()->id)){
+            $discount = DiscountTargetsModel::whereIn('target', $this->getProvider()->id)->discount;
         }
         return $discount;            
     }
