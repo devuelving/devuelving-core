@@ -351,17 +351,39 @@ class ProductModel extends Model
     /**
      * Función para comprobar si tienen activos algún descuento y aplicarlo al precio de coste
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getDiscountTarget()
     {
         $discount = 1;
-        if (DiscountTargetsModel::whereIn('target', $this->id)->exists() && FranchiseCustomModel::where('franchise', FranchiseModel::get('id'))->where('var','discount1')->exists()) {
-            $discount = DiscountTargetsModel::whereIn('target', $this->id)->first()->discount;
-        } else if (FranchiseCustomModel::where('franchise', FranchiseModel::get('id'))->where('var','discount2')->exists() && DiscountTargetsModel::whereIn('target', $this->getProvider()->id)){
-            $discount = DiscountTargetsModel::whereIn('target', $this->getProvider()->id)->discount;
+        try {
+            // Comprobamos si la franquicia tiene los descuentos activados
+            if(FranchiseModel::getFranchise()->getCustom('discount') != null) {
+                $franchiseDiscounts = json_decode(FranchiseModel::getFranchise()->getCustom('discount'));
+                // Recorremos todos los descuentos de la franquicia
+                foreach ($franchiseDiscounts as $FranchiseDiscountTarget) {
+                    // Obtenemos los datos de los descuentos
+                    $discountTarget = DiscountTargetsModel::find($FranchiseDiscountTarget);
+                    $target = json_decode($discountTarget->target);
+                    // Comprobamos si el descuento es de tipo 1, lo que significa que el id del producto esta en los datos del descuento
+                    if ($discountTarget->type == 1) {
+                        if (in_array($this->id, $target)) {
+                            $discount = $discountTarget->discount;
+                        }
+                    // Comprobamos si el descuento es de tipo 2, lo que significa que se aplica un descuento por proveedor
+                    } else if ($discountTarget->type == 2) {
+                        if ($this->getProvider()->id == $target) {
+                            $discount = $discountTarget->discount;
+                        }
+                    }
+                }
+            }
+        } catch(\Exception $e) {
+            report($e);
         }
-        return $discount;            
+        return $discount;
     }
 
     /**
