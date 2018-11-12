@@ -97,7 +97,7 @@ class ProductModel extends Model
             $default_price = $this->getRecommendedPrice() / 1.10;
         } else {
             // Obtenemos el precio de coste y le sumamos el beneficio del franquiciado por defecto
-            $default_price = $costPrice + ($productProvider->cost_price * ($provider->franchise_profit_margin / 100)) * ((TaxModel::find($this->tax)->value / 100) + 1);
+            $default_price = ($costPrice + ($productProvider->cost_price * ($provider->franchise_profit_margin / 100))) * ((TaxModel::find($this->tax)->value / 100) + 1);
         }
         // Actualizamos los precios de los productos
         $product = ProductModel::find($this->id);
@@ -106,7 +106,7 @@ class ProductModel extends Model
         $product->default_price = $default_price;
         $product->save();
         // Comprobación de que el precio no es el mismo
-        if (number_format($costPrice, 2) != number_format($oldCostPrice, 2)) {
+        if (number_format($costPrice, 1) != number_format($oldCostPrice, 1)) {
             // Añadimos el registro de la nueva actualización del precio
             $this->addUpdatePrice($costPrice, $oldCostPrice);
         }
@@ -140,7 +140,7 @@ class ProductModel extends Model
             $type = 2; // Actualización del precio
         }
         // Comprobación de que el precio no es el mismo
-        if (number_format($costPrice, 2) != number_format($oldCostPrice, 2)) {
+        if (number_format($costPrice, 1) != number_format($oldCostPrice, 1)) {
             // Se añade un nuevo registro con el nuevo precio del producto
             DB::table('product_price_update')->insert([
                 'product' => $this->id,
@@ -345,7 +345,7 @@ class ProductModel extends Model
     public function getPublicPriceCost($tax = true)
     {
         if ($tax) {
-           return ($this->cost_price * $this->getDiscountTarget()) * ($this->getTax() + 1);
+            return ($this->cost_price * $this->getDiscountTarget()) * ($this->getTax() + 1);
         } else {
             return ($this->cost_price * $this->getDiscountTarget());
         }
@@ -363,7 +363,7 @@ class ProductModel extends Model
         $discount = 1;
         try {
             // Comprobamos si la franquicia tiene los descuentos activados
-            if(FranchiseModel::getFranchise()->getCustom('discount') != null) {
+            if (FranchiseModel::getFranchise()->getCustom('discount') != null) {
                 $franchiseDiscounts = json_decode(FranchiseModel::getFranchise()->getCustom('discount'));
                 // Recorremos todos los descuentos de la franquicia
                 foreach ($franchiseDiscounts as $FranchiseDiscountTarget) {
@@ -383,7 +383,7 @@ class ProductModel extends Model
                     }
                 }
             }
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             report($e);
         }
         return $discount;
@@ -890,7 +890,7 @@ class ProductModel extends Model
      */
     public function visiblePrice()
     {
-        if (! auth()->check() && !(FranchiseModel::custom('visible_price', 'false') == 'true')) {
+        if (!auth()->check() && !(FranchiseModel::custom('visible_price', 'false') == 'true')) {
             return false;
         } else {
             return true;
