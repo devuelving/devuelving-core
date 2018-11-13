@@ -373,12 +373,12 @@ class ProductModel extends Model
                     // Comprobamos si el descuento es de tipo 1, lo que significa que el id del producto esta en los datos del descuento
                     if ($discountTarget->type == 1) {
                         if (in_array($this->id, $target)) {
-                            $discount = $discountTarget->discount;
+                            $discount = 1 - ($discountTarget->discount/100);
                         }
                     // Comprobamos si el descuento es de tipo 2, lo que significa que se aplica un descuento por proveedor
                     } else if ($discountTarget->type == 2) {
                         if (in_array($this->getProvider()->id, $target)) {
-                            $discount = $discountTarget->discount;
+                            $discount = 1 - ($discountTarget->discount/100);
                         }
                     }
                 }
