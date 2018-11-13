@@ -569,6 +569,7 @@ class ProductModel extends Model
      */
     public function getPrice()
     {
+        $price = 0;
         if ($this->checkCustomPrice()) {
             $productCustom = ProductCustom::where('product', $this->id)->where('franchise', Franchise::get('id'))->first();
             if ($productCustom->price_type == 1) {
@@ -579,6 +580,7 @@ class ProductModel extends Model
         } else {
             $price = $this->default_price;
         }
+        return $price;
     }
 
     /**
