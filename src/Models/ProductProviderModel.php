@@ -31,7 +31,7 @@ class ProductProviderModel extends Model
      * @var array
      */
     protected $fillable = [
-        'product', 'ean', 'reference', 'cost_price', 'provider',
+        'product', 'ean', 'reference', 'cost_price', 'provider', 'stock',
     ];
 
     /**
