@@ -871,6 +871,8 @@ class ProductModel extends Model
                 $additions = ProductStockModel::where('product_stock.type', '=', 2)->where('product_stock.product', '=', $this->id)->sum('stock');
                 $subtractions = ProductStockModel::where('product_stock.type', '=', 1)->where('product_stock.product', '=', $this->id)->sum('stock');
                 return $additions - $subtractions;
+            } else if ($this->stock_type == 3 || $this->stock_type == 4) {
+                return $this->getProductProvider()->stock;
             } else {
                 return true;
             }
