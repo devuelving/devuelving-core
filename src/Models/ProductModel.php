@@ -651,7 +651,7 @@ class ProductModel extends Model
             $recommendedPrice = $this->getRecommendedPrice();
             return round((($recommendedPrice - $publicPrice) / $recommendedPrice) * 100);
         } catch (\Exception $e) {
-            report($e);
+            // report($e);
             return 0;
         }
     }
