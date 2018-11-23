@@ -10,6 +10,7 @@ use devuelving\core\ProductCustom;
 use devuelving\core\ProviderModel;
 use Illuminate\Support\Facades\DB;
 use devuelving\core\FranchiseModel;
+use devuelving\core\OrderDetailModel;
 use devuelving\core\ProductStockModel;
 use devuelving\core\ProductCustomModel;
 use Illuminate\Database\Eloquent\Model;
@@ -871,7 +872,20 @@ class ProductModel extends Model
                 $additions = ProductStockModel::where('product_stock.type', '=', 2)->where('product_stock.product', '=', $this->id)->sum('stock');
                 $subtractions = ProductStockModel::where('product_stock.type', '=', 1)->where('product_stock.product', '=', $this->id)->sum('stock');
                 return $additions - $subtractions;
-            } else if ($this->stock_type == 3 || $this->stock_type == 4) {
+            } else if ($this->stock_type == 3) {
+                $stock = $this->getProductProvider()->stock;
+                $date = Carbon::now()->subDays(2)->toDateString();
+                $reserved = OrderDetailModel::join('orders', 'order_details.order', '=', 'orders.id')
+                ->where('product', $this->id)
+                ->whereIn('orders.status', [1,2]);
+                $reserved->where(function ($query) use ($date) { 
+                    $query->where('orders.payment_method', '!=', 6);
+                    $query->orWhereDate('orders.created_at', 'LIKE', '>', $date);
+                    $query->orWhereNotNull('orders.payment_date');
+                    $query->orWhere('orders.status', 2);
+                });
+                return $stock-($reserved->sum('order_details.units'));
+            } else if ($this->stock_type == 4) {
                 return $this->getProductProvider()->stock;
             } else {
                 return true;
