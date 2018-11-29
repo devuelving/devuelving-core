@@ -900,11 +900,27 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return boolean
      */
     public function visiblePrice()
     {
-        if (!auth()->check() && !(FranchiseModel::custom('visible_price', 'false') == 'true')) {
+        if ((boolean) FranchiseModel::custom('visible_price', false) || auth()->check()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Método para comporbar si se muetran los descuentos
+     *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @return boolean
+     */
+    public function visibleDiscounts()
+    {
+        if (((FranchiseModel::get('type') == 0) && ($this->getPublicMarginProfit() < 25)) || ((!(boolean) FranchiseModel::custom('visible_discounts', true)) || ($this->getPublicMarginProfit() < 5))) {
             return false;
         } else {
             return true;
