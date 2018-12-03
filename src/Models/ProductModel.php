@@ -578,7 +578,7 @@ class ProductModel extends Model
             if ($productCustom->price_type == 1) {
                 $price = $productCustom->price;
             } else {
-                $price = $this->default_price + ($this->default_price * ($productCustom->price / 100));
+                $price = $this->getPublicPriceCost() * (($productCustom->price / 100) + 1);
             }
         } else {
             $price = $this->default_price;
