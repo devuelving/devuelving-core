@@ -106,8 +106,10 @@ class FranchiseModel extends Model
     {
         if (!empty(auth()->user()->franchise)) {
             return FranchiseModel::find(auth()->user()->franchise);
+        } else if ($franchise = FranchiseModel::where('domain', FranchiseModel::getDomain())->first()) {
+            return $franchise;
         } else {
-            return FranchiseModel::where('domain', FranchiseModel::getDomain())->first();
+            return FranchiseModel::where('code', str_replace('.tutienda.com.es', '', FranchiseModel::getDomain()))->first();
         }
     }
 
