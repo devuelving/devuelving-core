@@ -668,7 +668,7 @@ class ProductModel extends Model
         if ($this->getRecommendedPrice() != null) {
             $recommendedPrice = $this->getRecommendedPrice();
             $costPrice = $this->getPublicPriceCost();
-            return round((($costPrice - $recommendedPrice) / $costPrice) * 100);
+            return round((($recommendedPrice - $costPrice) / $costPrice) * 100);
         }
         return null;
     }
