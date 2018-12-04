@@ -11,6 +11,7 @@ use devuelving\core\ShippingFeeModel;
 use devuelving\core\OrderDiscountModel;
 use devuelving\core\PaymentMethodModel;
 use Illuminate\Database\Eloquent\Model;
+use devuelving\core\FranchiseCustomModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OrderModel extends Model
