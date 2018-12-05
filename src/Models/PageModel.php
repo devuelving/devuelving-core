@@ -2,6 +2,7 @@
 
 namespace devuelving\core;
 
+use devuelving\core\FranchiseModel;
 use Illuminate\Database\Eloquent\Model;
 use Cviebrock\EloquentSluggable\Sluggable;
 
@@ -53,5 +54,17 @@ class PageModel extends Model
                 'source' => 'name'
             ]
         ];
+    }
+
+    /**
+     * Función para reemplazar los shorcodes del contenido
+     *
+     * @return void
+     */
+    public function getContent()
+    {
+        $return = $this->content;
+        $return = str_replace('[nombre_tienda]', strtoupper(FranchiseModel::get('name')), $return);
+        return $return;
     }
 }
