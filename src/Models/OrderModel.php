@@ -258,24 +258,29 @@ class OrderModel extends Model
 
     /**
      * Returns the amount of free shipping the franchisee is going to give the client
-     *
+     * 
      * @since 3.0.0
      * @author Aaron Bujalance Garcia <aaron@devuelving.com>
      * @return void
      */
     public function getFreeShipping()
     {
-        $total = false;
         $product_total = $this->totalAmount();
-        $free_shipping = json_decode(FranchiseModel::custom('free_shipping', '{}'));
-        foreach ($free_shipping as $minimum => $amount) {
-            if ($product_total >= $minimum) {
-                $total = number_format($amount, 2, '.', '');
-            } else {
-                return $total;
-            }
+        $free_shippings = FranchiseCustomModel::where('franchise', $this->franchise)->where('var', 'free_shipping')->first();
+        if ($free_shippings){
+            $total = false;
+            $free_shipping_array = json_decode($free_shippings->value);
+            foreach ($free_shipping_array as $free_shipping) {
+                if($product_total >= $free_shipping->amount) {
+                    $total = number_format($free_shipping->discount, 2, '.', '');
+                } else {
+                    return $total;
+                } 
+            } 
+            return $total;
+        } else {
+            return false;
         }
-        return $total;
     }
 
     /**
