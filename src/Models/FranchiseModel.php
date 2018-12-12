@@ -114,6 +114,18 @@ class FranchiseModel extends Model
     }
 
     /**
+     * Metodo para obtener al franquiciado del dominio
+     *
+     * @since 3.0.0
+     * @author Aaron <aaron@devuelving.com>
+     * @return void
+     */
+    public static function getFranchiseContactData() 
+    {
+        return FranchiseContactDataModel::where('franchise', FranchiseModel::getFranchise()->id)->first();
+    }
+
+    /**
      * Función para obtener datos de la franquicia
      *
      * @since 3.0.0
