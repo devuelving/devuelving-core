@@ -224,7 +224,7 @@ class OrderModel extends Model
             $voucher = OrderDiscountModel::where('order', $this->id)->first();
             $discounts = $voucher->discount_value;
         }
-        $earnings = $earnings - $this->shipping_costs_franchise;
+        $earnings = $earnings - $this->shipping_costs_franchise - $discounts;
         return number_format($earnings, 2, '.', '');
     }
 
