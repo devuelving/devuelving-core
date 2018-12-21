@@ -495,4 +495,22 @@ class OrderModel extends Model
     {
         return OrderShipmentStatusModel::where('order', $this->id)->get();
     }
+
+    /**
+     * Función para comprobar si en el pedido hay productos de un proveedor
+     * Devuelve 0 Si no hay carne. 1 Si hay.
+     *
+     * @return void
+     */
+    public function checkProviderOrder($provider)
+    {
+        $order_lines = OrderDetailModel::where('order', $this->id)->get();
+        foreach ($order_lines as $order_line) {
+            $product = ProductModel::find($order_line->product);
+            if ($product->getProvider()->id == $provider) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
