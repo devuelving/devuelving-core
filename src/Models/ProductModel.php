@@ -73,6 +73,54 @@ class ProductModel extends Model
     }
 
     /**
+     * The "booting" method of the model.
+     *
+     * @return void
+     * @author Aaron <aaron@devuelving.com>
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        self::updating(function ($product) {
+            // We check if the product belongs to a franchise
+            if ($product->franchise === NULL) {
+                // We check if the status of the product has changed
+                if ($product->isDirty('discontinued')){
+                    // To prevent both clutter in the .rss and the database, we will only use one register per product
+                    $productStatusUpdate = ProductStatusUpdatesModel::where('product', $product->id)->first();
+                    if(!$productStatusUpdate) {
+                        $productStatusUpdate = new ProductStatusUpdatesModel();
+                    }
+                    $productStatusUpdate->product = $product->id;
+                    // Depending on the change, we inform the user one way or another through the .rss feed
+                    if ($product->discontinued > 0){
+                        $productStatusUpdate->status = "El producto ha sido descatalogado";
+                    } else {
+                        $productStatusUpdate->status = "Producto añadido al catalogo de nuevo";
+                    }
+                    $productStatusUpdate->save();
+                    // We only let the users know that the status have changed if the product is not discontinued
+                } else if ($product->isDirty('unavailable') && $product->discontinued == 0){
+                    // To prevent both clutter in the .rss and the database, we will only use one register per product
+                    $productStatusUpdate = ProductStatusUpdatesModel::where('product', $product->id)->first();
+                    if(!$productStatusUpdate) {
+                        $productStatusUpdate = new ProductStatusUpdatesModel();
+                    }
+                    $productStatusUpdate->product = $product->id;
+                    // Depending on the change, we inform the user one way or another through the .rss feed
+                    if ($product->unavailable > 0){
+                        $productStatusUpdate->status = "Stock agotado";
+                    } else {
+                        $productStatusUpdate->status = "Producto en stock de nuevo";
+                    }
+                    $productStatusUpdate->save();
+                }
+            }
+        });
+    }
+
+    /**
      * Actualiza los precios del producto en la tabla de productos
      *
      * @since 3.0.0
