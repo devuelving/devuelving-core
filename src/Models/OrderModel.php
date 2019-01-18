@@ -269,14 +269,14 @@ class OrderModel extends Model
         $free_shippings = FranchiseCustomModel::where('franchise', $this->franchise)->where('var', 'free_shipping')->first();
         if ($free_shippings){
             $total = false;
+			$last_amount = 0;
             $free_shipping_array = json_decode($free_shippings->value);
             foreach ($free_shipping_array as $free_shipping) {
-                if($product_total >= $free_shipping->amount) {
+                if($product_total >= $free_shipping->amount && $free_shipping->amount > $last_amount) {
+                    $last_amount = $free_shipping->amount;
                     $total = number_format($free_shipping->discount, 2, '.', '');
-                } else {
-                    return $total;
-                } 
-            } 
+                }
+            }
             return $total;
         } else {
             return false;
