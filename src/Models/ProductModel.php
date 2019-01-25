@@ -124,7 +124,7 @@ class ProductModel extends Model
      * Actualiza los precios del producto en la tabla de productos
      *
      * @since 3.0.0
-     * @author David Cortés <david@devuelving.com>
+     * @author Aaron <aaron@devuelving.com>
      * @return void
      */
     public function updatePrice()
@@ -150,14 +150,15 @@ class ProductModel extends Model
         }
         // Actualizamos los precios de los productos
         $product = ProductModel::find($this->id);
-        $oldCostPrice = $product->cost_price / ($productProvider->cost_price * ($provider->profit_margin / 100));
+        $oldCostPrice = $product->cost_price / (1 + $provider->profit_margin / 100);
         $product->cost_price = $costPrice;
         $product->default_price = $default_price;
         $product->save();
+        $newCostPrice = $product->cost_price / (1 + $provider->profit_margin / 100);
         // Comprobación de que el precio no es el mismo
-        if (number_format($productProvider->cost_price, 1) != number_format($oldCostPrice, 1)) {
+        if (number_format($newCostPrice, 1) != number_format($oldCostPrice, 1)) {
             // Añadimos el registro de la nueva actualización del precio
-            $this->addUpdatePrice($productProvider->cost_price, $oldCostPrice);
+            $this->addUpdatePrice($newCostPrice, $oldCostPrice);
         }
     }
 
