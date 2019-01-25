@@ -155,9 +155,9 @@ class ProductModel extends Model
         $product->default_price = $default_price;
         $product->save();
         // Comprobación de que el precio no es el mismo
-        if (number_format($costPrice, 1) != number_format($oldCostPrice, 1)) {
+        if (number_format($productProvider->cost_price, 1) != number_format($oldCostPrice, 1)) {
             // Añadimos el registro de la nueva actualización del precio
-            $this->addUpdatePrice($costPrice, $oldCostPrice);
+            $this->addUpdatePrice($productProvider->cost_price, $oldCostPrice);
         }
     }
 
