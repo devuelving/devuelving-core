@@ -150,7 +150,7 @@ class ProductModel extends Model
         }
         // Actualizamos los precios de los productos
         $product = ProductModel::find($this->id);
-        $oldCostPrice = $product->cost_price;
+        $oldCostPrice = $product->cost_price / ($productProvider->cost_price * ($provider->profit_margin / 100));
         $product->cost_price = $costPrice;
         $product->default_price = $default_price;
         $product->save();
