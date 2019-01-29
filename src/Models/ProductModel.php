@@ -920,7 +920,9 @@ class ProductModel extends Model
             if ($this->stock_type == 1) {
                 $additions = ProductStockModel::where('product_stock.type', '=', 2)->where('product_stock.product', '=', $this->id)->sum('stock');
                 $subtractions = ProductStockModel::where('product_stock.type', '=', 1)->where('product_stock.product', '=', $this->id)->sum('stock');
-                return $additions - $subtractions;
+                $stock = $additions - $subtractions;
+                if ($stock < 0) $stock = 0;
+                return $stock;
             } else if ($this->stock_type == 3) {
                 $stock = $this->getProductProvider()->stock;
                 $date = Carbon::now()->subDays(2)->toDateString();
