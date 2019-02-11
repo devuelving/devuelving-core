@@ -120,9 +120,12 @@ class FranchiseModel extends Model
      * @author Aaron <aaron@devuelving.com>
      * @return void
      */
-    public static function getFranchiseContactData() 
+    public static function getFranchiseContactData($franchise = NULL) 
     {
-        return FranchiseContactDataModel::where('franchise', FranchiseModel::getFranchise()->id)->first();
+        if(!$franchise) {
+            $franchise = FranchiseModel::getFranchise()->id;
+        }
+        return FranchiseContactDataModel::where('franchise', $franchise)->first();
     }
 
     /**
