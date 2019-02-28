@@ -2,15 +2,16 @@
 
 namespace devuelving\core;
 
+use App\Franchise;
 use devuelving\core\TaxModel;
-use devuelving\core\RegionModel;
-use devuelving\core\CountryModel;
-use devuelving\core\IncidentsModel;
-use devuelving\core\OrderDetailModel;
-use devuelving\core\ShippingFeeModel;
-use devuelving\core\OrderDiscountModel;
-use devuelving\core\PaymentMethodModel;
+use devuelving\core\ProductModel;
+use devuelving\core\MyCountryModel;
+use devuelving\core\MyOrderDetailModel;
 use Illuminate\Database\Eloquent\Model;
+use devuelving\core\MyShippingFeesModel;
+use devuelving\core\FranchiseCustomModel;
+use devuelving\core\MyOrderDiscountModel;
+use devuelving\core\MyPaymentMethodModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MyOrderModel extends Model
@@ -57,7 +58,7 @@ class MyOrderModel extends Model
     public function totalAmount()
     {
         $order_price = 0;
-        $order_details = OrderDetailModel::where('order', $this->id)->get();
+        $order_details = MyOrderDetailModel::where('order', $this->id)->get();
         foreach ($order_details as $order_detail) {
             $order_price = $order_price + ($order_detail->units * $order_detail->unit_price);
         }
@@ -171,11 +172,12 @@ class MyOrderModel extends Model
      */
     public function getPaymentMethod()
     {
-        if (empty($this->payment_method)) {
-            $this->payment_method = 1;
+        if (empty($this->payment_method) || !MyPaymentMethodModel::where('franchise', Franchise::get('id'))->where('id', $this->payment_method)->exists()) {
+            $payment_method = MyPaymentMethodModel::where('franchise', Franchise::get('id'))->first();
+            $this->payment_method = $payment_method->id;
             $this->save();
         }
-        return PaymentMethodModel::find($this->payment_method);
+        return MyPaymentMethodModel::find($this->payment_method);
     }
 
     /**
@@ -200,13 +202,13 @@ class MyOrderModel extends Model
     public function getEarnings()
     {
         $earnings = 0;
-        $details = OrderDetailModel::where('order', $this->id)->get();
+        $details = MyOrderDetailModel::where('order', $this->id)->get();
         foreach ($details as $detail) {
             $earnings = $earnings + $detail->franchise_earning;
         }
         $discounts = 0;
-        if (OrderDiscountModel::where('order', $this->id)->exists()) {
-            $voucher = OrderDiscountModel::where('order', $this->id)->first();
+        if (MyOrderDiscountModel::where('order', $this->id)->exists()) {
+            $voucher = MyOrderDiscountModel::where('order', $this->id)->first();
             $discounts = $voucher->discount_value;
         }
         $earnings = $earnings - $this->shipping_costs_franchise - $discounts;
@@ -224,13 +226,8 @@ class MyOrderModel extends Model
     {
         if (!empty($this->address_country)) {
             $total = 0;
-            if (RegionModel::where('name', $this->address_province)->where('country', $this->address_country)->count() == 1) {
-                $region = RegionModel::where('name', $this->address_province)->where('country', $this->address_country)->first();
-                $shippingFee = ShippingFeeModel::find($region->shipping_fee);
-            } else {
-                $country = CountryModel::where('code', $this->address_country)->first();
-                $shippingFee = ShippingFeeModel::find($country->shipping_fee);
-            }
+            $country = MyCountryModel::where('code', $this->address_country)->first();
+            $shippingFee = MyShippingFeesModel::find($country->shipping_fee);
             $total = $this->getShippingPrice($shippingFee, $this->weight);
             if ($this->hasDropshipping()) {
                 $total = $total + $this->getDropshippingPrice();
@@ -289,7 +286,7 @@ class MyOrderModel extends Model
             'address_town' => $this->address_town,
             'address_province' => $this->address_province,
             'address_postal_code' => $this->address_postal_code,
-            'address_country' => CountryModel::where('code', $this->address_country)->first(),
+            'address_country' => MyCountryModel::where('code', $this->address_country)->first(),
         ];
     }
 
@@ -301,7 +298,7 @@ class MyOrderModel extends Model
      * @param ShippingFeeModel $shippingFee
      * @return void
      */
-    public function getShippingPrice(ShippingFeeModel $shippingFee, $weight)
+    public function getShippingPrice(MyShippingFeesModel $shippingFee, $weight)
     {
         switch (true) {
             case $weight < 2:
@@ -398,7 +395,7 @@ class MyOrderModel extends Model
      */
     public function countProducts()
     {
-        return OrderDetailModel::where('order', $this->id)->count();
+        return MyOrderDetailModel::where('order', $this->id)->count();
     }
 
     /**
@@ -422,7 +419,7 @@ class MyOrderModel extends Model
      */
     public function listProducts()
     {
-        return OrderDetailModel::where('order', $this->id)->get();
+        return MyOrderDetailModel::where('order', $this->id)->get();
     }
 
     /**
@@ -434,7 +431,7 @@ class MyOrderModel extends Model
      */
     public function getDiscountCoupon()
     {
-        return OrderDiscountModel::where('order', $this->id)->where('type', 1)->first();
+        return MyOrderDiscountModel::where('order', $this->id)->where('type', 1)->first();
     }
 
     /**
@@ -446,19 +443,7 @@ class MyOrderModel extends Model
      */
     public function getOthersDiscounts()
     {
-        return OrderDiscountModel::where('order', $this->id)->where('type', '!=', 1)->get();
-    }
-
-    /**
-     * Método para obtener el listado de estados de un pedido
-     *
-     * @since 3.0.0
-     * @author David Cortés <david@devuelving.com>
-     * @return void
-     */
-    public function getOrderShipmentStatus()
-    {
-        return OrderShipmentStatusModel::where('order', $this->id)->get();
+        return MyOrderDiscountModel::where('order', $this->id)->where('type', '!=', 1)->get();
     }
 
     /**
@@ -469,7 +454,7 @@ class MyOrderModel extends Model
      */
     public function checkProviderOrder($provider)
     {
-        $order_lines = OrderDetailModel::where('order', $this->id)->get();
+        $order_lines = MyOrderDetailModel::where('order', $this->id)->get();
         foreach ($order_lines as $order_line) {
             $product = ProductModel::find($order_line->product);
             if ($product->getProvider()->id == $provider) {
