@@ -265,6 +265,9 @@ class OrderModel extends Model
      */
     public function getFreeShipping()
     {
+        if(session('priceCost') == 1){
+            return false;
+        }
         $product_total = $this->totalAmount();
         $free_shippings = FranchiseCustomModel::where('franchise', $this->franchise)->where('var', 'free_shipping')->first();
         if ($free_shippings){
