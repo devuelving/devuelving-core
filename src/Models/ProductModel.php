@@ -563,7 +563,21 @@ class ProductModel extends Model
             return true;
         }
     }
-
+    /**
+     * Función para comprobar si el producto se envia a Canarias
+     *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @return void
+     */
+    public function checkCanarias()
+    {
+        if ($this->shipping_canarias == 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     /**
      * Comprueba si el producto esta en promociones por defecto
      *
