@@ -37,4 +37,18 @@ class FranchiseFundsModel extends Model
     protected $hidden = [
         'id', 'created_at', 'updated_at',
     ];
+
+    /**
+     * Returns available funds for a given Franchise
+     *
+     * @param int $franchise
+     * @return void
+     */
+    public static function getFranchiseFunds($franchise)
+    {
+        $totalfunds = FranchiseFundsModel::where('franchise', $franchise)->where('type', 1)->where('status', 2)->sum('amount');
+        $used = FranchiseFundsModel::where('franchise', $franchise)->where('type', 2)->where('status', 2)->sum('amount');
+        $reinbursements = FranchiseFundsModel::where('franchise', $franchise)->where('type', 3)->where('status', 2)->sum('amount');
+        return $totalfunds - $used + $reinbursements;
+    }
 }
