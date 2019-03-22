@@ -26,7 +26,7 @@ class FranchiseFundsModel extends Model
      * @var array
      */
     protected $fillable = [
-        'amount', 'status', 'type', 'franchise', 'payment_id',
+        'amount', 'status', 'type', 'concept', 'franchise', 'payment_id',
     ];
 
     /**
