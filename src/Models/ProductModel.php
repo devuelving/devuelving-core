@@ -928,7 +928,7 @@ class ProductModel extends Model
      * @author Aaron Bujalance <aaron@devuelving.com>
      * @return boolean
      */
-    public function getStock()
+    public function getStock($order = 0)
     {
         if (!$this->unavailable && !$this->discontinued) {
             if ($this->stock_type == 1) {
@@ -942,6 +942,7 @@ class ProductModel extends Model
                 $date = Carbon::now()->subDays(2)->toDateString();
                 $reserved = OrderDetailModel::join('orders', 'order_details.order', '=', 'orders.id')
                 ->where('product', $this->id)
+                ->where('order', '!=', $order)
                 ->whereIn('orders.status', [1,2]);
                 $reserved->where(function ($query) use ($date) { 
                     $query->where('orders.payment_method', '!=', 6);
