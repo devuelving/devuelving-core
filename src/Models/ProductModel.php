@@ -943,10 +943,10 @@ class ProductModel extends Model
                 $reserved = OrderDetailModel::join('orders', 'order_details.order', '=', 'orders.id')
                 ->where('product', $this->id)
                 ->where('order', '!=', $order)
+                ->whereDate('orders.created_at', '>=', $date,' and')
                 ->whereIn('orders.status', [1,2]);
-                $reserved->where(function ($query) use ($date) { 
+                $reserved->where(function ($query) use ($date) {
                     $query->where('orders.payment_method', '!=', 6);
-                    $query->orWhereDate('orders.created_at', 'LIKE', '>', $date);
                     $query->orWhereNotNull('orders.payment_date');
                     $query->orWhere('orders.status', 2);
                 });
