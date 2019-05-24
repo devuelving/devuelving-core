@@ -4,21 +4,21 @@ namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
 
-class OrderDiscountModel extends Model
+class MyShippingFeesModel extends Model
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'order_discounts';
+    protected $table = 'my_shop_shipping_fees';
 
     /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
-    public $timestamps = true;
+    public $timestamps = false;
 
     /**
      * The attributes that are mass assignable.
@@ -26,7 +26,7 @@ class OrderDiscountModel extends Model
      * @var array
      */
     protected $fillable = [
-        'order', 'type', 'discount_voucher_data', 'discount_value',
+        'id', 'franchise', 'name', 'rate_2', 'rate_3', 'rate_5', 'rate_7', 'rate_10', 'rate_15', 'rate_20', 'rate_30', 'rate_40'
     ];
 
     /**

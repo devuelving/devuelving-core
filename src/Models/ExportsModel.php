@@ -2,6 +2,7 @@
 
 namespace devuelving\core;
 
+use devuelving\core\TaxModel;
 use devuelving\core\CategoryModel;
 use Illuminate\Database\Eloquent\Model;
 
@@ -40,8 +41,10 @@ class ExportsModel extends Model
     ];
 
     /**
-     * FUnción para obtener los filtros
+     * Función para obtener los filtros
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getFilters()
@@ -54,16 +57,15 @@ class ExportsModel extends Model
                 $category = CategoryModel::find($filters['category']);
                 $category = $category->name;
             }
-            if ($filters['iva'] == 0) {
-                $iva = 'Todos los tipos de IVA';
+            if ($filters['tax'] == 0) {
+                $tax = 'Todos los tipos de IVA';
             } else {
-                $iva = Tax::find($filters['iva']);
-                $iva = $iva->name;
+                $tax = TaxModel::find($filters['tax']);
+                $tax = $tax->name;
             }
             return [
+                'tax' => $tax,
                 'category' => $category,
-                'iva' => $iva,
-                'promotions' => $filters['promotions'],
             ];
         } else {
             return null;

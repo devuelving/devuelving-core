@@ -33,7 +33,7 @@ class FranchiseModel extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'status', 'agent', 'name', 'domain', 'domain_provider', 'company_type', 'start', 'irpf', 'bank_account', 'options'
+        'code', 'status', 'agent', 'name', 'domain', 'domain_status', 'domain_provider', 'company_type', 'start', 'irpf', 'bank_account', 'options', 'type'
     ];
 
     /**
@@ -46,8 +46,46 @@ class FranchiseModel extends Model
     ];
 
     /**
+     * Método para obtener el logo de la franquicia
+     *
+     * @return void
+     */
+    public static function getLogo()
+    {
+        try {
+            $franchise = new FranchiseModel();
+            if ($franchise->getCustom('logo') != null) {
+                return config('app.cdn.url') . $franchise->getCustom('logo');
+            }
+            return asset('images/app/brand/logo.png');
+        } catch (\Exception $e) {
+            return asset('images/app/brand/logo.png');
+        }
+    }
+
+    /**
+     * Método para obtener el icono de la franquicia
+     *
+     * @return void
+     */
+    public static function getIcon()
+    {
+        try {
+            $franchise = new FranchiseModel();
+            if ($franchise->getCustom('icon') != null) {
+                return config('app.cdn.url') . $franchise->getCustom('icon');
+            }
+            return asset('images/app/brand/icon.png');
+        } catch (\Exception $e) {
+            return asset('images/app/brand/icon.png');
+        }
+    }
+
+    /**
      * Método para obtener el dominio de la franquicia actual
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public static function getDomain()
@@ -58,38 +96,48 @@ class FranchiseModel extends Model
     }
 
     /**
-     * Método para obtener la franquicia por el dominio
+     * Método para obtener la franquicia por el dominio o usuario
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public static function getFranchise()
     {
-        return FranchiseModel::where('domain', FranchiseModel::getDomain())->first();
+        if (!empty(auth()->user()->franchise)) {
+            return FranchiseModel::find(auth()->user()->franchise);
+        } else if ($franchise = FranchiseModel::where('domain', FranchiseModel::getDomain())->first()) {
+            return $franchise;
+        } else {
+            return FranchiseModel::where('code', str_replace('.tutienda.com.es', '', FranchiseModel::getDomain()))->first();
+        }
     }
 
     /**
-     * Función para obtener la lista de clientes de la franquicia
+     * Metodo para obtener al franquiciado del dominio
      *
+     * @since 3.0.0
+     * @author Aaron <aaron@devuelving.com>
      * @return void
      */
-    public function countClients()
+    public static function getFranchiseContactData($franchise = NULL) 
     {
-        $clients = CustomerModel::where('franchise', $this->id)->get();
-        return count($clients) - 1;
+        if(!$franchise) {
+            $franchise = FranchiseModel::getFranchise()->id;
+        }
+        return FranchiseContactDataModel::where('franchise', $franchise)->first();
     }
 
     /**
      * Función para obtener datos de la franquicia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public static function get($data = null)
     {
-        if (!empty(auth()->user()->franchise)) {
-            $id = auth()->user()->franchise;
-        } else {
-            $id = FranchiseModel::getFranchise()->id;
-        }
+        $id = FranchiseModel::getFranchise()->id;
         if ($data) {
             try {
                 $franchise = FranchiseModel::find($id);
@@ -103,8 +151,23 @@ class FranchiseModel extends Model
     }
 
     /**
+     * Función para obtener la lista de clientes de la franquicia
+     *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @return void
+     */
+    public function countClients()
+    {
+        $clients = CustomerModel::where('franchise', $this->id)->get();
+        return count($clients) - 1;
+    }
+
+    /**
      * Función para obtener las variables perosnalizadas de la franquicia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getCustom($data = null)
@@ -122,10 +185,35 @@ class FranchiseModel extends Model
             return null;
         }
     }
+    
+    /**
+     * Método para obtener variables customizadas de la franquicia
+     *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @param string $var
+     * @param string $default
+     * @return void
+     */
+    public static function custom($var, $default = null)
+    {
+        try {
+            $franchise = new FranchiseModel();
+            if ($franchise->getCustom($var) != null) {
+                return $franchise->getCustom($var);
+            } else {
+                return $default;
+            }
+        } catch (\Exception $e) {
+            return $default;
+        }
+    }
 
     /**
      * Función para obtener las citas telefonicas de la franquicia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param string $type
      * @param date $date
      * @param string $date

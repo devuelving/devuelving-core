@@ -4,14 +4,14 @@ namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
 
-class OrderDiscountModel extends Model
+class HelpArticlesModel extends Model
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'order_discounts';
+    protected $table = 'help_articles';
 
     /**
      * Indicates if the model should be timestamped.
@@ -26,7 +26,7 @@ class OrderDiscountModel extends Model
      * @var array
      */
     protected $fillable = [
-        'order', 'type', 'discount_voucher_data', 'discount_value',
+        'name', 'text', 'category',
     ];
 
     /**
@@ -35,6 +35,6 @@ class OrderDiscountModel extends Model
      * @var array
      */
     protected $hidden = [
-        'created_at', 'updated_at',
+        'id', 'created_at', 'updated_at',
     ];
 }

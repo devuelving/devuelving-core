@@ -2,23 +2,19 @@
 
 namespace devuelving\core;
 
+use devuelving\core\CategoryCustomModel;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
-class OrderDiscountModel extends Model
+class CategoryCustomModel extends Model
 {
+
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'order_discounts';
-
-    /**
-     * Indicates if the model should be timestamped.
-     *
-     * @var bool
-     */
-    public $timestamps = true;
+    protected $table = 'category_custom';
 
     /**
      * The attributes that are mass assignable.
@@ -26,7 +22,7 @@ class OrderDiscountModel extends Model
      * @var array
      */
     protected $fillable = [
-        'order', 'type', 'discount_voucher_data', 'discount_value',
+        'category', 'name', 'description', 'meta_title', 'meta_description', 'meta_keywords', 'franchise',
     ];
 
     /**
@@ -35,6 +31,6 @@ class OrderDiscountModel extends Model
      * @var array
      */
     protected $hidden = [
-        'created_at', 'updated_at',
+        'id', 
     ];
 }

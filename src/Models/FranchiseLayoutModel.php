@@ -2,12 +2,11 @@
 
 namespace devuelving\core;
 
-use devuelving\core\ProductModel;
-use devuelving\core\ProviderModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use devuelving\core\FranchiseLayoutHistoryModel;
 
-class ProductProviderModel extends Model
+class FranchiseLayoutModel extends Model
 {
     use SoftDeletes;
 
@@ -16,7 +15,7 @@ class ProductProviderModel extends Model
      *
      * @var string
      */
-    protected $table = 'product_provider';
+    protected $table = 'franchise_layouts';
 
     /**
      * Indicates if the model should be timestamped.
@@ -31,7 +30,7 @@ class ProductProviderModel extends Model
      * @var array
      */
     protected $fillable = [
-        'product', 'ean', 'reference', 'cost_price', 'provider', 'stock',
+        'id', 'franchise', 'type', 'name', 'content'
     ];
 
     /**
@@ -52,26 +51,38 @@ class ProductProviderModel extends Model
     {
         parent::boot();
 
-        self::created(function ($productProvider) {
-            $product = ProductModel::find($productProvider->product);
-            $product->updatePrice();
-        });
-
-        self::updated(function ($productProvider) {
-            $product = ProductModel::find($productProvider->product);
-            $product->updatePrice();
+        self::updating(function ($franchiseLayout) {
+            $franchiseLayoutHistory = new FranchiseLayoutHistoryModel();
+            $franchiseLayoutHistory->makeBackup($franchiseLayout->id, auth()->user());
         });
     }
 
     /**
-     * Obtiene el proveedor
+     * Transform the resource into an array.
+     *
+     * @param  \Illuminate\Http\Request
+     * @return array
+     */
+    public function toArray()
+    {
+        return [
+            'id' => $this->id,
+            'franchise' => $this->franchise,
+            'type' => $this->type,
+            'name' => $this->name,
+            'content' => $this->getContent()
+        ];
+    }
+
+    /**
+     * Decodifica el contenido del layout en json
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @return void
      */
-    public function getProvider()
+    public function getContent()
     {
-        return ProviderModel::find($this->provider);
+        return json_decode($this->content);
     }
 }

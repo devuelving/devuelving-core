@@ -2,21 +2,20 @@
 
 namespace devuelving\core;
 
+use devuelving\core\FranchiseModel;
 use Illuminate\Database\Eloquent\Model;
 use Cviebrock\EloquentSluggable\Sluggable;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class BrandModel extends Model
+class PageModel extends Model
 {
     use Sluggable;
-    use SoftDeletes;
-
+    
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'brand';
+    protected $table = 'pages';
 
     /**
      * Indicates if the model should be timestamped.
@@ -31,7 +30,7 @@ class BrandModel extends Model
      * @var array
      */
     protected $fillable = [
-        'slug', 'name', 'image', 'franchise',
+        'slug', 'name', 'content', 'franchise'
     ];
 
     /**
@@ -58,14 +57,14 @@ class BrandModel extends Model
     }
 
     /**
-     * Función para imprimir un banner de la marca
+     * Función para reemplazar los shorcodes del contenido
      *
-     * @since 3.0.0
-     * @author David Cortés <david@devuelving.com>
      * @return void
      */
-    public function print()
+    public function getContent()
     {
-        return view('modules.catalog.brand');
+        $return = $this->content;
+        $return = str_replace('[nombre_tienda]', strtoupper(FranchiseModel::get('name')), $return);
+        return $return;
     }
 }

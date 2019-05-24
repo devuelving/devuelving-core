@@ -62,6 +62,8 @@ class CategoryModel extends Model
     /**
      * Función para obtener un listado con las categorías
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param int $parent
      * @return void
      */
@@ -90,6 +92,8 @@ class CategoryModel extends Model
     /**
      * Función para obtener un listado con las categorías
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param int $parent
      * @return void
      */
@@ -118,6 +122,8 @@ class CategoryModel extends Model
     /**
      * Método para devolver la imagen de la categoria
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getImage()
@@ -135,6 +141,8 @@ class CategoryModel extends Model
     /**
      * Método para devolver la categoria padre
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getParent()
@@ -145,6 +153,8 @@ class CategoryModel extends Model
     /**
      * Función para obtener el nombre de la categoria con todas las padres
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param int $parent
      * @param string $icon
      * @return void
@@ -160,6 +170,8 @@ class CategoryModel extends Model
     /**
      * Función para imprimir un banner de la categoria
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function print()

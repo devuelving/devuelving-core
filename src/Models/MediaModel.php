@@ -3,12 +3,10 @@
 namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
-use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class BrandModel extends Model
+class MediaModel extends Model
 {
-    use Sluggable;
     use SoftDeletes;
 
     /**
@@ -16,7 +14,7 @@ class BrandModel extends Model
      *
      * @var string
      */
-    protected $table = 'brand';
+    protected $table = 'media';
 
     /**
      * Indicates if the model should be timestamped.
@@ -31,7 +29,7 @@ class BrandModel extends Model
      * @var array
      */
     protected $fillable = [
-        'slug', 'name', 'image', 'franchise',
+        'name', 'realname', 'folder', 'type', 'size', 'franchise'
     ];
 
     /**
@@ -40,32 +38,16 @@ class BrandModel extends Model
      * @var array
      */
     protected $hidden = [
-        'created_at', 'updated_at',
+        'created_at', 'updated_at', 'deleted_at',
     ];
 
     /**
-     * Return the sluggable configuration array for this model.
+     * Obtiene el tamapo del fichero en un formato correcto
      *
-     * @return array
-     */
-    public function sluggable()
-    {
-        return [
-            'slug' => [
-                'source' => 'name'
-            ]
-        ];
-    }
-
-    /**
-     * Función para imprimir un banner de la marca
-     *
-     * @since 3.0.0
-     * @author David Cortés <david@devuelving.com>
      * @return void
      */
-    public function print()
+    public function getSize()
     {
-        return view('modules.catalog.brand');
+        return \ByteUnits\bytes($this->size)->format();
     }
 }

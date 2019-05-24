@@ -10,9 +10,12 @@ use devuelving\core\ProductCustom;
 use devuelving\core\ProviderModel;
 use Illuminate\Support\Facades\DB;
 use devuelving\core\FranchiseModel;
+use devuelving\core\OrderDetailModel;
 use devuelving\core\ProductStockModel;
 use devuelving\core\ProductCustomModel;
 use Illuminate\Database\Eloquent\Model;
+use devuelving\core\DiscountTargetsModel;
+use devuelving\core\FranchiseCustomModel;
 use devuelving\core\ProductCategoryModel;
 use devuelving\core\ProductProviderModel;
 use Cviebrock\EloquentSluggable\Sluggable;
@@ -43,7 +46,7 @@ class ProductModel extends Model
      * @var array
      */
     protected $fillable = [
-        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'transport', 'weight', 'volume', 'tax', 'brand', 'tags', 'variations', 'franchise', 'promotion', 'free_shipping', 'double_unit', 'discount_50', 'discount_progressive', 'units_limit', 'liquidation', 'unavailable', 'discontinued', 'highlight', 'price_edit', 'shipping_canarias', 'cost_price', 'recommended_price', 'default_price', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords',
+        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'transport', 'weight', 'volume', 'tax', 'brand', 'tags', 'variations', 'franchise', 'promotion', 'free_shipping', 'double_unit', 'units_limit', 'liquidation', 'unavailable', 'discontinued', 'external_sale', 'highlight', 'price_edit', 'shipping_canarias', 'cost_price', 'recommended_price', 'default_price', 'profit_margin', 'franchise_profit_margin', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords',
     ];
 
     /**
@@ -70,8 +73,58 @@ class ProductModel extends Model
     }
 
     /**
+     * The "booting" method of the model.
+     *
+     * @return void
+     * @author Aaron <aaron@devuelving.com>
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        self::updating(function ($product) {
+            // We check if the product belongs to a franchise
+            if ($product->franchise === NULL) {
+                // We check if the status of the product has changed
+                if ($product->isDirty('discontinued')){
+                    // To prevent both clutter in the .rss and the database, we will only use one register per product
+                    $productStatusUpdate = ProductStatusUpdatesModel::where('product', $product->id)->first();
+                    if(!$productStatusUpdate) {
+                        $productStatusUpdate = new ProductStatusUpdatesModel();
+                    }
+                    $productStatusUpdate->product = $product->id;
+                    // Depending on the change, we inform the user one way or another through the .rss feed
+                    if ($product->discontinued > 0){
+                        $productStatusUpdate->status = "El producto ha sido descatalogado";
+                    } else {
+                        $productStatusUpdate->status = "Producto añadido al catalogo de nuevo";
+                    }
+                    $productStatusUpdate->save();
+                    // We only let the users know that the status have changed if the product is not discontinued
+                } else if ($product->isDirty('unavailable') && $product->discontinued == 0){
+                    // To prevent both clutter in the .rss and the database, we will only use one register per product
+                    $productStatusUpdate = ProductStatusUpdatesModel::where('product', $product->id)->first();
+                    if(!$productStatusUpdate) {
+                        $productStatusUpdate = new ProductStatusUpdatesModel();
+                    }
+                    $productStatusUpdate->product = $product->id;
+                    // Depending on the change, we inform the user one way or another through the .rss feed
+                    if ($product->unavailable > 0){
+                        $productStatusUpdate->status = "Stock agotado";
+                    } else {
+                        $productStatusUpdate->status = "Producto en stock de nuevo";
+                    }
+                    $productStatusUpdate->save();
+                }
+            }
+        });
+    }
+
+    /**
      * Actualiza los precios del producto en la tabla de productos
      *
+     * @since 3.0.0
+     * @author Aaron <aaron@devuelving.com>
      * @return void
      */
     public function updatePrice()
@@ -87,35 +140,63 @@ class ProductModel extends Model
         // Obtenemos el proveedor del producto
         $provider = $productProvider->getProvider();
         // Obtenemos el precio de coste y le sumamos el margen de beneficio del proveedor
-        $cost_price = $productProvider->cost_price + ($productProvider->cost_price * ($provider->profit_margin / 100));
+        $costPrice = $productProvider->cost_price + ($productProvider->cost_price * ($provider->profit_margin / 100));
+        if ($provider->id == 5 || $provider->id == 6) {
+            // Obtenemos el precio recomendado y le restamos el 10% que es el precio minimo de venta
+            $default_price = $this->getRecommendedPrice() / 1.10;
+        } else {
+            // Obtenemos el precio de coste y le sumamos el beneficio del franquiciado por defecto
+            $default_price = ($costPrice + ($productProvider->cost_price * ($provider->franchise_profit_margin / 100))) * ((TaxModel::find($this->tax)->value / 100) + 1);
+        }
         // Actualizamos los precios de los productos
-        DB::table($this->table)->where('id', $this->id)->update([
-            'cost_price' => $cost_price,
-            'default_price' => $cost_price * ((rand(10, 25) / 100) + 1),
-        ]);
+        $product = ProductModel::find($this->id);
+        $oldCostPrice = $product->cost_price / (1 + $provider->profit_margin / 100);
+        $product->cost_price = $costPrice;
+        $product->default_price = $default_price;
+        $product->save();
+        $newCostPrice = $product->cost_price / (1 + $provider->profit_margin / 100);
+        // Comprobación de que el precio no es el mismo
+        if (number_format($newCostPrice, 1) != number_format($oldCostPrice, 1)) {
+            // Añadimos el registro de la nueva actualización del precio
+            $this->addUpdatePrice($newCostPrice, $oldCostPrice);
+        }
     }
 
     /**
      * Añade una actualización del precio del producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @param float $costPrice
+     * @param float $oldCostPrice
      * @return void
      */
-    public function addUpdatePrice()
+    public function addUpdatePrice($costPrice = 0, $oldCostPrice = 0)
     {
         // Obtenemos el anterior precio del producto
         try {
             $productPriceUpdate = DB::table('product_price_update')->where('product', $this->id)->orderBy('id', 'desc')->first();
-            $oldPrice = $productPriceUpdate->price;
+            $oldType = $productPriceUpdate->type;
         } catch (\Exception $e) {
             // report($e);
-            $oldPrice = 0;
+            $oldType = 1;
+        }
+        // Obtenemos el tipo de actualización del precio del producto
+        if ($oldCostPrice == 0 || ($oldType == 3 && ($this->unavailable == 0 || $this->discontinued == 0))) {
+            $type = 1; // Nuevo producto
+        } else if ($this->unavailable == 1 || $this->discontinued == 1) {
+            $type = 3; // Eliminación producto
+        } else {
+            $type = 2; // Actualización del precio
         }
         // Comprobación de que el precio no es el mismo
-        if ($this->cost_price != $oldPrice) {
+        if (number_format($costPrice, 1) != number_format($oldCostPrice, 1)) {
             // Se añade un nuevo registro con el nuevo precio del producto
             DB::table('product_price_update')->insert([
                 'product' => $this->id,
-                'price' => $this->cost_price,
+                'type' => $type,
+                'new_price_cost' => $costPrice,
+                'old_price_cost' => $oldCostPrice,
                 'created_at' => Carbon::now()->toDateTimeString(),
                 'updated_at' => Carbon::now()->toDateTimeString()
             ]);
@@ -125,6 +206,8 @@ class ProductModel extends Model
     /**
      * Función para obtener los datos de un producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param string $data
      * @return void
      */
@@ -136,6 +219,8 @@ class ProductModel extends Model
     /**
      * Función para obtener todas las imagenes de un producto ordenadas por preferencia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getImages()
@@ -154,6 +239,8 @@ class ProductModel extends Model
     /**
      * Función para obtener la imagen destacada
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getDefaultImage()
@@ -164,6 +251,8 @@ class ProductModel extends Model
     /**
      * Función para obtener los ean del producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getEan()
@@ -179,6 +268,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el ean en un string
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function eanToString()
@@ -198,6 +289,8 @@ class ProductModel extends Model
     /**
      * Función para obtener la marca
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getBrand()
@@ -208,6 +301,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el valor del iva de este producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getTax()
@@ -230,6 +325,8 @@ class ProductModel extends Model
     /**
      * Función para obtene el producto proveedor
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param boolean $cheapest
      * @return void
      */
@@ -270,6 +367,8 @@ class ProductModel extends Model
     /**
      * Función para obtener datos de producto proveedor
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param string $data
      * @param boolean $cheapest
      * @return void
@@ -286,23 +385,67 @@ class ProductModel extends Model
     }
 
     /**
-     * Función para obtener el precio con el margen de beneficio del proveedor
+     * Función para obtener el precio de coste
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param boolean $tax
      * @return void
      */
     public function getPublicPriceCost($tax = true)
     {
         if ($tax) {
-           return $this->cost_price * ($this->getTax() + 1);
+            return ($this->cost_price * $this->getDiscountTarget()) * ($this->getTax() + 1);
         } else {
-            return $this->cost_price;
+            return ($this->cost_price * $this->getDiscountTarget());
         }
+    }
+
+    /**
+     * Función para comprobar si tienen activos algún descuento y aplicarlo al precio de coste
+     *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @return void
+     */
+    public function getDiscountTarget()
+    {
+        $discount = 1;
+        if (FranchiseModel::getFranchise()) {
+            try {
+                // Comprobamos si la franquicia tiene los descuentos activados
+                if (FranchiseModel::getFranchise()->getCustom('discount') != null) {
+                    $franchiseDiscounts = json_decode(FranchiseModel::getFranchise()->getCustom('discount'));
+                    // Recorremos todos los descuentos de la franquicia
+                    foreach ($franchiseDiscounts as $FranchiseDiscountTarget) {
+                        // Obtenemos los datos de los descuentos
+                        $discountTarget = DiscountTargetsModel::find($FranchiseDiscountTarget);
+                        $target = json_decode($discountTarget->target);
+                        // Comprobamos si el descuento es de tipo 1, lo que significa que el id del producto esta en los datos del descuento
+                        if ($discountTarget->type == 1) {
+                            if (in_array($this->id, $target)) {
+                                $discount = 1 - ($discountTarget->discount/100);
+                            }
+                        // Comprobamos si el descuento es de tipo 2, lo que significa que se aplica un descuento por proveedor
+                        } else if ($discountTarget->type == 2) {
+                            if (in_array($this->getProvider()->id, $target)) {
+                                $discount = 1 - ($discountTarget->discount/100);
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                report($e);
+            }
+        }
+        return $discount;
     }
 
     /**
      * Función para obtener el precio de coste sin IVA
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getPublicPriceCostWithoutIva()
@@ -313,12 +456,14 @@ class ProductModel extends Model
     /**
      * Función para obtener el precio sin IVA
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getPriceWithoutIva()
     {
         if ($this->getPrice() != null) {
-            return $this->getPrice() / ($this->getTax() + 1);
+            return $this->getPrice();
         }
         return null;
     }
@@ -326,6 +471,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el precio con el margen de beneficio del proveedor anterior al cambio
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getOldPublicPriceCost()
@@ -337,6 +484,8 @@ class ProductModel extends Model
     /**
      * Función para obtener la fecha de la ultima actualización de los precios de un producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getLastPriceUpdate()
@@ -351,6 +500,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el precio recomendado
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getRecommendedPrice()
@@ -361,6 +512,8 @@ class ProductModel extends Model
     /**
      * Función para comprobar si tiene un precio customizado
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function checkCustomPrice()
@@ -376,6 +529,8 @@ class ProductModel extends Model
     /**
      * Función para comprobar el tipo de precio custom del precio
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function typeCustomPrice()
@@ -396,35 +551,86 @@ class ProductModel extends Model
     /**
      * Función para comprobar si el producto esta en promocion
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function checkPromotion()
     {
-        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->whereNotNull('promotion')->first();
-        if (count($productCustom) == 0) {
+        if (ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->whereNotNull('promotion')->count() == 0) {
             return false;
         } else {
             return true;
         }
     }
-
+    /**
+     * Función para comprobar si el producto se envia a Canarias
+     *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @return void
+     */
+    public function checkCanarias()
+    {
+        if ($this->shipping_canarias == 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     /**
      * Comprueba si el producto esta en promociones por defecto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function checkSuperPromo()
     {
         if ($this->promotion == 1) {
-            return false;
-        } else {
             return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Comprueba que el producto esta en liquidación
+     *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @return void
+     */
+    public function checkLiquidation()
+    {
+        if ($this->liquidation == 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Comprobamos si los productos tiene la oferta 2x1
+     *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @return void
+     */
+    public function checkDoubleUnit()
+    {
+        if ($this->double_unit == 1) {
+            return true;
+        } else {
+            return false;
         }
     }
 
     /**
      * Función para obtener el precio de venta al publico
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getPrice()
@@ -435,17 +641,19 @@ class ProductModel extends Model
             if ($productCustom->price_type == 1) {
                 $price = $productCustom->price;
             } else {
-                $price = $this->default_price + ($this->default_price * ($productCustom->price / 100));
+                $price = $this->getPublicPriceCost() * (($productCustom->price / 100) + 1);
             }
         } else {
             $price = $this->default_price;
         }
-        return $price * ($this->getTax() + 1);
+        return $price;
     }
 
     /**
      * Función para obtener las categorias del producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getCategories()
@@ -454,23 +662,25 @@ class ProductModel extends Model
     }
 
     /**
-     * FUnción para obtener el beneficio de un producto
+     * Función para obtener el beneficio de un producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getProfit()
     {
         if ($this->getPrice() != null) {
-            $publicPrice = $this->getPrice();
-            $costPrice = $this->getPublicPriceCost();
-            return ($publicPrice - $costPrice) / $costPrice;
+            return ($this->getPrice() - $this->getPublicPriceCost()) / $this->getPublicPriceCost();
         }
-        return null;
+        return 0;
     }
 
     /**
      * Función para obtener el margen beneficio real del producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param boolean $front
      * @return void
      */
@@ -487,24 +697,33 @@ class ProductModel extends Model
                 }
             }
         }
-        return null;
+        return 0;
     }
 
     /**
      * Función para obtener el descuento entre el precio de venta y el PVPR
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getPublicMarginProfit()
     {
-        $publicPrice = $this->getPrice();
-        $recommendedPrice = $this->getRecommendedPrice();
-        return round((($recommendedPrice - $publicPrice) / $publicPrice) * 100);
+        try {
+            $publicPrice = $this->getPrice();
+            $recommendedPrice = $this->getRecommendedPrice();
+            return round((($recommendedPrice - $publicPrice) / $recommendedPrice) * 100);
+        } catch (\Exception $e) {
+            // report($e);
+            return 0;
+        }
     }
 
     /**
      * Función para obtener el beneficio entre el precio de coste y el pvpr
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getFullPriceMargin()
@@ -520,6 +739,8 @@ class ProductModel extends Model
     /**
      * Función para poner la unidad customizada al producto para la franquicia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param array $options
      * @return void
      */
@@ -560,7 +781,6 @@ class ProductModel extends Model
                 }
             }
             $productCustom->save();
-            $productCustom->checkClear();
             return [
                 'status' => true,
                 'message' => 'Se ha actualizado el precio correctamente',
@@ -576,7 +796,6 @@ class ProductModel extends Model
         } else if ($options['action'] == 'promotion') {
             $productCustom->promotion = $options['promotion'];
             $productCustom->save();
-            $productCustom->checkClear();
             if ($options['promotion'] == 1) {
                 return [
                     'status' => true,
@@ -599,6 +818,8 @@ class ProductModel extends Model
     /**
      * Función para obtener el nombre del producto segun la franquicia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getName()
@@ -619,6 +840,8 @@ class ProductModel extends Model
     /**
      * Función para obtener la descripción del producto segun la franquicia
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getDescription()
@@ -639,6 +862,8 @@ class ProductModel extends Model
     /**
      * Método para obtener la descripción corta
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param integer $maxLength
      * @return void
      */
@@ -656,6 +881,8 @@ class ProductModel extends Model
     /**
      * Función para obtener las etiquetas meta personalizadas
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @param string $type
      * @return void
      */
@@ -697,19 +924,35 @@ class ProductModel extends Model
     /**
      * Devuelve stock actual, true si no mantenemos stock o false si está agotado.
      *
+     * @since 3.0.0
+     * @author Aaron Bujalance <aaron@devuelving.com>
      * @return boolean
      */
-    public function getStock()
+    public function getStock($order = 0)
     {
-        if (!$this->unavailable) {
+        if (!$this->unavailable && !$this->discontinued) {
             if ($this->stock_type == 1) {
-                $additions = ProductStockModel::where('product_stock.type', '=', 2);
-                $additions->where('product_stock.product', '=', $this->id);
-                $additions->sum('stock');
-                $subtractions = ProductStockModel::where('product_stock.type', '=', 1);
-                $subtractions->where('product_stock.product', '=', $this->id);
-                $subtractions->sum('stock');
-                return $additions - $subtractions;
+                $additions = ProductStockModel::where('product_stock.type', '=', 2)->where('product_stock.product', '=', $this->id)->sum('stock');
+                $subtractions = ProductStockModel::where('product_stock.type', '=', 1)->where('product_stock.product', '=', $this->id)->sum('stock');
+                $stock = $additions - $subtractions;
+                if ($stock < 0) $stock = 0;
+                return $stock;
+            } else if ($this->stock_type == 3) {
+                $stock = $this->getProductProvider()->stock;
+                $date = Carbon::now()->subDays(2)->toDateString();
+                $reserved = OrderDetailModel::join('orders', 'order_details.order', '=', 'orders.id')
+                ->where('product', $this->id)
+                ->where('order', '!=', $order)
+                ->whereDate('orders.created_at', '>=', $date,' and')
+                ->whereIn('orders.status', [1,2]);
+                $reserved->where(function ($query) use ($date) {
+                    $query->where('orders.payment_method', '!=', 6);
+                    $query->orWhereNotNull('orders.payment_date');
+                    $query->orWhere('orders.status', 2);
+                });
+                return $stock-($reserved->sum('order_details.units'));
+            } else if ($this->stock_type == 4) {
+                return $this->getProductProvider()->stock;
             } else {
                 return true;
             }
@@ -719,8 +962,42 @@ class ProductModel extends Model
     }
 
     /**
+     * Método para comprobar si se muestran los precios visibles
+     *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @return boolean
+     */
+    public function visiblePrice()
+    {
+        if ((boolean) FranchiseModel::custom('visible_price', false) || auth()->check()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Método para comporbar si se muetran los descuentos
+     *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
+     * @return boolean
+     */
+    public function visibleDiscounts()
+    {
+        if (((FranchiseModel::get('type') == 0) && ($this->getPublicMarginProfit() < 25)) || ((!(boolean) FranchiseModel::custom('visible_discounts', true)) || ($this->getPublicMarginProfit() < 5))) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
      * Función para imprimir un banner del producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function print()

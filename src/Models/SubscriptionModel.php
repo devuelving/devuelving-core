@@ -1,17 +1,17 @@
 <?php
 
-namespace devuelving\core;
+namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class OrderDiscountModel extends Model
+class SubscriptionModel extends Model
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'order_discounts';
+    protected $table = 'subscriptions';
 
     /**
      * Indicates if the model should be timestamped.
@@ -26,7 +26,7 @@ class OrderDiscountModel extends Model
      * @var array
      */
     protected $fillable = [
-        'order', 'type', 'discount_voucher_data', 'discount_value',
+        'code', 'name', 'description', 'price',
     ];
 
     /**

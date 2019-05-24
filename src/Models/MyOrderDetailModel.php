@@ -2,13 +2,12 @@
 
 namespace devuelving\core;
 
+use devuelving\core\ProductModel;
 use Illuminate\Database\Eloquent\Model;
-use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class BrandModel extends Model
+class MyOrderDetailModel extends Model
 {
-    use Sluggable;
     use SoftDeletes;
 
     /**
@@ -16,7 +15,7 @@ class BrandModel extends Model
      *
      * @var string
      */
-    protected $table = 'brand';
+    protected $table = 'my_shop_order_details';
 
     /**
      * Indicates if the model should be timestamped.
@@ -31,7 +30,7 @@ class BrandModel extends Model
      * @var array
      */
     protected $fillable = [
-        'slug', 'name', 'image', 'franchise',
+        'type', 'status', 'order', 'product', 'variation', 'units', 'unit_price',
     ];
 
     /**
@@ -40,32 +39,18 @@ class BrandModel extends Model
      * @var array
      */
     protected $hidden = [
-        'created_at', 'updated_at',
+        'id', 'created_at', 'updated_at', 'deleted_at',
     ];
 
     /**
-     * Return the sluggable configuration array for this model.
-     *
-     * @return array
-     */
-    public function sluggable()
-    {
-        return [
-            'slug' => [
-                'source' => 'name'
-            ]
-        ];
-    }
-
-    /**
-     * Función para imprimir un banner de la marca
+     * Función para obtener los detalles de un producto
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return Product
      */
-    public function print()
+    public function getProduct()
     {
-        return view('modules.catalog.brand');
+        return ProductModel::find($this->product);
     }
 }

@@ -41,6 +41,8 @@ class ProductCategoryModel extends Model
     /**
      * Función para obtener el producto
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getProduct()
@@ -51,6 +53,8 @@ class ProductCategoryModel extends Model
     /**
      * Función para obtener la categoria
      *
+     * @since 3.0.0
+     * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getCategory()

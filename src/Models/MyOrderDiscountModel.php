@@ -4,14 +4,14 @@ namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
 
-class OrderDiscountModel extends Model
+class MyOrderDiscountModel extends Model
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'order_discounts';
+    protected $table = 'my_shop_order_discounts';
 
     /**
      * Indicates if the model should be timestamped.

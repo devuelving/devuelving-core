@@ -6,20 +6,16 @@ class SlimModel
 {
     public static function getImages($inputName = 'slim')
     {
-
         $values = SlimModel::getPostData($inputName);
-
         // test for errors
         if ($values === false) {
             return false;
         }
-
         // determine if contains multiple input values, if is singular, put in array
         $data = [];
         if (!is_array($values)) {
             $values = [$values];
         }
-
         // handle all posted fields
         foreach ($values as $value) {
             $inputValue = SlimModel::parseInput($value);
@@ -27,7 +23,6 @@ class SlimModel
                 array_push($data, $inputValue);
             }
         }
-
         // return the data collected from the fields
         return $data;
     }
@@ -35,26 +30,21 @@ class SlimModel
     // $value should be in JSON format
     private static function parseInput($value)
     {
-
         // if no json received, exit, don't handle empty input values.
         if (empty($value)) {
             return null;
         }
-
         // If magic quotes enabled
         if (get_magic_quotes_gpc()) {
             $value = stripslashes($value);
         }
-
         // The data is posted as a JSON String so to be used it needs to be deserialized first
         $data = json_decode($value);
-
         // shortcut
         $input = null;
         $actions = null;
         $output = null;
         $meta = null;
-
         if (isset($data->input)) {
             $inputData = null;
             if (isset($data->input->image)) {
@@ -65,7 +55,6 @@ class SlimModel
                     $inputData = file_get_contents($filename);
                 }
             }
-
             $input = [
                 'data' => $inputData,
                 'name' => $data->input->name,
@@ -75,7 +64,6 @@ class SlimModel
                 'height' => $data->input->height,
             ];
         }
-
         if (isset($data->output)) {
             $outputDate = null;
             if (isset($data->output->image)) {
@@ -86,7 +74,6 @@ class SlimModel
                     $outputData = file_get_contents($filename);
                 }
             }
-
             $output = [
                 'data' => $outputData,
                 'name' => $data->output->name,
@@ -115,11 +102,9 @@ class SlimModel
                 ] : null
             ];
         }
-
         if (isset($data->meta)) {
             $meta = $data->meta;
         }
-
         // We've sanitized the base64data and will now return the clean file object
         return [
             'input' => $input,
@@ -132,31 +117,24 @@ class SlimModel
     // $path should have trailing slash
     public static function saveFile($data, $name, $path = 'tmp/', $uid = true)
     {
-
         // Add trailing slash if omitted
         if (substr($path, -1) !== '/') {
             $path .= '/';
         }
-
         // Test if directory already exists
         if (!is_dir($path)) {
             mkdir($path, 0755, true);
         }
-
         // Sanitize characters in file name
         $name = SlimModel::sanitizeFileName($name);
-
         // Let's put a unique id in front of the filename so we don't accidentally overwrite other files
         if ($uid) {
             $name = uniqid() . '_' . $name;
         }
-
         // Add name to path, we need the full path including the name to save the file
         $path = $path . $name;
-
         // store the file
         SlimModel::save($data, $path);
-
         // return the files new name and location
         return [
             'name' => $name,
@@ -214,16 +192,13 @@ class SlimModel
      */
     private static function getPostData($inputName)
     {
-
         $values = [];
-
         if (isset($_POST[$inputName])) {
             $values = $_POST[$inputName];
         } else if (isset($_FILES[$inputName])) {
             // Slim was not used to upload this file
             return false;
         }
-
         return $values;
     }
 

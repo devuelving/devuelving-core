@@ -3,12 +3,9 @@
 namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FranchiseeModel extends Model
 {
-    use SoftDeletes;
-
     /**
      * The table associated with the model.
      *
