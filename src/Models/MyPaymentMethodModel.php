@@ -26,7 +26,7 @@ class MyPaymentMethodModel extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'porcentual', 'fixed', 'iban', 'contact', 'swift'
+        'name', 'porcentual', 'fixed', 'iban', 'contact', 'swift', 'mode'
     ];
 
     /**
