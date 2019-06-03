@@ -30,7 +30,7 @@ class MyOrderDetailModel extends Model
      * @var array
      */
     protected $fillable = [
-        'type', 'status', 'order', 'product', 'variation', 'units', 'unit_price',
+        'type', 'status', 'order', 'product', 'variation', 'units', 'unit_price', 'tax', 'tax_value',
     ];
 
     /**
