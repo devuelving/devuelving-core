@@ -235,7 +235,7 @@ class OrderModel extends Model
      * @author David Cortés <david@devuelving.com>
      * @return void
      */
-    public function getShippingCosts()
+    public function getShippingCosts($excludeMeat = false)
     {
         if (!empty($this->address_country)) {
             $total = 0;
@@ -246,7 +246,12 @@ class OrderModel extends Model
                 $country = CountryModel::where('code', $this->address_country)->first();
                 $shippingFee = ShippingFeeModel::find($country->shipping_fee);
             }
+            if ($excludeMeat){
+            $total = $this->getShippingPrice($shippingFee, $this->getProductWeight(true));
+            }
+            else{
             $total = $this->getShippingPrice($shippingFee, $this->weight);
+            }
             if ($this->hasDropshipping()) {
                 $total = $total + $this->getDropshippingPrice();
             }
@@ -515,5 +520,23 @@ class OrderModel extends Model
             }
         }
         return false;
+    }
+    
+    /**
+     * Gets the weight from de order product detail
+     *
+     * @param bool $excludeMeat
+     * @return void
+     */
+    public function getProductWeight($excludeMeat = false)
+    {
+        $weight = 0;
+        $products = $this->listProducts();
+        foreach ($products as $product) {
+            if (!($product->getProduct()->getProvider()->id == 11 && $excludeMeat = true)) {
+                $weight = $weight + $product->getProduct()->weight;
+            }
+        }
+        return $weight;
     }
 }
