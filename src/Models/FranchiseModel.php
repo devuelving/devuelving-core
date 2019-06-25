@@ -56,7 +56,12 @@ class FranchiseModel extends Model
             $franchise = new FranchiseModel();
             if ($franchise->getCustom('logo') != null) {
                 // return config('app.cdn.url') . $franchise->getCustom('logo');
-                return '/cdn/' . $franchise->getCustom('logo');
+                // return '/cdn/' . $franchise->getCustom('logo');
+                if (Request::secure()){
+                    return "https://" . $franchise->getDomain() .  '/cdn/'  . $franchise->getCustom('logo');;
+                } else {
+                    return "http://" . $franchise->getDomain() .  '/cdn/' . $franchise->getCustom('logo');;
+                }
             }
             return asset('images/app/brand/logo.png');
         } catch (\Exception $e) {
@@ -75,7 +80,12 @@ class FranchiseModel extends Model
             $franchise = new FranchiseModel();
             if ($franchise->getCustom('icon') != null) {
                 // return config('app.cdn.url') . $franchise->getCustom('icon');
-                return '/cdn/' . $franchise->getCustom('icon');
+                // return '/cdn/' . $franchise->getCustom('icon');
+                if (Request::secure()){
+                    return "https://" . $franchise->getDomain() .  '/cdn/'  . $franchise->getCustom('icon');;
+                } else {
+                    return "http://" . $franchise->getDomain() .  '/cdn/' . $franchise->getCustom('icon');;
+                }
             }
             return asset('images/app/brand/icon.png');
         } catch (\Exception $e) {
