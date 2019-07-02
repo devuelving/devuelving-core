@@ -247,10 +247,12 @@ class OrderModel extends Model
                 $shippingFee = ShippingFeeModel::find($country->shipping_fee);
             }
             if ($excludeMeat){
-            $total = $this->getShippingPrice($shippingFee, $this->getProductWeight(true));
+            // $total = $this->getShippingPrice($shippingFee, $this->getProductWeight(true));
+            $total = $this->getShippingPrice($shippingFee, $this->getShippingWeight(true));
             }
             else{
-            $total = $this->getShippingPrice($shippingFee, $this->weight);
+            // $total = $this->getShippingPrice($shippingFee, $this->weight);
+            $total = $this->getShippingPrice($shippingFee, $this->getShippingWeight());
             }
             if ($this->hasDropshipping()) {
                 $total = $total + $this->getDropshippingPrice();
@@ -538,5 +540,29 @@ class OrderModel extends Model
             }
         }
         return $weight;
+    }
+
+     /**
+     * Rutina per obtenir el pes o el volum (el mes gran)
+     *
+     * @param bool $excludeMeat
+     * @return void
+     */
+    public function getShippingWeight($excludeMeat = false)
+    {
+        $weight = 0;
+        $volume = 0;
+        $products = $this->listProducts();
+        foreach ($products as $product) {
+            if (!($product->getProduct()->getProvider()->id == 11 && $excludeMeat = true)) {
+                $weight = $weight + $product->getProduct()->weight * $product->units;
+                $volume = $volume + $product->getProduct()->volume * $product->units;
+            }
+        }
+        if($weight > $volume) {
+            return $weight;
+        }else {
+            return $volume;
+        }
     }
 }

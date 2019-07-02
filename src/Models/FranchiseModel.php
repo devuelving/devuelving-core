@@ -50,14 +50,20 @@ class FranchiseModel extends Model
      *
      * @return void
      */
-    public static function getLogo()
+    public static function getLogo($redirect = true)
     {
         try {
             $franchise = new FranchiseModel();
             if ($franchise->getCustom('logo') != null) {
                 // return config('app.cdn.url') . $franchise->getCustom('logo');
                 // return '/cdn/' . $franchise->getCustom('logo');
+                if ($redirect){
                 return route('index') . '/cdn/' . $franchise->getCustom('logo');
+                }
+                else
+                {
+                return config('app.cdn.url') . $franchise->getCustom('logo');
+                }
             } 
             return asset('images/app/brand/logo.png');
         } catch (\Exception $e) {
