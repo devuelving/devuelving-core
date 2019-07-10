@@ -223,13 +223,17 @@ class ProductModel extends Model
      * @author David Cortés <david@devuelving.com>
      * @return void
      */
-    public function getImages()
+    public function getImages($redirect = true)
     {
         $return = [];
         $images = DB::table('product_image')->where('product', $this->id)->orderBy('default', 'desc')->get();
         foreach ($images as $image) {
-            // $return[] = config('app.cdn.url') . $image->image;
-            $return[] = route('index') . '/cdn/' . $image->image;
+            if ($redirect){
+                $return[] = route('index') . '/cdn/' . $image->image;
+            }
+            else{
+                $return[] = config('app.cdn.url') . $image->image;
+            }
         }
         if (count($return) < 1) {
             // $return[] = config('app.cdn.url') . 'default.png';
@@ -245,9 +249,9 @@ class ProductModel extends Model
      * @author David Cortés <david@devuelving.com>
      * @return void
      */
-    public function getDefaultImage()
+    public function getDefaultImage($redirect = true)
     {
-        return $this->getImages()[0];
+        return $this->getImages($redirect)[0];
     }
 
     /**
