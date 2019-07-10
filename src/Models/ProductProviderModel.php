@@ -54,12 +54,16 @@ class ProductProviderModel extends Model
 
         self::created(function ($productProvider) {
             $product = ProductModel::find($productProvider->product);
-            $product->updatePrice();
+            if (!$product->franchise){
+                $product->updatePrice();
+            }
         });
 
         self::updated(function ($productProvider) {
             $product = ProductModel::find($productProvider->product);
-            $product->updatePrice();
+            if (!$product->franchise){
+                $product->updatePrice();
+            }
         });
     }
 
