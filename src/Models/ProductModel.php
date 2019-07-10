@@ -236,8 +236,11 @@ class ProductModel extends Model
             }
         }
         if (count($return) < 1) {
-            // $return[] = config('app.cdn.url') . 'default.png';
-            $return[] = route('index') . '/cdn/product/default.png';
+            if ($redirect){
+                $return[] = route('index') . '/cdn/product/default.png';
+            }else{
+                $return[] = config('app.cdn.url') . 'default.png';
+            }
         }
         return $return;
     }
