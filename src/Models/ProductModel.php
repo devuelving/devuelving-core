@@ -73,6 +73,31 @@ class ProductModel extends Model
     }
 
     /**
+     *  Relationship brand hasOne
+     */
+    public function brands(){
+        return $this->hasOne('devuelving\core\BrandModel', 'id', 'brand');
+    }
+    /**
+     * Relationship product custom hasOne
+     */
+    public function productCustoms(){
+        return $this->hasMany('devuelving\core\ProductCustomModel', 'product', 'id');
+    }
+    /**
+     * Relationship product provider hasOne
+     */
+    public function productProvider(){
+        return $this->hasMany('devuelving\core\ProductProviderModel', 'product', 'id');
+    }
+    /**
+     * Relationship product image hasOne
+     */
+    public function productImage(){
+        return $this->hasMany('devuelving\core\ProductImageModel', 'product', 'id');
+    }
+
+    /**
      * The "booting" method of the model.
      *
      * @return void
@@ -221,12 +246,15 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return array
+     * @param $images ProductImageModel Parametro para controlar si viene del toArray en el frontend
      */
-    public function getImages()
+    public function getImages($images = null)
     {
         $return = [];
-        $images = DB::table('product_image')->where('product', $this->id)->orderBy('default', 'desc')->get();
+        if ($images == null)
+            $images = DB::table('product_image')->where('product', $this->id)->orderBy('default', 'desc')->get();
+
         foreach ($images as $image) {
             // $return[] = config('app.cdn.url') . $image->image;
             $return[] = '/cdn/' . $image->image;
@@ -255,12 +283,15 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return array
+     * @param $productProviders ProductProviderModel Parametro para controlar si viene del toArray en el frontend
      */
-    public function getEan()
+    public function getEan($productProviders = null)
     {
         $return = [];
-        $productProviders = ProductProviderModel::where('product', $this->id)->get();
+        if ($productProviders == null)
+            $productProviders = ProductProviderModel::where('product', $this->id)->get();
+
         foreach ($productProviders as $productProvider) {
             $return[] = $productProvider->ean;
         }
@@ -293,11 +324,15 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return BrandModel
+     * @param $brand BrandModel Parametro para controlar si viene del toArray en el frontend
      */
-    public function getBrand()
+    public function getBrand($brand=null)
     {
-        return BrandModel::find($this->brand);
+        if ($brand==null)
+            return BrandModel::find($this->brand);
+        else
+            return $brand;
     }
 
     /**
@@ -555,11 +590,17 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return boolean
+     * @param $productCustom ProductCustomModel Parametro para controlar si viene del toArray en el frontend
      */
-    public function checkPromotion()
+    public function checkPromotion($productCustom = null)
     {
-        if (ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->whereNotNull('promotion')->count() == 0) {
+        if ($productCustom==null)
+            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id)->whereNotNull('promotion');
+        else
+            $productCustom->where('promotion', '!=', NULL);
+
+        if ($productCustom->count() == 0) {
             return false;
         } else {
             return true;
@@ -822,11 +863,14 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return string
+     * @param $productCustom ProductCustomModel Parametro para controlar si viene del toArray en el frontend
      */
-    public function getName()
+    public function getName($productCustom = null)
     {
-        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
+        if ($productCustom==null)
+            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
+
         if ($productCustom->count() == 0) {
             return $this->name;
         } else {
@@ -845,10 +889,13 @@ class ProductModel extends Model
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @return void
+     * @param $productCustom ProductCustomModel Parametro para controlar si viene del toArray en el frontend
      */
-    public function getDescription()
+    public function getDescription($productCustom = null)
     {
-        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
+        if ($productCustom==null)
+            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
+
         if ($productCustom->count() == 0) {
             return $this->description;
         } else {
@@ -861,7 +908,7 @@ class ProductModel extends Model
         }
     }
 
-    /**
+    /**c
      * Método para obtener la descripción corta
      *
      * @since 3.0.0
