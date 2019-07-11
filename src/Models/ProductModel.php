@@ -908,7 +908,7 @@ class ProductModel extends Model
         }
     }
 
-    /**c
+    /**
      * Método para obtener la descripción corta
      *
      * @since 3.0.0
