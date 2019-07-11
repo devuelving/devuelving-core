@@ -129,36 +129,38 @@ class ProductModel extends Model
      */
     public function updatePrice()
     {
-        // Obtenemos la regla del precio establecida
-        if ($this->price_rules == 1) {
-            $rule = 'asc';
-        } else {
-            $rule = 'desc';
-        }
-        // Obtenemos el product provider
-        $productProvider = $this->getProductProvider();
-        // Obtenemos el proveedor del producto
-        $provider = $productProvider->getProvider();
-        // Obtenemos el precio de coste y le sumamos el margen de beneficio del proveedor
-        $costPrice = $productProvider->cost_price + ($productProvider->cost_price * ($provider->profit_margin / 100));
-        if ($provider->id == 5 || $provider->id == 6) {
-            // Obtenemos el precio recomendado y le restamos el 10% que es el precio minimo de venta
-            $default_price = $this->getRecommendedPrice() / 1.10;
-        } else {
-            // Obtenemos el precio de coste y le sumamos el beneficio del franquiciado por defecto
-            $default_price = ($costPrice + ($productProvider->cost_price * ($provider->franchise_profit_margin / 100))) * ((TaxModel::find($this->tax)->value / 100) + 1);
-        }
-        // Actualizamos los precios de los productos
-        $product = ProductModel::find($this->id);
-        $oldCostPrice = $product->cost_price / (1 + $provider->profit_margin / 100);
-        $product->cost_price = $costPrice;
-        $product->default_price = $default_price;
-        $product->save();
-        $newCostPrice = $product->cost_price / (1 + $provider->profit_margin / 100);
-        // Comprobación de que el precio no es el mismo
-        if (number_format($newCostPrice, 1) != number_format($oldCostPrice, 1)) {
-            // Añadimos el registro de la nueva actualización del precio
-            $this->addUpdatePrice($newCostPrice, $oldCostPrice);
+        if ($this->franchise === null) {
+            // Obtenemos la regla del precio establecida
+            if ($this->price_rules == 1) {
+                $rule = 'asc';
+            } else {
+                $rule = 'desc';
+            }
+            // Obtenemos el product provider
+            $productProvider = $this->getProductProvider();
+            // Obtenemos el proveedor del producto
+            $provider = $productProvider->getProvider();
+            // Obtenemos el precio de coste y le sumamos el margen de beneficio del proveedor
+            $costPrice = $productProvider->cost_price + ($productProvider->cost_price * ($provider->profit_margin / 100));
+            if ($provider->id == 5 || $provider->id == 6) {
+                // Obtenemos el precio recomendado y le restamos el 10% que es el precio minimo de venta
+                $default_price = $this->getRecommendedPrice() / 1.10;
+            } else {
+                // Obtenemos el precio de coste y le sumamos el beneficio del franquiciado por defecto
+                $default_price = ($costPrice + ($productProvider->cost_price * ($provider->franchise_profit_margin / 100))) * ((TaxModel::find($this->tax)->value / 100) + 1);
+            }
+            // Actualizamos los precios de los productos
+            $product = ProductModel::find($this->id);
+            $oldCostPrice = $product->cost_price / (1 + $provider->profit_margin / 100);
+            $product->cost_price = $costPrice;
+            $product->default_price = $default_price;
+            $product->save();
+            $newCostPrice = $product->cost_price / (1 + $provider->profit_margin / 100);
+            // Comprobación de que el precio no es el mismo
+            if (number_format($newCostPrice, 1) != number_format($oldCostPrice, 1)) {
+                // Añadimos el registro de la nueva actualización del precio
+                $this->addUpdatePrice($newCostPrice, $oldCostPrice);
+            }
         }
     }
 
