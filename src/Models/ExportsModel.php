@@ -5,10 +5,12 @@ namespace devuelving\core;
 use devuelving\core\TaxModel;
 use devuelving\core\CategoryModel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ExportsModel extends Model
 {
     use SoftDeletes;
+    
     /**
      * The table associated with the model.
      *
