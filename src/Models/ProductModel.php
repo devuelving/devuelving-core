@@ -251,10 +251,9 @@ class ProductModel extends Model
      * @return array
      * @param $images ProductImageModel Parametro para controlar si viene del toArray en el frontend
      */
-    public function getImages($redirect = true)
+    public function getImages($images == null, $redirect = true )
     {
-        $return = [];
-        $images = DB::table('product_image')->where('product', $this->id)->orderBy('default', 'desc')->get();
+        $return = [];       
         if ($images == null)
             $images = DB::table('product_image')->where('product', $this->id)->orderBy('default', 'desc')->get();
 
