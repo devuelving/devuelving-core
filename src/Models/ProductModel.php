@@ -251,7 +251,7 @@ class ProductModel extends Model
      * @return array
      * @param $images ProductImageModel Parametro para controlar si viene del toArray en el frontend
      */
-    public function getImages($images == null, $redirect = true )
+    public function getImages($images = null, $redirect = true )
     {
         $return = [];       
         if ($images == null)
@@ -284,7 +284,7 @@ class ProductModel extends Model
      */
     public function getDefaultImage($redirect = true)
     {
-        return $this->getImages($redirect)[0];
+        return $this->getImages(null, $redirect)[0];
     }
 
     /**
