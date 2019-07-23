@@ -247,6 +247,8 @@ class MyOrderModel extends Model
      */
     public function getFreeShipping()
     {
+        // 19/07/2019 - No apliquem descomptes al ports de la tienda propia
+        return 0;
         $product_total = $this->totalAmount();
         $free_shippings = FranchiseCustomModel::where('franchise', $this->franchise)->where('var', 'free_shipping')->first();
         if ($free_shippings){
