@@ -163,7 +163,7 @@ class CategoryModel extends Model
     {
         if ($parent != 0) {
             $category = CategoryModel::find($parent);
-            return $category->listCategoriesName($category->parent) . ' ' . $icon . ' ' . $category->name;
+            return $category->listCategoriesName($category->parent, '>') . ' ' . $icon . ' ' . $category->name;
         }
     }
 
