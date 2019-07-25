@@ -226,7 +226,7 @@ class MyOrderModel extends Model
     {
         if (!empty($this->address_country)) {
             $total = 0;
-            $country = MyCountryModel::where('code', $this->address_country)->first();
+            $country = MyCountryModel::where('franchise', Franchise::get('id'))->where('code', $this->address_country)->first();
             $shippingFee = MyShippingFeesModel::find($country->shipping_fee);
             $total = $this->getShippingPrice($shippingFee, $this->weight);
             if ($this->hasDropshipping()) {
