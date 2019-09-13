@@ -75,25 +75,29 @@ class ProductModel extends Model
     /**
      *  Relationship brand hasOne
      */
-    public function brands(){
+    public function brands()
+    {
         return $this->hasOne('devuelving\core\BrandModel', 'id', 'brand');
     }
     /**
      * Relationship product custom hasOne
      */
-    public function productCustoms(){
+    public function productCustoms()
+    {
         return $this->hasMany('devuelving\core\ProductCustomModel', 'product', 'id');
     }
     /**
      * Relationship product provider hasOne
      */
-    public function productProvider(){
+    public function productProvider()
+    {
         return $this->hasMany('devuelving\core\ProductProviderModel', 'product', 'id');
     }
     /**
      * Relationship product image hasOne
      */
-    public function productImage(){
+    public function productImage()
+    {
         return $this->hasMany('devuelving\core\ProductImageModel', 'product', 'id');
     }
 
@@ -109,32 +113,32 @@ class ProductModel extends Model
 
         self::updating(function ($product) {
             // We check if the product belongs to a franchise
-            if ($product->franchise === NULL) {
+            if ($product->franchise === null) {
                 // We check if the status of the product has changed
-                if ($product->isDirty('discontinued')){
+                if ($product->isDirty('discontinued')) {
                     // To prevent both clutter in the .rss and the database, we will only use one register per product
                     $productStatusUpdate = ProductStatusUpdatesModel::where('product', $product->id)->first();
-                    if(!$productStatusUpdate) {
+                    if (!$productStatusUpdate) {
                         $productStatusUpdate = new ProductStatusUpdatesModel();
                     }
                     $productStatusUpdate->product = $product->id;
                     // Depending on the change, we inform the user one way or another through the .rss feed
-                    if ($product->discontinued > 0){
+                    if ($product->discontinued > 0) {
                         $productStatusUpdate->status = "El producto ha sido descatalogado";
                     } else {
-                        $productStatusUpdate->status = "Producto añadido al catalogo de nuevo";
+                        $productStatusUpdate->status = "Producto añadido al catálogo de nuevo";
                     }
                     $productStatusUpdate->save();
                     // We only let the users know that the status have changed if the product is not discontinued
-                } else if ($product->isDirty('unavailable') && $product->discontinued == 0){
+                } else if ($product->isDirty('unavailable') && $product->discontinued == 0) {
                     // To prevent both clutter in the .rss and the database, we will only use one register per product
                     $productStatusUpdate = ProductStatusUpdatesModel::where('product', $product->id)->first();
-                    if(!$productStatusUpdate) {
+                    if (!$productStatusUpdate) {
                         $productStatusUpdate = new ProductStatusUpdatesModel();
                     }
                     $productStatusUpdate->product = $product->id;
                     // Depending on the change, we inform the user one way or another through the .rss feed
-                    if ($product->unavailable > 0){
+                    if ($product->unavailable > 0) {
                         $productStatusUpdate->status = "Stock agotado";
                     } else {
                         $productStatusUpdate->status = "Producto en stock de nuevo";
@@ -251,24 +255,23 @@ class ProductModel extends Model
      * @return array
      * @param $images ProductImageModel Parametro para controlar si viene del toArray en el frontend
      */
-    public function getImages($images = null, $redirect = true )
+    public function getImages($images = null, $redirect = true)
     {
-        $return = [];       
+        $return = [];
         if ($images == null)
             $images = DB::table('product_image')->where('product', $this->id)->orderBy('default', 'desc')->get();
 
         foreach ($images as $image) {
-            if ($redirect){
+            if ($redirect) {
                 $return[] = route('index') . '/cdn/' . $image->image;
-            }
-            else{
+            } else {
                 $return[] = config('app.cdn.url') . $image->image;
             }
         }
         if (count($return) < 1) {
-            if ($redirect){
+            if ($redirect) {
                 $return[] = route('index') . '/cdn/product/default.png';
-            }else{
+            } else {
                 $return[] = config('app.cdn.url') . 'default.png';
             }
         }
@@ -336,9 +339,9 @@ class ProductModel extends Model
      * @return BrandModel
      * @param $brand BrandModel Parametro para controlar si viene del toArray en el frontend
      */
-    public function getBrand($brand=null)
+    public function getBrand($brand = null)
     {
-        if ($brand==null)
+        if ($brand == null)
             return BrandModel::find($this->brand);
         else
             return $brand;
@@ -470,12 +473,12 @@ class ProductModel extends Model
                         // Comprobamos si el descuento es de tipo 1, lo que significa que el id del producto esta en los datos del descuento
                         if ($discountTarget->type == 1) {
                             if (in_array($this->id, $target)) {
-                                $discount = 1 - ($discountTarget->discount/100);
+                                $discount = 1 - ($discountTarget->discount / 100);
                             }
                         // Comprobamos si el descuento es de tipo 2, lo que significa que se aplica un descuento por proveedor
                         } else if ($discountTarget->type == 2) {
                             if (in_array($this->getProvider()->id, $target)) {
-                                $discount = 1 - ($discountTarget->discount/100);
+                                $discount = 1 - ($discountTarget->discount / 100);
                             }
                         }
                     }
@@ -604,10 +607,10 @@ class ProductModel extends Model
      */
     public function checkPromotion($productCustom = null)
     {
-        if ($productCustom==null)
+        if ($productCustom == null)
             $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id)->whereNotNull('promotion');
         else
-            $productCustom->where('promotion', '!=', NULL);
+            $productCustom->where('promotion', '!=', null);
 
         if ($productCustom->count() == 0) {
             return false;
@@ -813,11 +816,29 @@ class ProductModel extends Model
             } else {
                 $publicPrice = $options['price'];
                 $costPrice = $this->getPublicPriceCost();
+                $recommendprice = $this->getRecommendedPrice();
                 $margin = round((($publicPrice - $costPrice) / $costPrice) * 100);
+                //$discountprice = 
+                $provider = $this->getProductProviderData('provider');
+                //Megaplus tiene una limitación y no se puede tener el precio custom por debajo del 15% de PVPR
+                $minim_custom_price = $recommendprice - ($recommendprice * 0.15);
                 if ($margin < 1 && $options['price_type'] == 1) {
                     return [
                         'status' => false,
                         'message' => 'El precio tiene que tener un beneficio minimo de un 1%',
+                        'custom_price' => $this->checkCustomPrice(),
+                        'type_custom_price' => $this->typeCustomPrice(),
+                        'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
+                        'cost_price_iva' => number_format($this->getPublicPriceCost(), 2, '.', ''),
+                        'recommended_price' => number_format($this->getRecommendedPrice(), 2, '.', ''),
+                        'price' => number_format($this->getPrice(), 2, '.', ''),
+                        'profit_margin' => $this->getProfitMargin(),
+                        'full_price_margin' => $this->getFullPriceMargin(),
+                    ];
+                } else if ($provider == 5 && $minim_custom_price > number_format($options['price'], 2, '.', '')) {
+                    return [
+                        'status' => false,
+                        'message' => 'Condiciones especiales para este proveedor. Descuento máximo sobre PVPR del 15%.',
                         'custom_price' => $this->checkCustomPrice(),
                         'type_custom_price' => $this->typeCustomPrice(),
                         'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
@@ -877,7 +898,7 @@ class ProductModel extends Model
      */
     public function getName($productCustom = null)
     {
-        if ($productCustom==null)
+        if ($productCustom == null)
             $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
 
         if ($productCustom->count() == 0) {
@@ -902,7 +923,7 @@ class ProductModel extends Model
      */
     public function getDescription($productCustom = null)
     {
-        if ($productCustom==null)
+        if ($productCustom == null)
             $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
 
         if ($productCustom->count() == 0) {
@@ -999,16 +1020,16 @@ class ProductModel extends Model
                 $stock = $this->getProductProvider()->stock;
                 $date = Carbon::now()->subDays(2)->toDateString();
                 $reserved = OrderDetailModel::join('orders', 'order_details.order', '=', 'orders.id')
-                ->where('product', $this->id)
-                ->where('order', '!=', $order)
-                ->whereDate('orders.created_at', '>=', $date,' and')
-                ->whereIn('orders.status', [1,2]);
+                    ->where('product', $this->id)
+                    ->where('order', '!=', $order)
+                    ->whereDate('orders.created_at', '>=', $date, ' and')
+                    ->whereIn('orders.status', [1, 2]);
                 $reserved->where(function ($query) use ($date) {
                     $query->where('orders.payment_method', '!=', 6);
                     $query->orWhereNotNull('orders.payment_date');
                     $query->orWhere('orders.status', 2);
                 });
-                return $stock-($reserved->sum('order_details.units'));
+                return $stock - ($reserved->sum('order_details.units'));
             } else if ($this->stock_type == 4) {
                 return $this->getProductProvider()->stock;
             } else {
@@ -1028,7 +1049,7 @@ class ProductModel extends Model
      */
     public function visiblePrice()
     {
-        if ((boolean) FranchiseModel::custom('visible_price', false) || auth()->check()) {
+        if ((boolean)FranchiseModel::custom('visible_price', false) || auth()->check()) {
             return true;
         } else {
             return false;
@@ -1044,7 +1065,7 @@ class ProductModel extends Model
      */
     public function visibleDiscounts()
     {
-        if (((FranchiseModel::get('type') == 0) && ($this->getPublicMarginProfit() < 25)) || ((!(boolean) FranchiseModel::custom('visible_discounts', true)) || ($this->getPublicMarginProfit() < 5))) {
+        if (((FranchiseModel::get('type') == 0) && ($this->getPublicMarginProfit() < 25)) || ((!(boolean)FranchiseModel::custom('visible_discounts', true)) || ($this->getPublicMarginProfit() < 5))) {
             return false;
         } else {
             return true;
