@@ -55,7 +55,6 @@ class PageModel extends Model
             ]
         ];
     }
-
     /**
      * Función para reemplazar los shorcodes del contenido
      *
