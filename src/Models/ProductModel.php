@@ -46,7 +46,7 @@ class ProductModel extends Model
      * @var array
      */
     protected $fillable = [
-        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'transport', 'weight', 'volume', 'tax', 'brand', 'tags', 'variations', 'franchise', 'promotion', 'free_shipping', 'double_unit', 'units_limit', 'liquidation', 'unavailable', 'discontinued', 'external_sale', 'highlight', 'price_edit', 'shipping_canarias', 'cost_price', 'recommended_price', 'default_price', 'profit_margin', 'franchise_profit_margin', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords',
+        'slug', 'name', 'description', 'stock_type', 'minimum_stock', 'transport', 'weight', 'volume', 'tax', 'brand', 'tags', 'variations', 'franchise', 'promotion', 'free_shipping', 'double_unit', 'units_limit', 'liquidation', 'unavailable', 'discontinued', 'external_sale', 'highlight', 'price_edit', 'shipping_canarias', 'cost_price', 'recommended_price', 'default_price', 'profit_margin', 'franchise_profit_margin', 'price_rules', 'meta_title', 'meta_description', 'meta_keywords', 'net_quantity', 'unit'
     ];
 
     /**
@@ -101,6 +101,21 @@ class ProductModel extends Model
         return $this->hasMany('devuelving\core\ProductImageModel', 'product', 'id');
     }
 
+    public function getUnitNameAttribute()
+    {
+        switch ($this->unit) {
+            case 0:
+                return 'KG';
+                break;
+            case 1:
+                return 'litro';
+                break;
+            case 2:
+                return 'unidad';
+                break;
+        }
+    }
+
     /**
      * The "booting" method of the model.
      *
@@ -113,7 +128,7 @@ class ProductModel extends Model
 
         self::updating(function ($product) {
             // We check if the product belongs to a franchise
-            if ($product->franchise === null) {
+            if ($product->franchise === NULL) {
                 // We check if the status of the product has changed
                 if ($product->isDirty('discontinued')) {
                     // To prevent both clutter in the .rss and the database, we will only use one register per product
@@ -126,7 +141,7 @@ class ProductModel extends Model
                     if ($product->discontinued > 0) {
                         $productStatusUpdate->status = "El producto ha sido descatalogado";
                     } else {
-                        $productStatusUpdate->status = "Producto añadido al catálogo de nuevo";
+                        $productStatusUpdate->status = "Producto añadido al catalogo de nuevo";
                     }
                     $productStatusUpdate->save();
                     // We only let the users know that the status have changed if the product is not discontinued
@@ -475,7 +490,7 @@ class ProductModel extends Model
                             if (in_array($this->id, $target)) {
                                 $discount = 1 - ($discountTarget->discount / 100);
                             }
-                        // Comprobamos si el descuento es de tipo 2, lo que significa que se aplica un descuento por proveedor
+                            // Comprobamos si el descuento es de tipo 2, lo que significa que se aplica un descuento por proveedor
                         } else if ($discountTarget->type == 2) {
                             if (in_array($this->getProvider()->id, $target)) {
                                 $discount = 1 - ($discountTarget->discount / 100);
@@ -610,7 +625,7 @@ class ProductModel extends Model
         if ($productCustom == null)
             $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id)->whereNotNull('promotion');
         else
-            $productCustom->where('promotion', '!=', null);
+            $productCustom->where('promotion', '!=', NULL);
 
         if ($productCustom->count() == 0) {
             return false;
@@ -816,29 +831,11 @@ class ProductModel extends Model
             } else {
                 $publicPrice = $options['price'];
                 $costPrice = $this->getPublicPriceCost();
-                $recommendprice = $this->getRecommendedPrice();
                 $margin = round((($publicPrice - $costPrice) / $costPrice) * 100);
-                //$discountprice = 
-                $provider = $this->getProductProviderData('provider');
-                //Megaplus tiene una limitación y no se puede tener el precio custom por debajo del 15% de PVPR
-                $minim_custom_price = $recommendprice - ($recommendprice * 0.15);
                 if ($margin < 1 && $options['price_type'] == 1) {
                     return [
                         'status' => false,
                         'message' => 'El precio tiene que tener un beneficio minimo de un 1%',
-                        'custom_price' => $this->checkCustomPrice(),
-                        'type_custom_price' => $this->typeCustomPrice(),
-                        'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
-                        'cost_price_iva' => number_format($this->getPublicPriceCost(), 2, '.', ''),
-                        'recommended_price' => number_format($this->getRecommendedPrice(), 2, '.', ''),
-                        'price' => number_format($this->getPrice(), 2, '.', ''),
-                        'profit_margin' => $this->getProfitMargin(),
-                        'full_price_margin' => $this->getFullPriceMargin(),
-                    ];
-                } else if ($provider == 5 && $minim_custom_price > number_format($options['price'], 2, '.', '')) {
-                    return [
-                        'status' => false,
-                        'message' => 'Condiciones especiales para este proveedor. Descuento máximo sobre PVPR del 15%.',
                         'custom_price' => $this->checkCustomPrice(),
                         'type_custom_price' => $this->typeCustomPrice(),
                         'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
@@ -1049,7 +1046,7 @@ class ProductModel extends Model
      */
     public function visiblePrice()
     {
-        if ((boolean)FranchiseModel::custom('visible_price', false) || auth()->check()) {
+        if ((bool) FranchiseModel::custom('visible_price', false) || auth()->check()) {
             return true;
         } else {
             return false;
@@ -1065,7 +1062,7 @@ class ProductModel extends Model
      */
     public function visibleDiscounts()
     {
-        if (((FranchiseModel::get('type') == 0) && ($this->getPublicMarginProfit() < 25)) || ((!(boolean)FranchiseModel::custom('visible_discounts', true)) || ($this->getPublicMarginProfit() < 5))) {
+        if (((FranchiseModel::get('type') == 0) && ($this->getPublicMarginProfit() < 25)) || ((!(bool) FranchiseModel::custom('visible_discounts', true)) || ($this->getPublicMarginProfit() < 5))) {
             return false;
         } else {
             return true;

@@ -7,6 +7,7 @@ use devuelving\core\CustomerModel;
 use devuelving\core\FranchiseModel;
 use Illuminate\Database\Eloquent\Model;
 use devuelving\core\CallAppointmentModel;
+use devuelving\core\FranchiseServicesModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FranchiseModel extends Model
@@ -116,7 +117,10 @@ class FranchiseModel extends Model
     {
         if (!empty(auth()->user()->franchise)) {
             return FranchiseModel::find(auth()->user()->franchise);
+        } else if (session()->exists('franchise')){
+            return session('franchise');
         } else if ($franchise = FranchiseModel::where('domain', FranchiseModel::getDomain())->first()) {
+            session()->put('franchise', $franchise);
             return $franchise;
         } else {
             return FranchiseModel::where('code', str_replace('.tutienda.com.es', '', FranchiseModel::getDomain()))->first();
@@ -218,7 +222,51 @@ class FranchiseModel extends Model
             return $default;
         }
     }
-
+    /**
+     * Función para obtener las servicios perosnalizadas de la franquicia
+     *
+     * @since 3.0.0
+     * @author 
+     * @return void
+     */
+    public function getServices($data = null)
+    {
+        if (!empty(auth()->user()->franchise)) {
+            $id = auth()->user()->franchise;
+        } else {
+            $id = FranchiseModel::getFranchise()->id;
+        }
+        try {
+            info('id_franquicia->'.$id .' servicio->'.$data);
+            $franchise = FranchiseServicesModel::where('franchise', $id)->where('service', $data)->first();
+            return $franchise->value;
+        } catch (\Exception $e) {
+            // report($e);
+            return null;
+        }
+    }
+    /**
+     * Método para obtener servicios de la franquicia
+     *
+     * @since 3.0.0
+     * @author 
+     * @param string $var
+     * @param string $default
+     * @return void
+     */
+    public static function services($var, $default = null)
+    {
+        try {
+            $franchise = new FranchiseModel();
+            if ($franchise->getServices($var) != null) {
+                return $franchise->getServices($var);
+            } else {
+                return $default;
+            }
+        } catch (\Exception $e) {
+            return $default;
+        }
+    }
     /**
      * Función para obtener las citas telefonicas de la franquicia
      *
