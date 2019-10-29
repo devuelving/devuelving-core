@@ -831,11 +831,29 @@ class ProductModel extends Model
             } else {
                 $publicPrice = $options['price'];
                 $costPrice = $this->getPublicPriceCost();
+                $recommendprice = $this->getRecommendedPrice();
                 $margin = round((($publicPrice - $costPrice) / $costPrice) * 100);
+                //$discountprice = 
+                $provider = $this->getProductProviderData('provider');
+                //Megaplus tiene una limitación y no se puede tener el precio custom por debajo del 15% de PVPR
+                $minim_custom_price = $recommendprice - ($recommendprice * 0.15);
                 if ($margin < 1 && $options['price_type'] == 1) {
                     return [
                         'status' => false,
                         'message' => 'El precio tiene que tener un beneficio minimo de un 1%',
+                        'custom_price' => $this->checkCustomPrice(),
+                        'type_custom_price' => $this->typeCustomPrice(),
+                        'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
+                        'cost_price_iva' => number_format($this->getPublicPriceCost(), 2, '.', ''),
+                        'recommended_price' => number_format($this->getRecommendedPrice(), 2, '.', ''),
+                        'price' => number_format($this->getPrice(), 2, '.', ''),
+                        'profit_margin' => $this->getProfitMargin(),
+                        'full_price_margin' => $this->getFullPriceMargin(),
+                    ];
+                } else if ($provider == 5 && $minim_custom_price > number_format($options['price'], 2, '.', '') && $options['price_type'] == 1) {
+                    return [
+                        'status' => false,
+                        'message' => 'Condiciones especiales para este proveedor. Descuento máximo sobre PVPR del 15%.',
                         'custom_price' => $this->checkCustomPrice(),
                         'type_custom_price' => $this->typeCustomPrice(),
                         'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
@@ -884,6 +902,7 @@ class ProductModel extends Model
             ];
         }
     }
+
 
     /**
      * Función para obtener el nombre del producto segun la franquicia
