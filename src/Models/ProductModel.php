@@ -850,7 +850,7 @@ class ProductModel extends Model
                         'profit_margin' => $this->getProfitMargin(),
                         'full_price_margin' => $this->getFullPriceMargin(),
                     ];
-                } else if ($provider == 5 && $minim_custom_price > number_format($options['price'], 2, '.', '') && $options['price_type'] == 1) {
+                } else if ($provider == 5 && $minim_custom_price > number_format($options['price'], 2, '.', '') && ($options['price_type'] == 1 || $options['price_type'] == 2)) {
                     return [
                         'status' => false,
                         'message' => 'Condiciones especiales para este proveedor. Descuento máximo sobre PVPR del 15%.',
@@ -902,7 +902,6 @@ class ProductModel extends Model
             ];
         }
     }
-
 
     /**
      * Función para obtener el nombre del producto segun la franquicia
