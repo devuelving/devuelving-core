@@ -54,7 +54,7 @@ class CategoryModel extends Model
     {
         return [
             'slug' => [
-                'source' => 'name'
+                'source' => ['name', 'franchise']
             ]
         ];
     }

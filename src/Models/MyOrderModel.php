@@ -226,7 +226,7 @@ class MyOrderModel extends Model
     {
         if (!empty($this->address_country)) {
             $total = 0;
-            $country = MyCountryModel::where('code', $this->address_country)->first();
+            $country = MyCountryModel::where('franchise', Franchise::get('id'))->where('code', $this->address_country)->first();
             $shippingFee = MyShippingFeesModel::find($country->shipping_fee);
             $total = $this->getShippingPrice($shippingFee, $this->weight);
             if ($this->hasDropshipping()) {
@@ -247,6 +247,8 @@ class MyOrderModel extends Model
      */
     public function getFreeShipping()
     {
+        // 19/07/2019 - No apliquem descomptes al ports de la tienda propia
+        return 0;
         $product_total = $this->totalAmount();
         $free_shippings = FranchiseCustomModel::where('franchise', $this->franchise)->where('var', 'free_shipping')->first();
         if ($free_shippings){
