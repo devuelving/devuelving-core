@@ -836,6 +836,12 @@ class ProductModel extends Model
                 //$discountprice = 
                 $provider = $this->getProductProviderData('provider');
                 //Megaplus tiene una limitación y no se puede tener el precio custom por debajo del 15% de PVPR
+                if ($options['price_type'] == 1){
+                    $price = number_format($options['price'], 2, '.', '');
+                }
+                else{
+                    $price = $costPrice * ((number_format($options['price'], 2, '.', '') / 100) + 1);
+                }
                 $minim_custom_price = $recommendprice - ($recommendprice * 0.15);
                 if ($margin < 1 && $options['price_type'] == 1) {
                     return [
@@ -850,7 +856,7 @@ class ProductModel extends Model
                         'profit_margin' => $this->getProfitMargin(),
                         'full_price_margin' => $this->getFullPriceMargin(),
                     ];
-                } else if ($provider == 5 && $minim_custom_price > number_format($options['price'], 2, '.', '') && ($options['price_type'] == 1 || $options['price_type'] == 2)) {
+                } else if ($provider == 5 && $minim_custom_price > $price && ($options['price_type'] == 1 || $options['price_type'] == 2)) {
                     return [
                         'status' => false,
                         'message' => 'Condiciones especiales para este proveedor. Descuento máximo sobre PVPR del 15%.',
