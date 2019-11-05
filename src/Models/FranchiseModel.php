@@ -213,8 +213,9 @@ class FranchiseModel extends Model
     {
         try {
             $franchise = new FranchiseModel();
-            if ($franchise->getCustom($var) != null) {
-                return $franchise->getCustom($var);
+            $var_custom = $franchise->getCustom($var);
+            if ($var_custom != null) {
+                return $var_custom;
             } else {
                 return $default;
             }
