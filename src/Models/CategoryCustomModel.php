@@ -2,7 +2,6 @@
 
 namespace devuelving\core;
 
-use devuelving\core\CategoryCustomModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 

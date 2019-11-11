@@ -4,7 +4,6 @@ namespace devuelving\core;
 
 use Carbon\Carbon;
 use devuelving\core\CustomerModel;
-use devuelving\core\FranchiseModel;
 use Illuminate\Database\Eloquent\Model;
 use devuelving\core\CallAppointmentModel;
 use devuelving\core\FranchiseServicesModel;

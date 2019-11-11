@@ -2,7 +2,6 @@
 
 namespace devuelving\core;
 
-use devuelving\core\CategoryModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Cviebrock\EloquentSluggable\Sluggable;

@@ -4,7 +4,6 @@ namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
 use devuelving\core\FranchiseLayoutModel;
-use devuelving\core\FranchiseLayoutHistoryModel;
 
 class FranchiseLayoutHistoryModel extends Model
 {

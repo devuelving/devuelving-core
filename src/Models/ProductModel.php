@@ -5,7 +5,6 @@ namespace devuelving\core;
 use Carbon\Carbon;
 use devuelving\core\TaxModel;
 use devuelving\core\BrandModel;
-use devuelving\core\ProductModel;
 use devuelving\core\ProductCustom;
 use devuelving\core\ProviderModel;
 use Illuminate\Support\Facades\DB;
