@@ -26,7 +26,7 @@ class FranchiseComercialsModel extends Model
      * @var array
      */
     protected $fillable = [
-        'franchise', 'name', 'code', 'id', 
+        'franchise', 'name', 'code', 'id', 'commission', 'type_commission', 
     ];
 
     /**
