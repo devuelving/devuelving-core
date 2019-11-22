@@ -54,4 +54,13 @@ class ProviderModel extends Model
         $providerData = json_decode($this->data);
         return $providerData->$data;
     }
+
+
+    public function hasPhysicalStock(){
+        return $this->stock_type == config('settings.stock_types.fisico');
+    }
+
+    public function hasDropshippingStock(){
+        return $this->stock_type == config('settings.stock_types.dropshipping');
+    }
 }

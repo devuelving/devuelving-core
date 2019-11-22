@@ -409,18 +409,29 @@ class ProductModel extends Model
                 $productProvider = ProductProviderModel::join('provider', 'product_provider.provider', '=', 'provider.id');
                 $productProvider->where('product_provider.product', $this->id);
                 $productProvider->where('provider.active', 1);
+                /*$productProvider->orderBy('product_provider.cost_price', $rule);
+                $productProvider->select('product_provider.*', 'provider.name');
+                $provider = $productProvider->first();*/
+
+
+                if($this->hasPhysicalStock()){
+                    $productProvider->where('provider.stock_type', config('settings.stock_types.fisico'));
+                }
                 $productProvider->orderBy('product_provider.cost_price', $rule);
                 $productProvider->select('product_provider.*', 'provider.name');
-                $productProvider = $productProvider->first();
+                $provider = $productProvider->first();
             } else {
                 if (!$cheapest) {
                     $rule = 'desc';
                 } else {
                     $rule = 'asc';
                 }
-                $productProvider = ProductProviderModel::where('product', $this->id)->orderBy('product_provider.cost_price', $rule)->first();
+            if($this->stock_type == config('settings.stock_types.fisico'))
+                    $provider = ProductStockModel::where('product', $this->id)->orderBy('product_stock.purchase_price', $rule)->first();
+                else
+                    $provider = ProductProviderModel::where('product', $this->id)->orderBy('product_provider.cost_price', $rule)->first();
             }
-            return $productProvider;
+            return $provider;
         } catch (\Exception $e) {
             // report($e);
             return null;
@@ -835,12 +846,6 @@ class ProductModel extends Model
                 //$discountprice = 
                 $provider = $this->getProductProviderData('provider');
                 //Megaplus tiene una limitación y no se puede tener el precio custom por debajo del 15% de PVPR
-                if ($options['price_type'] == 1){
-                    $price = number_format($options['price'], 2, '.', '');
-                }
-                else{
-                    $price = $costPrice * ((number_format($options['price'], 2, '.', '') / 100) + 1);
-                }
                 $minim_custom_price = $recommendprice - ($recommendprice * 0.15);
                 if ($margin < 1 && $options['price_type'] == 1) {
                     return [
@@ -855,7 +860,7 @@ class ProductModel extends Model
                         'profit_margin' => $this->getProfitMargin(),
                         'full_price_margin' => $this->getFullPriceMargin(),
                     ];
-                } else if ($provider == 5 && $minim_custom_price > $price && ($options['price_type'] == 1 || $options['price_type'] == 2)) {
+                } else if ($provider == 5 && $minim_custom_price > number_format($options['price'], 2, '.', '') && ($options['price_type'] == 1 || $options['price_type'] == 2)) {
                     return [
                         'status' => false,
                         'message' => 'Condiciones especiales para este proveedor. Descuento máximo sobre PVPR del 15%.',
@@ -1030,13 +1035,13 @@ class ProductModel extends Model
     public function getStock($order = 0)
     {
         if (!$this->unavailable && !$this->discontinued) {
-            if ($this->stock_type == 1) {
+            if ($this->hasPhysicalStock()) {
                 $additions = ProductStockModel::where('product_stock.type', '=', 2)->where('product_stock.product', '=', $this->id)->sum('stock');
                 $subtractions = ProductStockModel::where('product_stock.type', '=', 1)->where('product_stock.product', '=', $this->id)->sum('stock');
                 $stock = $additions - $subtractions;
                 if ($stock < 0) $stock = 0;
                 return $stock;
-            } else if ($this->stock_type == 3) {
+            } else if ($this->hasDropshippingStock()) {
                 $stock = $this->getProductProvider()->stock;
                 $date = Carbon::now()->subDays(2)->toDateString();
                 $reserved = OrderDetailModel::join('orders', 'order_details.order', '=', 'orders.id')
@@ -1050,7 +1055,7 @@ class ProductModel extends Model
                     $query->orWhere('orders.status', 2);
                 });
                 return $stock - ($reserved->sum('order_details.units'));
-            } else if ($this->stock_type == 4) {
+            } else if ($this->hasLiquidationStock()) {
                 return $this->getProductProvider()->stock;
             } else {
                 return true;
@@ -1103,5 +1108,18 @@ class ProductModel extends Model
     {
         $product = ProductModel::find($this->id);
         return view('modules.catalog.product', compact('product'));
+    }
+
+
+    public function hasPhysicalStock(){
+        return $this->stock_type == config('settings.stock_types.fisico');
+    }
+
+    public function hasDropshippingStock(){
+        return $this->stock_type == config('settings.stock_types.dropshipping');
+    }
+
+    public function hasLiquidationStock(){
+        return $this->stock_type == config('settings.stock_types.liquidacion');
     }
 }
