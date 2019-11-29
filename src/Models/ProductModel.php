@@ -514,7 +514,25 @@ class ProductModel extends Model
         }
         return $discount;
     }
-
+    /**
+     * Función para calcular el número de unidades compradas de un producto para un usuario concreto
+     *     
+     */
+    public function getUnitsPurchased($user = null)
+    {
+        //select sum(order_details.units) from `orders` 
+        //inner join `order_details` on `orders`.`id` = `order_details`.`order` 
+        //inner join `product` on `product`.`id` = `order_details`.`product` 
+        //where `orders`.`customer` = 1 and `orders`.`status` not in (10, 0, 1) and `order_details`.`product` = 38349
+        $unitsPurchased = OrderDetailModel::join('orders', 'order_details.order', '=', 'orders.id')
+            ->join('product', 'product.id', '=', 'order_details.product')
+            ->where('orders.customer', $user)
+            ->whereNotIn('orders.status', [0, 1, 10])
+            ->where('order_details.product', '=', $this->id)
+            ->select('order_details.units')
+            ->sum('order_details.units');
+        return $unitsPurchased;
+    }
     /**
      * Función para obtener el precio de coste sin IVA
      *
