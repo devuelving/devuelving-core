@@ -413,10 +413,9 @@ class ProductModel extends Model
                 $productProvider->select('product_provider.*', 'provider.name');
                 $provider = $productProvider->first();*/
 
-
-                if($this->hasPhysicalStock()){
+                /*if($this->hasPhysicalStock()){
                     $productProvider->where('provider.stock_type', config('settings.stock_types.fisico'));
-                }
+                }*/
                 $productProvider->orderBy('product_provider.cost_price', $rule);
                 $productProvider->select('product_provider.*', 'provider.name');
                 $provider = $productProvider->first();
