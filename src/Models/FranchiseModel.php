@@ -237,7 +237,7 @@ class FranchiseModel extends Model
             $id = FranchiseModel::getFranchise()->id;
         }
         try {
-            info('id_franquicia->'.$id .' servicio->'.$data);
+            //info('id_franquicia->'.$id .' servicio->'.$data);
             $franchise = FranchiseServicesModel::where('franchise', $id)->where('service', $data)->first();
             return $franchise->value;
         } catch (\Exception $e) {
