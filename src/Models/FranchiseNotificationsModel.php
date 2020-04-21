@@ -4,7 +4,7 @@ namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
 
-class FranchiseNotificacionsModel extends Model
+class FranchiseNotificationsModel extends Model
 {
     /**
      * The table associated with the model.
@@ -26,7 +26,7 @@ class FranchiseNotificacionsModel extends Model
      * @var array
      */
     protected $fillable = [
-        'title', 'content', 'franchise',
+        'subject', 'content', 'franchise', 'status',
     ];
 
     /**
