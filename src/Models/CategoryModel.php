@@ -32,7 +32,7 @@ class CategoryModel extends Model
      * @var array
      */
     protected $fillable = [
-        'slug', 'name', 'description', 'parent', 'has_products', 'franchise', 'meta_title', 'meta_description', 'meta_keywords',
+        'slug', 'name', 'description', 'description_large', 'parent', 'has_products', 'franchise', 'meta_title', 'meta_description', 'meta_keywords',
     ];
 
     /**

@@ -21,7 +21,7 @@ class CategoryCustomModel extends Model
      * @var array
      */
     protected $fillable = [
-        'category', 'name', 'description', 'meta_title', 'meta_description', 'meta_keywords', 'franchise',
+        'category', 'name', 'description', 'meta_title', 'meta_description', 'meta_keywords', 'franchise', 'status'
     ];
 
     /**
