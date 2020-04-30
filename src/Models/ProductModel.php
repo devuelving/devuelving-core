@@ -890,6 +890,20 @@ class ProductModel extends Model
                         'profit_margin' => $this->getProfitMargin(),
                         'full_price_margin' => $this->getFullPriceMargin(),
                     ];
+                } else if ($provider == 4 && (($defaultprice / 1.14 > number_format($publicPrice, 2, '.', '') && $options['price_type'] == 1) || ($options['price_type'] == 2 && $defaultprice / 1.14 > (($publicPrice / 100) + 1) * $costPrice))) {
+                    return [
+                        'status' => false,
+                        'message' => 'Precio mínimo para este producto->' . number_format($defaultprice / 1.14, 2, '.', ''),
+                        'custom_price' => $this->checkCustomPrice(),
+                        'type_custom_price' => $this->typeCustomPrice(),
+                        'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
+                        'cost_price_iva' => number_format($this->getPublicPriceCost(), 2, '.', ''),
+                        'recommended_price' => number_format($this->getRecommendedPrice(), 2, '.', ''),
+                        'price' => number_format($this->getPrice(), 2, '.', ''),
+                        'profit_margin' => $this->getProfitMargin(),
+                        'full_price_margin' => $this->getFullPriceMargin(),
+                    ];
+                
                 } else {
                     $productCustom->price = number_format($options['price'], 2, '.', '');
                     $productCustom->price_type = $options['price_type'];
