@@ -467,10 +467,15 @@ class ProductModel extends Model
      */
     public function getPublicPriceCost($tax = true)
     {
+        $discount = $this->getDiscountTarget();
+        // cuando es demo y el usuario es diferente de demo@devuelving.com no tiene descuentos
+        if (Franchise::getFranchise()->type == 0 && auth()->user()->type != 1) {
+            $discount = 1;
+        }
         if ($tax) {
-            return ($this->cost_price * $this->getDiscountTarget()) * ($this->getTax() + 1);
+            return ($this->cost_price * $discount) * ($this->getTax() + 1);
         } else {
-            return ($this->cost_price * $this->getDiscountTarget());
+            return ($this->cost_price * $discount);
         }
     }
 
