@@ -469,7 +469,7 @@ class ProductModel extends Model
     {
         $discount = $this->getDiscountTarget();
         // cuando es demo y el usuario es diferente de demo@devuelving.com no tiene descuentos
-        if (Franchise::getFranchise()->type == 0 && !empty(auth()->user()) && auth()->user()->type != 1) {
+        if (FranchiseModel::getFranchise()->type == 0 && !empty(auth()->user()) && auth()->user()->type != 1) {
             $discount = 1;
         }
         if ($tax) {
