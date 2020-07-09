@@ -469,7 +469,7 @@ class ProductModel extends Model
     {
         $discount = $this->getDiscountTarget();
         // cuando es demo y el usuario es diferente de demo@devuelving.com no tiene descuentos
-        if (FranchiseModel::getFranchise()->type == 0 && !empty(auth()->user()) && auth()->user()->type != 1) {
+        if (FranchiseModel::getFranchise()->type == 0 && auth()->user()->type != 1) {
             $discount = 1;
         }
         if ($tax) {
@@ -867,8 +867,14 @@ class ProductModel extends Model
                 $margin = round((($publicPrice - $costPrice) / $costPrice) * 100);
                 //$discountprice = 
                 $provider = $this->getProductProviderData('provider');
-                //Megaplus tiene una limitación y no se puede tener el precio custom por debajo del 15% de PVPR
-                $minim_custom_price = $recommendprice - ($recommendprice * 0.15);
+                //Megaplus tiene una limitación y no se puede tener el precio custom por debajo del 10% de PVPR
+                $minim_custom_price_5 = $recommendprice - ($recommendprice * 0.10);
+                $defaultprice = $this->getDefaultPrice();
+                $newPrice = $costPrice  + ($costPrice * ($options['price'] / 100));
+                info('new price: ' . $newPrice);
+                info('minium price: ' . $minim_custom_price_5);
+                info('price type: ' . $options['price_type'] );
+                info("request number: " . number_format($options['price'], 2, '.', ''));
                 if ($margin < 1 && $options['price_type'] == 1) {
                     return [
                         'status' => false,
@@ -882,10 +888,17 @@ class ProductModel extends Model
                         'profit_margin' => $this->getProfitMargin(),
                         'full_price_margin' => $this->getFullPriceMargin(),
                     ];
-                } else if ($provider == 5 && $minim_custom_price > number_format($options['price'], 2, '.', '') && ($options['price_type'] == 1 || $options['price_type'] == 2)) {
+                    // } else if ($provider == 5 && $minim_custom_price_5 > number_format($options['price'], 2, '.', '') && ($options['price_type'] == 1 || $options['price_type'] == 2)) {    
+                    // MEGAPLUS + ARTESANIA AGRICOLA
+                } else if (
+                    ($provider == 5 || $provider == 6)
+                    && (
+                        ($options['price_type'] == 2 && ($newPrice < $minim_custom_price_5)) ||
+                        ($options['price_type'] == 1 && (number_format($options['price'], 2, '.', '') < $minim_custom_price_5)))
+                ) {
                     return [
                         'status' => false,
-                        'message' => 'Condiciones especiales para este proveedor. Descuento máximo sobre PVPR del 15%.',
+                        'message' => 'Condiciones especiales para este proveedor. Descuento máximo sobre PVPR del 10%.',
                         'custom_price' => $this->checkCustomPrice(),
                         'type_custom_price' => $this->typeCustomPrice(),
                         'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
@@ -895,7 +908,9 @@ class ProductModel extends Model
                         'profit_margin' => $this->getProfitMargin(),
                         'full_price_margin' => $this->getFullPriceMargin(),
                     ];
-                } else if ($provider == 4 && (($defaultprice / 1.14 > number_format($publicPrice, 2, '.', '') && $options['price_type'] == 1) || ($options['price_type'] == 2 && $defaultprice / 1.14 > (($publicPrice / 100) + 1) * $costPrice))) {
+                    // BEMALU
+                } else if ($provider == 4 && (($defaultprice / 1.14 > number_format($publicPrice, 2, '.', '') && $options['price_type'] == 1) ||
+                    ($options['price_type'] == 2 && $defaultprice / 1.14 > (($publicPrice / 100) + 1) * $costPrice))) {
                     return [
                         'status' => false,
                         'message' => 'Precio mínimo para este producto->' . number_format($defaultprice / 1.14, 2, '.', ''),
@@ -908,7 +923,6 @@ class ProductModel extends Model
                         'profit_margin' => $this->getProfitMargin(),
                         'full_price_margin' => $this->getFullPriceMargin(),
                     ];
-                
                 } else {
                     $productCustom->price = number_format($options['price'], 2, '.', '');
                     $productCustom->price_type = $options['price_type'];
