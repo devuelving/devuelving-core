@@ -171,7 +171,11 @@ class OrderModel extends Model
     public function getTotal()
     {
         if ($this->getDiscountCoupon() != null) {
-            return number_format(($this->getSubtotal() + $this->getPaymentCost()) - $this->getDiscountCoupon()->discount_value, 2, '.', '');
+            $total = ($this->getSubtotal() + $this->getPaymentCost()) - $this->getDiscountCoupon()->discount_value;
+            if ($total <= 0) {
+                $total = 0;
+            }
+            return number_format($total, 2, '.', '');
         } else {
             return number_format($this->getSubtotal() + $this->getPaymentCost(), 2, '.', '');
         }
