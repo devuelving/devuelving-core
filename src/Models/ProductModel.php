@@ -558,8 +558,9 @@ class ProductModel extends Model
      */
     public function getPriceWithoutIva()
     {
-        if ($this->getPrice() != null) {
-            return $this->getPrice();
+        $price = $this->getPrice();
+        if ($price != null) {
+            return $price;
         }
         return null;
     }
@@ -772,8 +773,10 @@ class ProductModel extends Model
      */
     public function getProfit()
     {
-        if ($this->getPrice() != null) {
-            return ($this->getPrice() - $this->getPublicPriceCost()) / $this->getPublicPriceCost();
+        $price = $this->getPrice();
+        $publicprice = $this->getPublicPriceCost();
+        if ($price != null) {
+            return ($price - $publicprice) / $publicprice;
         }
         return 0;
     }
@@ -788,14 +791,15 @@ class ProductModel extends Model
      */
     public function getProfitMargin($front = false)
     {
-        if ($this->getProfit() != null) {
+        $profit = $this->getProfit();
+        if ($profit != null) {
             if ($front == false) {
-                return round($this->getProfit() * 100);
+                return round($profit * 100);
             } else {
-                if (($this->getProfit() * 100) > $this->getFullPriceMargin()) {
+                if (($profit * 100) > $this->getFullPriceMargin()) {
                     return 0;
                 } else {
-                    return round($this->getProfit() * 100);
+                    return round($profit * 100);
                 }
             }
         }
@@ -928,6 +932,7 @@ class ProductModel extends Model
                     $productCustom->price_type = $options['price_type'];
                 }
             }
+
             $productCustom->save();
             return [
                 'status' => true,
@@ -1161,15 +1166,18 @@ class ProductModel extends Model
     }
 
 
-    public function hasPhysicalStock(){
+    public function hasPhysicalStock()
+    {
         return $this->stock_type == config('settings.stock_types.fisico');
     }
 
-    public function hasDropshippingStock(){
+    public function hasDropshippingStock()
+    {
         return $this->stock_type == config('settings.stock_types.dropshipping');
     }
 
-    public function hasLiquidationStock(){
+    public function hasLiquidationStock()
+    {
         return $this->stock_type == config('settings.stock_types.liquidacion');
     }
 }
