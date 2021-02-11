@@ -489,11 +489,12 @@ class ProductModel extends Model
     public function getDiscountTarget()
     {
         $discount = 1;
-        if (FranchiseModel::getFranchise()) {
+        $franchise = FranchiseModel::getFranchise();
+        if ($franchise) {
             try {
                 // Comprobamos si la franquicia tiene los descuentos activados
-                if (FranchiseModel::getFranchise()->getCustom('discount') != null) {
-                    $franchiseDiscounts = json_decode(FranchiseModel::getFranchise()->getCustom('discount'));
+                if ($franchise->getCustom('discount') != null) {
+                    $franchiseDiscounts = json_decode($franchise->getCustom('discount'));
                     // Recorremos todos los descuentos de la franquicia
                     foreach ($franchiseDiscounts as $FranchiseDiscountTarget) {
                         // Obtenemos los datos de los descuentos
@@ -615,7 +616,13 @@ class ProductModel extends Model
      */
     public function checkCustomPrice()
     {
-        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->whereNotNull('price')->get();
+        if (session()->exists('franchise')){
+            $franchise = session('franchise');
+        }else{
+           $franchise = FranchiseModel::find(auth()->user()->franchise);
+           session()->put('franchise', $franchise);
+        }
+        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', $franchise->id)->whereNotNull('price')->get();
         if (count($productCustom) == 0) {
             return false;
         } else {
@@ -774,8 +781,8 @@ class ProductModel extends Model
     public function getProfit()
     {
         $price = $this->getPrice();
-        $publicprice = $this->getPublicPriceCost();
-        if ($price != null) {
+        if ($price != null) {            
+            $publicprice = $this->getPublicPriceCost();
             return ($price - $publicprice) / $publicprice;
         }
         return 0;
@@ -804,8 +811,8 @@ class ProductModel extends Model
             }
         }
         return 0;
-    }
-
+    }    
+    
     /**
      * Función para obtener el descuento entre el precio de venta y el PVPR
      *
@@ -813,10 +820,13 @@ class ProductModel extends Model
      * @author David Cortés <david@devuelving.com>
      * @return void
      */
-    public function getPublicMarginProfit()
+    public function getPublicMarginProfit($publicPrice = null)
     {
         try {
-            $publicPrice = $this->getPrice();
+            if(!$publicPrice){
+                $publicPrice = $this->getPrice();
+            }
+            
             $recommendedPrice = $this->getRecommendedPrice();
             return round((($recommendedPrice - $publicPrice) / $recommendedPrice) * 100);
         } catch (\Exception $e) {
@@ -1159,10 +1169,13 @@ class ProductModel extends Model
      * @author David Cortés <david@devuelving.com>
      * @return void
      */
-    public function print()
+    public function print($productdata = null)
     {
-        $product = ProductModel::find($this->id);
-        return view('modules.catalog.product', compact('product'));
+        $product = $this;//ProductModel::find($this->id);
+        if(!$productdata){            
+            $productdata = [];
+        }
+        return view('modules.catalog.product', compact('product', 'productdata'));
     }
 
 
