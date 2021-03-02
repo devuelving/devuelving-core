@@ -206,7 +206,8 @@ class OrderModel extends Model
      */
     public function getPaymentCost()
     {
-        return number_format(($this->getSubtotal() * ($this->getPaymentMethod()->porcentual / 100)) + $this->getPaymentMethod()->fixed, 2, '.', '');
+        $paymentMethod = $this->getPaymentMethod();
+        return number_format(($this->getSubtotal() * ($paymentMethod->porcentual / 100)) + $paymentMethod->fixed, 2, '.', '');    
     }
 
     /**
@@ -288,7 +289,13 @@ class OrderModel extends Model
             foreach ($free_shipping_array as $free_shipping) {
                 if($product_total >= $free_shipping->amount && $free_shipping->amount > $last_amount) {
                     $last_amount = $free_shipping->amount;
-                    $total = number_format($free_shipping->discount, 2, '.', '');
+                    //$total = number_format($free_shipping->discount, 2, '.', '');
+                    //cambio para coger el valor de pickupsi el pedido se recoge en tienda
+                    if ($this->pickup) {
+                        $total = number_format($free_shipping->discount_pickup, 2, '.', '');
+                    } else {
+                        $total = number_format($free_shipping->discount, 2, '.', '');
+                    }
                 }
             }
             return $total;

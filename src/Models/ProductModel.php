@@ -616,12 +616,7 @@ class ProductModel extends Model
      */
     public function checkCustomPrice()
     {
-        if (session()->exists('franchise')){
-            $franchise = session('franchise');
-        }else{
-           $franchise = FranchiseModel::find(auth()->user()->franchise);
-           session()->put('franchise', $franchise);
-        }
+        $franchise = FranchiseModel::getFranchise();
         $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', $franchise->id)->whereNotNull('price')->get();
         if (count($productCustom) == 0) {
             return false;
@@ -639,7 +634,7 @@ class ProductModel extends Model
      */
     public function typeCustomPrice()
     {
-        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->whereNotNull('price');
+        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::getFranchise()->id)->whereNotNull('price');
         if ($productCustom->count() == 0) {
             return 0;
         } else {
@@ -663,7 +658,7 @@ class ProductModel extends Model
     public function checkPromotion($productCustom = null)
     {
         if ($productCustom == null)
-            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id)->whereNotNull('promotion');
+            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id)->whereNotNull('promotion');
         else
             $productCustom->where('promotion', '!=', NULL);
 
@@ -747,7 +742,7 @@ class ProductModel extends Model
     {
         $price = 0;
         if ($this->checkCustomPrice()) {
-            $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->first();
+            $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::getFranchise()->id)->first();
             if ($productCustom->price_type == 1) {
                 $price = $productCustom->price;
             } else {
@@ -862,11 +857,11 @@ class ProductModel extends Model
      */
     public function productCustom($options = [])
     {
-        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
+        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id);
         if ($productCustom->count() == 0) {
             $productCustom = new ProductCustomModel();
             $productCustom->product = $this->id;
-            $productCustom->franchise = FranchiseModel::get('id');
+            $productCustom->franchise = FranchiseModel::getFranchise()->id;
         } else {
             $productCustom = $productCustom->first();
         }
@@ -989,7 +984,7 @@ class ProductModel extends Model
     public function getName($productCustom = null)
     {
         if ($productCustom == null)
-            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
+            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id);
 
         if ($productCustom->count() == 0) {
             return $this->name;
@@ -1014,7 +1009,7 @@ class ProductModel extends Model
     public function getDescription($productCustom = null)
     {
         if ($productCustom == null)
-            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
+            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id);
 
         if ($productCustom->count() == 0) {
             return $this->description;
@@ -1057,7 +1052,7 @@ class ProductModel extends Model
      */
     public function getMetaData($type)
     {
-        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
+        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id);
         if ($productCustom->count() == 0) {
             if ($type == 'meta_title') {
                 return $this->getName();
@@ -1155,7 +1150,7 @@ class ProductModel extends Model
      */
     public function visibleDiscounts()
     {
-        if (((FranchiseModel::get('type') == 0) && ($this->getPublicMarginProfit() < 25)) || ((!(bool) FranchiseModel::custom('visible_discounts', true)) || ($this->getPublicMarginProfit() < 5))) {
+        if (((FranchiseModel::getFranchise()->type == 0) && ($this->getPublicMarginProfit() < 25)) || ((!(bool) FranchiseModel::custom('visible_discounts', true)) || ($this->getPublicMarginProfit() < 5))) {
             return false;
         } else {
             return true;

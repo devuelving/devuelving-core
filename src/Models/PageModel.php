@@ -63,7 +63,7 @@ class PageModel extends Model
     public function getContent()
     {
         $return = $this->content;
-        $return = str_replace('[nombre_tienda]', strtoupper(FranchiseModel::get('name')), $return);
+        $return = str_replace('[nombre_tienda]', strtoupper(FranchiseModel::getFranchise()->name), $return);
         if (FranchiseServicesModel::where('franchise', FranchiseModel::getFranchise()->id)->where('service', 'tienda_propia')->where('value', '1')->exists()){
         $return = str_replace('[myshop_terms]', $this->getMyShopTerms(), $return);
         }
@@ -99,18 +99,18 @@ class PageModel extends Model
     public function getMyShopOwner(){
 
         $franchise = FranchiseModel::getFranchise();
-
+        $franchiseContactData = $franchise->getFranchiseContactData();
         $return = '<table border="1">' .
         '<tbody>' .
         '<tr>' .
             '<td style="padding:10px;">' .
             '<u>Datos identificativos de ' . strtoupper($franchise->name) .'</u><br /><br />' .
-            '<strong>Identidad:</strong>&nbsp;' . $franchise->getFranchiseContactData()->name . '&nbsp;' . $franchise->getFranchiseContactData()->surname . '<br />' .
-            '<strong>C.I.F.:</strong>&nbsp;' . $franchise->getFranchiseContactData()->nif . '<br />' .
-            '<strong>Dirección postal:</strong>&nbsp;' . $franchise->getFranchiseContactData()->street . '&nbsp;' . $franchise->getFranchiseContactData()->number . '&nbsp;' . $franchise->getFranchiseContactData()->floor . '&nbsp;' . $franchise->getFranchiseContactData()->door . '<br />' .
-            $franchise->getFranchiseContactData()->postal_code . '&nbsp;' . $franchise->getFranchiseContactData()->town . '&nbsp;' . $franchise::getFranchiseContactData()->province . '&nbsp;' . $franchise->getFranchiseContactData()->country . '<br />' .
-            '<strong>Correo electrónico:</strong>&nbsp;' . $franchise->getFranchiseContactData()->email . '<br />' .
-            '<strong>Teléfono:</strong>&nbsp;' . $franchise->getFranchiseContactData()->phone . '<br />' .
+            '<strong>Identidad:</strong>&nbsp;' . $franchiseContactData->name . '&nbsp;' . $franchiseContactData->surname . '<br />' .
+            '<strong>C.I.F.:</strong>&nbsp;' . $franchiseContactData->nif . '<br />' .
+            '<strong>Dirección postal:</strong>&nbsp;' . $franchiseContactData->street . '&nbsp;' . $franchiseContactData->number . '&nbsp;' . $franchiseContactData->floor . '&nbsp;' . $franchiseContactData->door . '<br />' .
+            $franchiseContactData->postal_code . '&nbsp;' . $franchiseContactData->town . '&nbsp;' . $franchiseContactData->province . '&nbsp;' . $franchiseContactData->country . '<br />' .
+            '<strong>Correo electrónico:</strong>&nbsp;' . $franchiseContactData->email . '<br />' .
+            '<strong>Teléfono:</strong>&nbsp;' . $franchiseContactData->phone . '<br />' .
             '</td>' .
         '</tr>' .
         '</tbody>' .

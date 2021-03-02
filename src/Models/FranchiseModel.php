@@ -54,15 +54,16 @@ class FranchiseModel extends Model
     {
         try {
             $franchise = new FranchiseModel();
-            if ($franchise->getCustom('logo') != null) {
+            $franchiseLogo = $franchise->getCustom('logo');
+            if ($franchiseLogo != null) {
                 // return config('app.cdn.url') . $franchise->getCustom('logo');
                 // return '/cdn/' . $franchise->getCustom('logo');
                 if ($redirect){
-                return route('index') . '/cdn/' . $franchise->getCustom('logo');
+                return route('index') . '/cdn/' . $franchiseLogo;
                 }
                 else
                 {
-                return config('app.cdn.url') . $franchise->getCustom('logo');
+                return config('app.cdn.url') . $franchiseLogo;
                 }
             } 
             return asset('images/app/brand/logo.png');
@@ -114,7 +115,28 @@ class FranchiseModel extends Model
      */
     public static function getFranchise()
     {
-        if (!empty(auth()->user()->franchise)) {
+        if (session()->exists('franchise')){
+            //info('FranchiseModel:: Tengo franquicia en sesión->'.session('franchise'));
+            return session('franchise');
+        }else if (!empty(auth()->user()->franchise)) {
+           //info('FranchiseModel:: No hay franquicia en sesión. La busco y la guardo');
+           $franchise = FranchiseModel::find(auth()->user()->franchise);
+           session()->put('franchise', $franchise);
+           //info('FranchiseModel:: Ahora sí, la franquicia en sesión->'.session('franchise'));
+           return $franchise;
+        } else if ($franchise = FranchiseModel::where('domain', FranchiseModel::getDomain())->first()) {
+            session()->put('franchise', $franchise);            
+            //info('FranchiseModel:: entro por dominio sin sesión la busco y la guardo->'.session('franchise'));
+            return $franchise;
+        } else {
+            $franchise = FranchiseModel::where('code', str_replace('.tutienda.com.es', '', FranchiseModel::getDomain()))->first();
+            session()->put('franchise', $franchise);
+            //info('FranchiseModel:: entro por código sin sesión la busco y la guardo->'.session('franchise'));            
+            return $franchise;
+        }
+        
+        /******* cambio 8/2/21 */
+        /*if (!empty(auth()->user()->franchise)) {
             return FranchiseModel::find(auth()->user()->franchise);
         } else if (session()->exists('franchise')){
             return session('franchise');
@@ -123,8 +145,9 @@ class FranchiseModel extends Model
             return $franchise;
         } else {
             return FranchiseModel::where('code', str_replace('.tutienda.com.es', '', FranchiseModel::getDomain()))->first();
-        }
+        }*/
     }
+
 
     /**
      * Metodo para obtener al franquiciado del dominio
