@@ -179,7 +179,7 @@ con número de CIF B-64503238.</p><br>';
             '<strong>Dirección postal:</strong>&nbsp;' . $franchiseContactData->street . '&nbsp;' . $franchiseContactData->number . '&nbsp;' . $franchiseContactData->floor . '&nbsp;' . $franchiseContactData->door . '&nbsp;' .
             $franchiseContactData->postal_code . '&nbsp;' . $franchiseContactData->town . '&nbsp;(' . $franchiseContactData->province . ')&nbsp;-&nbsp;' . $franchiseContactData->country . '<br />' .
             '<strong>Correo electrónico:</strong>&nbsp;' . $franchiseContactData->email . '<br />' .
-            '<strong>Teléfono:</strong>&nbsp;' . $franchiseContactData->phone . '<br />' .
+            
             '</td>' .
         '</tr>' .
         '</tbody>' .
