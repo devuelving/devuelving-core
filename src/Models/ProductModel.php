@@ -366,7 +366,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return float
      */
     public function getTax()
     {
@@ -378,7 +378,7 @@ class ProductModel extends Model
      * Returns Provider for the product
      *
      * @param boolean $cheapest
-     * @return void
+     * @return ProductProviderModel
      */
     public function getProvider($cheapest = false)
     {
@@ -391,7 +391,7 @@ class ProductModel extends Model
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @param boolean $cheapest
-     * @return void
+     * @return ProductProviderModel
      */
     public function getProductProvider($cheapest = false)
     {
@@ -463,7 +463,7 @@ class ProductModel extends Model
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @param boolean $tax
-     * @return void
+     * @return float
      */
     public function getPublicPriceCost($tax = true)
     {
@@ -571,7 +571,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return float
      */
     public function getOldPublicPriceCost()
     {
@@ -584,7 +584,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return float
      */
     public function getLastPriceUpdate()
     {
@@ -600,7 +600,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return float
      */
     public function getRecommendedPrice()
     {
@@ -612,7 +612,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return boolean
      */
     public function checkCustomPrice()
     {
@@ -630,7 +630,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return int
      */
     public function typeCustomPrice()
     {
@@ -653,7 +653,7 @@ class ProductModel extends Model
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @return boolean
-     * @param $productCustom ProductCustomModel Parametro para controlar si viene del toArray en el frontend
+     * @param ProductCustomModel $productCustom  Parametro para controlar si viene del toArray en el frontend
      */
     public function checkPromotion($productCustom = null)
     {
@@ -673,7 +673,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return boolean
      */
     public function checkCanarias()
     {
@@ -688,7 +688,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return boolean
      */
     public function checkSuperPromo()
     {
@@ -704,7 +704,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return boolean
      */
     public function checkLiquidation()
     {
@@ -720,7 +720,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return boolean
      */
     public function checkDoubleUnit()
     {
@@ -736,7 +736,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return float
      */
     public function getPrice()
     {
@@ -759,7 +759,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return ProductCategoryModel
      */
     public function getCategories()
     {
@@ -771,7 +771,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return float
      */
     public function getProfit()
     {
@@ -789,7 +789,7 @@ class ProductModel extends Model
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @param boolean $front
-     * @return void
+     * @return float
      */
     public function getProfitMargin($front = false)
     {
@@ -813,7 +813,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return float
      */
     public function getPublicMarginProfit($publicPrice = null)
     {
@@ -835,7 +835,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return float
      */
     public function getFullPriceMargin()
     {
@@ -853,7 +853,7 @@ class ProductModel extends Model
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @param array $options
-     * @return void
+     * @return array
      */
     public function productCustom($options = [])
     {
@@ -937,7 +937,6 @@ class ProductModel extends Model
                     $productCustom->price_type = $options['price_type'];
                 }
             }
-
             $productCustom->save();
             return [
                 'status' => true,
@@ -1003,7 +1002,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return void
+     * @return string
      * @param $productCustom ProductCustomModel Parametro para controlar si viene del toArray en el frontend
      */
     public function getDescription($productCustom = null)
@@ -1029,7 +1028,7 @@ class ProductModel extends Model
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @param integer $maxLength
-     * @return void
+     * @return string
      */
     public function getShortDescription($maxLength = 440)
     {
@@ -1048,7 +1047,7 @@ class ProductModel extends Model
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @param string $type
-     * @return void
+     * @return string
      */
     public function getMetaData($type)
     {
@@ -1090,7 +1089,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author Aaron Bujalance <aaron@devuelving.com>
-     * @return boolean
+     * @return integer
      */
     public function getStock($order = 0)
     {
