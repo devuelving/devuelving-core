@@ -268,7 +268,7 @@ class OrderModel extends Model
         return null;
     }
 
-    /**
+     /**
      * Returns the amount of free shipping the franchisee is going to give the client
      * 
      * @since 3.0.0
@@ -280,14 +280,25 @@ class OrderModel extends Model
         if(session('priceCost') == 1){
             return false;
         }
-        $product_total = $this->totalAmount();
+        
         $free_shippings = FranchiseCustomModel::where('franchise', $this->franchise)->where('var', 'free_shipping')->first();
         if ($free_shippings){
+            $orderDiscount = $this->getDiscountCoupon();
+            if(!empty($orderDiscount)){
+                info('descuento a aplicar ->'.$orderDiscount->discount_value);
+                $product_total = number_format($this->totalAmount() - $orderDiscount->discount_value, 2);
+                
+            }else{
+                info('no existe vale descuento');
+                $product_total = $this->totalAmount();
+            }
+            info('product_total->'.$product_total);
             $total = false;
 			$last_amount = 0;
             $free_shipping_array = json_decode($free_shippings->value);
             foreach ($free_shipping_array as $free_shipping) {
                 if($product_total >= $free_shipping->amount && $free_shipping->amount > $last_amount) {
+                    info($free_shipping->amount);
                     $last_amount = $free_shipping->amount;
                     //$total = number_format($free_shipping->discount, 2, '.', '');
                     //cambio para coger el valor de pickupsi el pedido se recoge en tienda
