@@ -83,17 +83,17 @@ class ProductModel extends Model
      */
     public function productCustoms()
     {
-        return $this->hasMany('devuelving\core\ProductCustomModel', 'product', 'id');
+        return $this->hasOne('devuelving\core\ProductCustomModel', 'product', 'id')->where('franchise', FranchiseModel::getFranchise()->id);
     }
     /**
-     * Relationship product provider hasOne
+     * Relationship product provider hasMany
      */
     public function productProvider()
     {
         return $this->hasMany('devuelving\core\ProductProviderModel', 'product', 'id');
     }
     /**
-     * Relationship product image hasOne
+     * Relationship product image hasMany
      */
     public function productImage()
     {
