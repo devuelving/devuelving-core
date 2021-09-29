@@ -989,10 +989,24 @@ class ProductModel extends Model
                     'message' => 'El producto se ha quitado de promociones correctamente'
                 ];
             }
+        } else if ($options['action'] == 'removed') {
+            $productCustom->removed = $options['removed'];
+            $productCustom->save();
+            if ($options['removed'] == 1) {
+                return [
+                    'status' => true,
+                    'message' => 'El producto se ha ocultado correctamente'
+                ];
+            } else {
+                return [
+                    'status' => true,
+                    'message' => 'El producto se ha activado correctamente'
+                ];
+            }
         } else {
             return [
                 'status' => false,
-                'message' => 'No se ha enviado una acción valida'
+                'message' => 'No se ha enviado una acción válida'
             ];
         }
     }
