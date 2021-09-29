@@ -83,6 +83,7 @@ class ProductModel extends Model
      */
     public function productCustoms()
     {
+        //return $this->hasMany('devuelving\core\ProductCustomModel', 'product', 'id');
         return $this->hasOne('devuelving\core\ProductCustomModel', 'product', 'id')->where('franchise', FranchiseModel::getFranchise()->id);
     }
     /**
@@ -366,7 +367,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return float
+     * @return void
      */
     public function getTax()
     {
@@ -378,7 +379,7 @@ class ProductModel extends Model
      * Returns Provider for the product
      *
      * @param boolean $cheapest
-     * @return ProductProviderModel
+     * @return void
      */
     public function getProvider($cheapest = false)
     {
@@ -391,7 +392,7 @@ class ProductModel extends Model
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @param boolean $cheapest
-     * @return ProductProviderModel
+     * @return void
      */
     public function getProductProvider($cheapest = false)
     {
@@ -463,7 +464,7 @@ class ProductModel extends Model
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @param boolean $tax
-     * @return float
+     * @return void
      */
     public function getPublicPriceCost($tax = true)
     {
@@ -493,9 +494,10 @@ class ProductModel extends Model
         if ($franchise) {
             try {
                 // Comprobamos si la franquicia tiene los descuentos activados
-                if ($franchise->getCustom('discount') != null) {
-                    $franchiseDiscounts = json_decode($franchise->getCustom('discount'));
-                    // Recorremos todos los descuentos de la franquicia
+               $franchise_discount = $franchise->getCustom('discount');
+                if ($franchise_discount != null) {
+                    $franchiseDiscounts = json_decode($franchise_discount);                    
+                    // Recorremos todos los descuentos de la franquicia                 
                     foreach ($franchiseDiscounts as $FranchiseDiscountTarget) {
                         // Obtenemos los datos de los descuentos
                         $discountTarget = DiscountTargetsModel::find($FranchiseDiscountTarget);
@@ -571,7 +573,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return float
+     * @return void
      */
     public function getOldPublicPriceCost()
     {
@@ -584,7 +586,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return float
+     * @return void
      */
     public function getLastPriceUpdate()
     {
@@ -600,7 +602,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return float
+     * @return void
      */
     public function getRecommendedPrice()
     {
@@ -612,10 +614,15 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return boolean
+     * @return void
      */
     public function checkCustomPrice()
     {
+        if(!empty($this->productCustoms) && $this->productCustoms->price !== null) {
+            return true;
+        } else {
+            return false;
+        }
         $franchise = FranchiseModel::getFranchise();
         $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', $franchise->id)->whereNotNull('price')->get();
         if (count($productCustom) == 0) {
@@ -630,15 +637,14 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return int
+     * @return void
      */
     public function typeCustomPrice()
     {
-        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::getFranchise()->id)->whereNotNull('price');
-        if ($productCustom->count() == 0) {
+        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::getFranchise()->id)->whereNotNull('price')->first();
+        if (empty($productCustom)) {
             return 0;
-        } else {
-            $productCustom = $productCustom->first();
+        } else {            
             if ($productCustom->price_type == 1) {
                 return 1;
             } else if ($productCustom->price_type == 2) {
@@ -653,27 +659,46 @@ class ProductModel extends Model
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @return boolean
-     * @param ProductCustomModel $productCustom  Parametro para controlar si viene del toArray en el frontend
+     * @param $productCustom ProductCustomModel Parametro para controlar si viene del toArray en el frontend
      */
     public function checkPromotion($productCustom = null)
     {
+
+        if(!empty($this->productCustoms) && $this->productCustoms->promotion === 1){
+            return true;
+        }
+        return false;
+        /*
         if ($productCustom == null)
             $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id)->whereNotNull('promotion');
         else
-            $productCustom->where('promotion', '!=', NULL);
-
+            $productCustom->where('promotion', '!=', NULL)->where('franchise', FranchiseModel::getFranchise()->id);
         if ($productCustom->count() == 0) {
             return false;
         } else {
             return true;
+        }*/
+    }
+    /** 
+     * Función para comprobar si el producto esta oculto para la franquicia
+     *    
+     * @return boolean
+     * @param $productCustom ProductCustomModel Parametro para controlar si viene del toArray en el frontend
+     */
+    public function checkRemoved($productCustom = null)
+    {
+        
+        if(!empty($this->productCustoms) && $this->productCustoms->removed === 1){
+            return true;
         }
+        return false;       
     }
     /**
      * Función para comprobar si el producto se envia a Canarias
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return boolean
+     * @return void
      */
     public function checkCanarias()
     {
@@ -688,7 +713,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return boolean
+     * @return void
      */
     public function checkSuperPromo()
     {
@@ -704,7 +729,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return boolean
+     * @return void
      */
     public function checkLiquidation()
     {
@@ -720,7 +745,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return boolean
+     * @return void
      */
     public function checkDoubleUnit()
     {
@@ -736,7 +761,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return float
+     * @return void
      */
     public function getPrice()
     {
@@ -759,7 +784,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return ProductCategoryModel
+     * @return void
      */
     public function getCategories()
     {
@@ -771,7 +796,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return float
+     * @return void
      */
     public function getProfit()
     {
@@ -789,7 +814,7 @@ class ProductModel extends Model
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @param boolean $front
-     * @return float
+     * @return void
      */
     public function getProfitMargin($front = false)
     {
@@ -813,7 +838,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return float
+     * @return void
      */
     public function getPublicMarginProfit($publicPrice = null)
     {
@@ -835,7 +860,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return float
+     * @return void
      */
     public function getFullPriceMargin()
     {
@@ -853,18 +878,17 @@ class ProductModel extends Model
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @param array $options
-     * @return array
+     * @return void
      */
     public function productCustom($options = [])
     {
-        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id);
-        if ($productCustom->count() == 0) {
+        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id)->first();
+        if (empty($productCustom)) {
             $productCustom = new ProductCustomModel();
             $productCustom->product = $this->id;
-            $productCustom->franchise = FranchiseModel::getFranchise()->id;
-        } else {
-            $productCustom = $productCustom->first();
+            $productCustom->franchise = FranchiseModel::getFranchise()->id;        
         }
+
         if ($options['action'] == 'price') {
             if ($options['price'] == null || $options['price_type'] == null) {
                 $productCustom->price = null;
@@ -937,6 +961,7 @@ class ProductModel extends Model
                     $productCustom->price_type = $options['price_type'];
                 }
             }
+
             $productCustom->save();
             return [
                 'status' => true,
@@ -982,19 +1007,26 @@ class ProductModel extends Model
      */
     public function getName($productCustom = null)
     {
-        if ($productCustom == null)
-            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id);
 
-        if ($productCustom->count() == 0) {
+        if(!empty($this->productCustoms) && $this->productCustoms->name !== null){
+            return $this->productCustoms->name;
+        }
+        return $this->name;
+       
+        /*
+        if ($productCustom == null)
+            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id)->first();
+
+        if (empty($productCustom)) {
             return $this->name;
         } else {
-            $productCustom = $productCustom->first();
-            if ($productCustom->name != null) {
+            if (isset($productCustom->name) && $productCustom->name != null) {
                 return $productCustom->name;
             } else {
                 return $this->name;
             }
         }
+        */
     }
 
     /**
@@ -1002,24 +1034,29 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
-     * @return string
+     * @return void
      * @param $productCustom ProductCustomModel Parametro para controlar si viene del toArray en el frontend
      */
     public function getDescription($productCustom = null)
     {
+        if(!empty($this->productCustoms) && $this->productCustoms->description !== null){
+            return $this->productCustoms->description;
+        }
+        return $this->description;
+        /*
         if ($productCustom == null)
-            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id);
+            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id)->first();
 
-        if ($productCustom->count() == 0) {
+        if (empty($productCustom)) {
             return $this->description;
         } else {
-            $productCustom = $productCustom->first();
-            if ($productCustom->description != null) {
+            if (isset($productCustom->description) && $productCustom->description != null) {
                 return $productCustom->description;
             } else {
                 return $this->description;
             }
         }
+        */
     }
 
     /**
@@ -1028,7 +1065,7 @@ class ProductModel extends Model
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @param integer $maxLength
-     * @return string
+     * @return void
      */
     public function getShortDescription($maxLength = 440)
     {
@@ -1047,12 +1084,12 @@ class ProductModel extends Model
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @param string $type
-     * @return string
+     * @return void
      */
     public function getMetaData($type)
     {
-        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id);
-        if ($productCustom->count() == 0) {
+        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id)->first();
+        if (empty($productCustom)) {
             if ($type == 'meta_title') {
                 return $this->getName();
             } else if ($type == 'meta_description') {
@@ -1060,8 +1097,7 @@ class ProductModel extends Model
             } else if ($type == 'meta_keywords') {
                 return null;
             }
-        } else {
-            $productCustom = $productCustom->first();
+        } else {                                   
             if ($type == 'meta_title') {
                 if ($productCustom->meta_title != null) {
                     return $productCustom->meta_title;
@@ -1089,7 +1125,7 @@ class ProductModel extends Model
      *
      * @since 3.0.0
      * @author Aaron Bujalance <aaron@devuelving.com>
-     * @return integer
+     * @return boolean
      */
     public function getStock($order = 0)
     {
