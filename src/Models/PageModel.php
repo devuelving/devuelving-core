@@ -107,8 +107,8 @@ con número de CIF B-64503238.</p><br>';
 
         $franchise = FranchiseModel::getFranchise();
         $franchiseContactData = $franchise->getFranchiseContactData();
-        $return = '<h3><strong>¿Quién es el Responsable del tratamiento de sus datos? </strong></h3>
-                <p>DT TECNOLOGÍA 2007, S.L. (o DEVUELVING) actúa como responsable del tratamiento de datos.</p>
+        $return = '<h3><strong>¿Quién es el Encargado del tratamiento de sus datos? </strong></h3>
+                <p>DT TECNOLOGÍA 2007, S.L. (o DEVUELVING) actúa como Encargado del tratamiento de datos.</p>
                 <table border="1">
                     <tbody>
                     <tr>
@@ -134,7 +134,7 @@ con número de CIF B-64503238.</p><br>';
      */
     public function getMyShopTerms(){
 
-        $return = '<h3><strong>¿Quién es el Responsable del tratamiento de sus datos? </strong></h3>';
+        $return = '<h3><strong>¿Quién es el Encargado del tratamiento de sus datos? </strong></h3>';
         if (FranchiseCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('var', 'myshop_terms')->exists()){
         $return = $return . '<p>' . FranchiseCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('var', 'myshop_terms')->first()->value .'</p>';
         }
@@ -152,7 +152,7 @@ con número de CIF B-64503238.</p><br>';
 
         $franchise = FranchiseModel::getFranchise();
         $franchiseContactData = $franchise->getFranchiseContactData();
-        $return = '<p>La plataforma de gestión y mantenimiento de esta web  hace parte de la franquicia Devuelving . Los derechos y licencias de explotación de la marca, imagen y logotipo ' . strtoupper($franchise->name) .' están vinculados a &nbsp;' . $franchiseContactData->name . '&nbsp;' . $franchiseContactData->surname . '
+        $return = '<p>La plataforma de gestión y mantenimiento de esta web esta supervisada por la empresa encargada de la gestión de los datos, autorizada por la propiedad de este dominio. Los derechos y licencias de explotación de la marca, imagen y logotipo ' . strtoupper($franchise->name) .' están vinculados a &nbsp;' . $franchiseContactData->name . '&nbsp;' . $franchiseContactData->surname . '
         con NIF/CIF &nbsp;' . $franchiseContactData->nif . ' y con domicilio en &nbsp;' . $franchiseContactData->street . '&nbsp;' . $franchiseContactData->number . '&nbsp;' . $franchiseContactData->floor . '&nbsp;' . $franchiseContactData->door . '&nbsp;' .
             $franchiseContactData->postal_code . '&nbsp;' . $franchiseContactData->town . '&nbsp;(' . $franchiseContactData->province . ')&nbsp;. <br>';
 
@@ -168,7 +168,7 @@ con número de CIF B-64503238.</p><br>';
 
         $franchise = FranchiseModel::getFranchise();
         $franchiseContactData = $franchise->getFranchiseContactData();
-        $return = strtoupper($franchise->name).'&nbsp; actúa como responsable del tratamiento de datos.</p>'.
+        $return = strtoupper($franchise->name).'&nbsp; actúa como encargado del tratamiento de datos.</p>'.
         '<table border="1">' .
         '<tbody>' .
         '<tr>' .
@@ -177,8 +177,9 @@ con número de CIF B-64503238.</p><br>';
             '<strong>Identidad:</strong>&nbsp;' . $franchiseContactData->name . '&nbsp;' . $franchiseContactData->surname . '<br />' .
             '<strong>C.I.F.:</strong>&nbsp;' . $franchiseContactData->nif . '<br />' .
             '<strong>Dirección postal:</strong>&nbsp;' . $franchiseContactData->street . '&nbsp;' . $franchiseContactData->number . '&nbsp;' . $franchiseContactData->floor . '&nbsp;' . $franchiseContactData->door . '&nbsp;' .
-            $franchiseContactData->postal_code . '&nbsp;' . $franchiseContactData->town . '&nbsp;(' . $franchiseContactData->province . ')&nbsp;-&nbsp;' . $franchiseContactData->country . '<br />' .            
-            '</td>' .
+            $franchiseContactData->postal_code . '&nbsp;' . $franchiseContactData->town . '&nbsp;(' . $franchiseContactData->province . ')&nbsp;-&nbsp;' . $franchiseContactData->country . '<br />' .
+            
+             '</td>' .
         '</tr>' .
         '</tbody>' .
     '</table><br>';
