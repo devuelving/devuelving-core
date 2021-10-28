@@ -2,8 +2,10 @@
 
 namespace devuelving\core;
 
+use Carbon\Carbon;
 use devuelving\core\FranchiseModel;
 use Illuminate\Database\Eloquent\Model;
+use devuelving\core\CustomerPaymentsModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CustomerModel extends Model
@@ -65,5 +67,22 @@ class CustomerModel extends Model
     public function franchise()
     {
         return FranchiseModel::find($this->franchise);
+    }
+
+     /**
+     * Método para comprobar si hay alguna suscripción activa
+     *
+     * @since 3.0.0
+     * @author Eduard Puigdemunt <eduard@devuelving.com>
+     * @return boolean
+     */
+    public function getActiveSubscription()
+    {
+        $now = Carbon::now();
+        return CustomerPaymentsModel::where('customer', $this->id)
+        ->where('status', 1) 
+        // ->whereRaw(Carbon::now()->between(Carbon::parse($this->payment_date), Carbon::parse($this->expires_date)))
+        ->whereRaw('"'.$now.'" between `payment_date` and `expires_date`')
+        ->exists();
     }
 }
