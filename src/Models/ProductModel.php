@@ -101,6 +101,11 @@ class ProductModel extends Model
         return $this->hasMany('devuelving\core\ProductImageModel', 'product', 'id');
     }
 
+    public function categories()
+    {
+        return $this->belongsToMany('devuelving\core\CategoryModel', 'product_category', 'product', 'category');
+    }
+
     public function getUnitNameAttribute()
     {
         switch ($this->unit) {
@@ -186,6 +191,23 @@ class ProductModel extends Model
             $provider = $productProvider->getProvider();
             // Obtenemos el precio de coste y le sumamos el margen de beneficio del proveedor
             $costPrice = $productProvider->cost_price + ($productProvider->cost_price * ($provider->profit_margin / 100));
+            // Apliquem recarrec a productes que volem vendre amb ports de franc (de moment nomes alfa y elektro3)
+            if ($provider->id == 7 || $provider->id == 15) {
+                $costPriceIVA = $productProvider->cost_price * ($this->getTax() + 1);
+                if ($costPriceIVA >= 150) {
+                    $costPrice += 12.40;
+                    $this->transport = 1;
+                } elseif ($costPriceIVA >= 80) {
+                    $costPrice += 8.26;
+                    $this->transport = 1;
+                } elseif ($costPriceIVA >= 40) {
+                    $costPrice += 6.61;
+                    $this->transport = 1;
+                } else {
+                    $this->transport = 0;
+                }
+            }
+            // Preu de venda franquiciat
             if ($provider->id == 5 || $provider->id == 6) {
                 // Obtenemos el precio recomendado y le restamos el 10% que es el precio minimo de venta
                 $default_price = $this->getRecommendedPrice() / 1.10;
@@ -194,7 +216,7 @@ class ProductModel extends Model
                 $default_price = ($costPrice + ($productProvider->cost_price * ($provider->franchise_profit_margin / 100))) * ((TaxModel::find($this->tax)->value / 100) + 1);
             }
             // Actualizamos los precios de los productos
-            $product = ProductModel::find($this->id);
+            $product = $this; //ProductModel::find($this->id);
             $oldCostPrice = $product->cost_price / (1 + $provider->profit_margin / 100);
             $product->cost_price = $costPrice;
             $product->default_price = $default_price;
@@ -426,7 +448,7 @@ class ProductModel extends Model
                 } else {
                     $rule = 'asc';
                 }
-            if($this->stock_type == config('settings.stock_types.fisico'))
+                if ($this->stock_type == config('settings.stock_types.fisico'))
                     $provider = ProductStockModel::where('product', $this->id)->orderBy('product_stock.purchase_price', $rule)->first();
                 else
                     $provider = ProductProviderModel::where('product', $this->id)->orderBy('product_provider.cost_price', $rule)->first();
@@ -470,7 +492,7 @@ class ProductModel extends Model
     {
         $discount = $this->getDiscountTarget();
         // cuando es demo y el usuario es diferente de demo@devuelving.com no tiene descuentos
-        if (FranchiseModel::getFranchise()->type == 0 && auth()->user() && auth()->user()->type != 1) {
+        if (FranchiseModel::getFranchise() && FranchiseModel::getFranchise()->type == 0 && auth()->user() && auth()->user()->type != 1) {
             $discount = 1;
         }
         if ($tax) {
@@ -492,32 +514,7 @@ class ProductModel extends Model
         $discount = 1;
         $franchise = FranchiseModel::getFranchise();
         if ($franchise) {
-            try {
-                // Comprobamos si la franquicia tiene los descuentos activados
-               $franchise_discount = $franchise->getCustom('discount');
-                if ($franchise_discount != null) {
-                    $franchiseDiscounts = json_decode($franchise_discount);                    
-                    // Recorremos todos los descuentos de la franquicia                 
-                    foreach ($franchiseDiscounts as $FranchiseDiscountTarget) {
-                        // Obtenemos los datos de los descuentos
-                        $discountTarget = DiscountTargetsModel::find($FranchiseDiscountTarget);
-                        $target = json_decode($discountTarget->target);
-                        // Comprobamos si el descuento es de tipo 1, lo que significa que el id del producto esta en los datos del descuento
-                        if ($discountTarget->type == 1) {
-                            if (in_array($this->id, $target)) {
-                                $discount = 1 - ($discountTarget->discount / 100);
-                            }
-                            // Comprobamos si el descuento es de tipo 2, lo que significa que se aplica un descuento por proveedor
-                        } else if ($discountTarget->type == 2) {
-                            if (in_array($this->getProvider()->id, $target)) {
-                                $discount = 1 - ($discountTarget->discount / 100);
-                            }
-                        }
-                    }
-                }
-            } catch (\Exception $e) {
-                report($e);
-            }
+            $discount = $this->getDiscount($franchise);
         }
         return $discount;
     }
@@ -888,7 +885,6 @@ class ProductModel extends Model
             $productCustom->product = $this->id;
             $productCustom->franchise = FranchiseModel::getFranchise()->id;        
         }
-
         if ($options['action'] == 'price') {
             if ($options['price'] == null || $options['price_type'] == null) {
                 $productCustom->price = null;
@@ -1236,5 +1232,42 @@ class ProductModel extends Model
     public function hasLiquidationStock()
     {
         return $this->stock_type == config('settings.stock_types.liquidacion');
+    }
+
+    public function getDiscount($franchise)
+    {
+        $discount = 1;
+        if ($franchise) {
+            try {
+                // Comprobamos si la franquicia tiene los descuentos activados
+                // $franchise_discount = $franchise->getCustom('discount');
+                $franchise_discount = FranchiseCustomModel::where('franchise', $franchise->id)->where('var', 'discount')->first(['value']);
+                if ($franchise_discount) {
+                    $franchiseDiscounts = json_decode($franchise_discount->value);
+                    // Recorremos todos los descuentos de la franquicia  
+                    foreach ($franchiseDiscounts as $FranchiseDiscountTarget) {
+                        // Obtenemos los datos de los descuentos
+                        $discountTarget = DiscountTargetsModel::find($FranchiseDiscountTarget);
+                        // Comprobamos si el descuento es de tipo 1, lo que significa que el id del producto esta en los datos del descuento
+                        if (isset($discountTarget)) {
+                            $target = json_decode($discountTarget->target);
+                            if ($discountTarget->type == 1) {
+                                if (in_array($this->id, $target)) {
+                                    $discount = 1 - ($discountTarget->discount / 100);
+                                }
+                                // Comprobamos si el descuento es de tipo 2, lo que significa que se aplica un descuento por proveedor
+                            } else if ($discountTarget->type == 2) {
+                                if (in_array($this->getProvider()->id, $target)) {
+                                    $discount = 1 - ($discountTarget->discount / 100);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                report($e);
+            }
+        }
+        return $discount;
     }
 }
