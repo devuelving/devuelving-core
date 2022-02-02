@@ -2,6 +2,7 @@
 
 namespace devuelving\core;
 
+use App\Franchise;
 use devuelving\core\TaxModel;
 use devuelving\core\RegionModel;
 use devuelving\core\CountryModel;
@@ -75,6 +76,22 @@ class OrderModel extends Model
         $order_details = OrderDetailModel::where('order', $this->id)->get();
         foreach ($order_details as $order_detail) {
             $order_price = $order_price + ($order_detail->units * $order_detail->unit_price);
+        }
+        return number_format($order_price, 2, '.', '');
+    }
+
+    /**
+     * Returns total amount to be paid NOT TAXES
+     *
+     * @return float
+     */
+    public function totalAmountWithOutTaxes()
+    {
+        $order_price = 0;
+        $order_price1 = 0;
+        $order_details = OrderDetailModel::where('order', $this->id)->get();
+        foreach ($order_details as $order_detail) {
+            $order_price = $order_price + ($order_detail->units * ($order_detail->unit_price / (1 + ($order_detail->tax / 100))));
         }
         return number_format($order_price, 2, '.', '');
     }
@@ -244,21 +261,23 @@ class OrderModel extends Model
     {
         if (!empty($this->address_country)) {
             $total = 0;
-            if (RegionModel::where('name', $this->address_province)->where('country', $this->address_country)->count() == 1) {
-                $region = RegionModel::where('name', $this->address_province)->where('country', $this->address_country)->first();
+            
+            $region = RegionModel::where('name', $this->address_province)->where('country', $this->address_country)->first();
+            if (!empty($region)) {
                 $shippingFee = ShippingFeeModel::find($region->shipping_fee);
             } else {
                 $country = CountryModel::where('code', $this->address_country)->first();
                 $shippingFee = ShippingFeeModel::find($country->shipping_fee);
             }
-            if ($excludeMeat){
-            // $total = $this->getShippingPrice($shippingFee, $this->getProductWeight(true));
-            $total = $this->getShippingPrice($shippingFee, $this->getShippingWeight(true));
+            info('OrderModel weight: ' . $this->getShippingWeight(true));
+            if ($excludeMeat) {
+                // $total = $this->getShippingPrice($shippingFee, $this->getProductWeight(true));
+                $total = $this->getShippingPrice($shippingFee, $this->getShippingWeight(true));
+            } else {
+                // $total = $this->getShippingPrice($shippingFee, $this->weight);
+                $total = $this->getShippingPrice($shippingFee, $this->getShippingWeight());
             }
-            else{
-            // $total = $this->getShippingPrice($shippingFee, $this->weight);
-            $total = $this->getShippingPrice($shippingFee, $this->getShippingWeight());
-            }
+
             if ($this->hasDropshipping()) {
                 $total = $total + $this->getDropshippingPrice();
             }
@@ -513,8 +532,9 @@ class OrderModel extends Model
      */
     public function getOthersDiscounts()
     {
-        return OrderDiscountModel::where('order', $this->id)->where('type', '!=', 1)->get();
-    }
+        //21/01/2022 cancelo la consulta.
+        return null;//OrderDiscountModel::where('order', $this->id)->where('type', '!=', 1)->get();
+        }
 
     /**
      * Método para obtener el listado de estados de un pedido
@@ -575,10 +595,11 @@ class OrderModel extends Model
         $weight = 0;
         $volume = 0;
         $products = $this->listProducts();
-        foreach ($products as $product) {
-            if (!($product->getProduct()->getProvider()->id == 11 && $excludeMeat = true)) {
-                $weight = $weight + $product->getProduct()->weight * $product->units;
-                $volume = $volume + $product->getProduct()->volume * $product->units;
+        foreach ($orderProducts as $orderProduct) {
+            $product = ProductModel::find($orderProduct->product);
+            if (!(($product->getProvider()->id == 11 && $excludeMeat == true) || ($product->transport == 1  && Franchise::custom('free_transport', true)))) {
+                $weight += $product->weight * $orderProduct->units;
+                $volume += $product->volume * $orderProduct->units;
             }
         }
         if($weight > $volume) {
