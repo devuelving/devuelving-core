@@ -88,10 +88,10 @@ class PageModel extends Model
      */
     public function getDefaultData(){
 
-        $franchise = FranchiseModel::getFranchise();
-        $franchiseContactData = $franchise->getFranchiseContactData();
-        $return = '<p>La plataforma de gestión y mantenimiento de esta web  hace parte de la franquicia Devuelving . Los derechos y licencias de explotación de la marca, imagen y logotipo DEVUELVING están vinculados y autorizados por la empresa <strong>DIGITAL COMPANY SHOPONLINE LLC.</strong>
-siendo esta última la gestora, domiciliada en 16192 Coastal HWY Lewes Delaware 19958 Estados Unidos,con identificación EIN 85-3847296  que autoriza  y colabora en el territorio nacional Español con la empresa DT Tecnología 2007, S.L., 
+        //$franchise = FranchiseModel::getFranchise();
+        //$franchiseContactData = $franchise->getFranchiseContactData();
+        $return = '<p>La plataforma de gestión y mantenimiento de esta web  hace parte de la franquicia Devuelving. Los derechos y licencias de explotación de la marca, imagen y logotipo DEVUELVING están vinculados y autorizados por la empresa <strong>DIGITAL COMPANY SHOPONLINE LLC.</strong>
+siendo esta última la gestora, domiciliada en 16192 Coastal HWY Lewes Delaware 19958 Estados Unidos,con identificación EIN 85-3847296 que autoriza y colabora en el territorio nacional Español con la empresa DT Tecnología 2007, S.L., 
 sociedad de nacionalidad española domiciliada en Ronda Ibérica 13 3B 08800 Vilanova i la Geltrú (Barcelona). DT Tecnología 2007 S.L. Está inscrita en el Registro Mercantil de Barcelona, en el Tomo 39447, Folio 156, Hoja núm. B-345984, inscripción 1ª, 
 con número de CIF B-64503238.</p><br>';
 
@@ -105,8 +105,8 @@ con número de CIF B-64503238.</p><br>';
      */
     public function getDefaultTerms(){
 
-        $franchise = FranchiseModel::getFranchise();
-        $franchiseContactData = $franchise->getFranchiseContactData();
+        //$franchise = FranchiseModel::getFranchise();
+        //$franchiseContactData = $franchise->getFranchiseContactData();
         $return = '<h3><strong>¿Quién es el Encargado del tratamiento de sus datos? </strong></h3>
                 <p>DT TECNOLOGÍA 2007, S.L. (o DEVUELVING) actúa como Encargado del tratamiento de datos.</p>
                 <table border="1">
@@ -115,7 +115,7 @@ con número de CIF B-64503238.</p><br>';
                         <td style="padding:10px;">
                         <u>Datos identificativos de DEVUELVING</u><br /><br />
                         <strong>Identidad:</strong>DT TECNOLOGÍA 2007, S.L.<br />
-                        <strong>C.I.F.:</strong> B-64503238<br />
+                        <strong>C.I.F.:</strong> B64503238<br />
                         <strong>Dirección postal:</strong> Ronda Ibérica nº13 nave B3, C.P 08800, Vilanova i la Geltrú (Barcelona, España)<br />
                         <strong>Correo electrónico:</strong> info@devuelving.com .<br />
                         </td>
@@ -136,7 +136,7 @@ con número de CIF B-64503238.</p><br>';
 
         $return = '<h3><strong>¿Quién es el Encargado del tratamiento de sus datos? </strong></h3>';
         if (FranchiseCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('var', 'myshop_terms')->exists()){
-        $return = $return . '<p>' . FranchiseCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('var', 'myshop_terms')->first()->value .'</p>';
+            $return = $return . '<p>' . FranchiseCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('var', 'myshop_terms')->first()->value .'</p>';
         }
         $return = $return . $this->getMyShopOwner(); 
         return $return;
@@ -174,11 +174,12 @@ con número de CIF B-64503238.</p><br>';
         '<tr>' .
             '<td style="padding:10px;">' .
             '<u>Datos identificativos de ' . strtoupper($franchise->name) .'</u><br /><br />' .
-            '<strong>Identidad:</strong>&nbsp;' . $franchiseContactData->name . '&nbsp;' . $franchiseContactData->surname . '<br />' .
-            '<strong>C.I.F.:</strong>&nbsp;' . $franchiseContactData->nif . '<br />' .
-            '<strong>Dirección postal:</strong>&nbsp;' . $franchiseContactData->street . '&nbsp;' . $franchiseContactData->number . '&nbsp;' . $franchiseContactData->floor . '&nbsp;' . $franchiseContactData->door . '&nbsp;' .
+            '<strong>Identidad: </strong>&nbsp;' . $franchiseContactData->name . '&nbsp;' . $franchiseContactData->surname . '<br />' .
+            '<strong>NIF/CIF: </strong>&nbsp;' . $franchiseContactData->nif . '<br />' .
+            '<strong>Dirección postal: </strong>&nbsp;' . $franchiseContactData->street . '&nbsp;' . $franchiseContactData->number . '&nbsp;' . $franchiseContactData->floor . '&nbsp;' . $franchiseContactData->door . '&nbsp;' .
             $franchiseContactData->postal_code . '&nbsp;' . $franchiseContactData->town . '&nbsp;(' . $franchiseContactData->province . ')&nbsp;-&nbsp;' . $franchiseContactData->country . '<br />' .
-            
+            '<strong>Correo electrónico: </strong>' . $franchiseContactData->email .'<br />'.
+            '<strong>Teléfono: </strong>' . $franchiseContactData->phone .'<br />'.
              '</td>' .
         '</tr>' .
         '</tbody>' .
