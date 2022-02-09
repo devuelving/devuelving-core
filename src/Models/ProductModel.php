@@ -118,6 +118,12 @@ class ProductModel extends Model
             case 2:
                 return 'unidad';
                 break;
+            case 3:
+                return '100ml';
+                break;
+            case 4:
+                return '100gr';
+                break;
         }
     }
 
