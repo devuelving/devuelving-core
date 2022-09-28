@@ -76,9 +76,14 @@ class CustomerModel extends Model
      * @author Eduard Puigdemunt <eduard@devuelving.com>
      * @return boolean
      */
-    public function getActiveSubscription()
+    public function getActiveSubscription($date = false)
     {
-        $now = Carbon::now();
+        if ($date) {
+            $now = $date;
+        }
+        else{
+            $now = Carbon::now();
+        }
         return CustomerPaymentsModel::where('customer', $this->id)
         ->where('status', 1) 
         // ->whereRaw(Carbon::now()->between(Carbon::parse($this->payment_date), Carbon::parse($this->expires_date)))

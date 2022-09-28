@@ -54,7 +54,8 @@ class CustomerPaymentsModel extends Model
         return $this->belongsTo(CustomerModel::class, 'customer', 'id');
     }
 
-    function getPaymentMethod(){
+    function getPaymentMethod()
+    {
         return $this->belongsTo(MyPaymentMethodModel::class, 'payment_method', 'id');
     }
 }
