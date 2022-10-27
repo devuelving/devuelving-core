@@ -33,7 +33,7 @@ class FranchiseModel extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'status', 'agent', 'name', 'domain', 'domain_status', 'domain_provider', 'company_type', 'start', 'irpf', 'bank_account', 'options', 'type'
+        'code', 'status', 'agent', 'name', 'domain', 'domain_status', 'domain_provider', 'company_type', 'start', 'finish', 'irpf', 'bank_account', 'options', 'type', 'billing_data', 'owner_data', 'email'
     ];
 
     /**
