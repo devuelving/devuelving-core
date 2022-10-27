@@ -180,7 +180,7 @@ class PageModel extends Model
         $franchise = FranchiseModel::find($franchise->id);
         if($franchise->owner_data){
             $franchiseContactData = json_decode($franchise->owner_data);
-            $return = strtoupper($franchise->name).'&nbsp; actúa como encargado del tratamiento de datos.</p>'.
+            $return = 'www.'.strtoupper($franchise->name).'&nbsp; actúa como encargado del tratamiento de datos.</p>'.
             '<table border="1"><tbody><tr>' .
                     '<td style="padding:10px;">' .
                     '<u>Datos identificativos de www.' . strtoupper($franchise->name) .'</u><br /><br />' .
@@ -195,7 +195,7 @@ class PageModel extends Model
             '</table><br>';
         } else {
             $franchiseContactData = $franchise->getFranchiseContactData();
-            $return = strtoupper($franchise->name).'&nbsp; actúa como encargado del tratamiento de datos.</p>'.
+            $return = 'www.'.strtoupper($franchise->name).'&nbsp; actúa como encargado del tratamiento de datos.</p>'.
             '<table border="1">' .
                 '<tbody>' .
                 '<tr>' .
