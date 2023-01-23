@@ -23,7 +23,7 @@ class MenuModel
             ['type' => 1, 'text' => 'Nutrición Sport', 'category' => 6],
             ['type' => 2, 'text' => 'Dietética Natural', 'category' => 7],
             ['type' => 1, 'text' => 'Tecnología', 'category' => 8],
-            ['type' => 1, 'text' => 'Carne Ecológica', 'category' => 181]
+            ['type' => 1, 'text' => 'Más Categorías', 'category' => 2367]
         ];
     }
 }

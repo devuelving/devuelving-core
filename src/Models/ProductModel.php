@@ -5,7 +5,6 @@ namespace devuelving\core;
 use Carbon\Carbon;
 use devuelving\core\TaxModel;
 use devuelving\core\BrandModel;
-use devuelving\core\ProductModel;
 use devuelving\core\ProductCustom;
 use devuelving\core\ProviderModel;
 use Illuminate\Support\Facades\DB;
@@ -84,22 +83,71 @@ class ProductModel extends Model
      */
     public function productCustoms()
     {
-        return $this->hasMany('devuelving\core\ProductCustomModel', 'product', 'id');
+        //return $this->hasMany('devuelving\core\ProductCustomModel', 'product', 'id');
+        return $this->hasOne('devuelving\core\ProductCustomModel', 'product', 'id')->where('franchise', FranchiseModel::getFranchise()->id);
     }
     /**
-     * Relationship product provider hasOne
+     * Relationship product provider hasMany
      */
     public function productProvider()
     {
         return $this->hasMany('devuelving\core\ProductProviderModel', 'product', 'id');
     }
     /**
-     * Relationship product image hasOne
+     * Relationship product image hasMany
      */
     public function productImage()
     {
         return $this->hasMany('devuelving\core\ProductImageModel', 'product', 'id');
     }
+
+    /**
+     * Relationship product image hasMany
+     */
+    public function productImages()
+    {
+        return $this->hasMany('devuelving\core\ProductImageModel', 'product', 'id')->where(function ($query) {
+            $query->whereNull('franchise')->orWhere('franchise', 0)->orWhere('franchise', FranchiseModel::getFranchise()->id);
+        })->orderBy("franchise")->orderBy("id");
+    }
+
+    /**
+     * Relationship product image hasMany - Only DEFAULT 
+     */
+    public function defaultImages()
+    {
+        return $this->productImages()->where(function ($query) {
+            $query->whereNull('franchise')->orWhere('franchise', 0);
+        });
+    }
+
+    /**
+     * Relationship product image hasMany - Only Custom
+     */
+    public function customImages()
+    {
+        return $this->productImages()->where("franchise", FranchiseModel::getFranchise()->id);
+    }
+
+    /**
+     * Main product image - Relationship product_image Array[0]
+     */
+    public function getMainImageAttribute()
+    {   
+        $model = $this->relationLoaded('productImages') ? $this->productImages->first() : $this->productImages()->first();
+        if(empty($model) || empty($model->image)) {
+            return '/product/default.png';
+        }
+        return $model->image;
+    }
+
+    /**
+     * Relationship category hasMany
+     */
+    public function categories()
+    {
+        return $this->belongsToMany('devuelving\core\CategoryModel', 'product_category', 'product', 'category');
+    }    
 
     public function getUnitNameAttribute()
     {
@@ -112,6 +160,12 @@ class ProductModel extends Model
                 break;
             case 2:
                 return 'unidad';
+                break;
+            case 3:
+                return '100ml';
+                break;
+            case 4:
+                return '100gr';
                 break;
         }
     }
@@ -186,6 +240,28 @@ class ProductModel extends Model
             $provider = $productProvider->getProvider();
             // Obtenemos el precio de coste y le sumamos el margen de beneficio del proveedor
             $costPrice = $productProvider->cost_price + ($productProvider->cost_price * ($provider->profit_margin / 100));
+            // Apliquem recarrec a productes que volem vendre amb ports de franc (de moment nomes alfa y elektro3)
+            // 19-01-22: Ara el recarrec el posem en un camp apart i no toquem el preu de cost.
+            $freeShipping = 0;
+            if ($provider->id == 7 || $provider->id == 15) {
+                $costPriceIVA = $productProvider->cost_price * ($this->getTax() + 1);
+                if ($costPriceIVA >= 150) {
+                    //$freeShipping = 12.40;
+                    $freeShipping = 15;
+                    $this->transport = 1;
+                } elseif ($costPriceIVA >= 80) {
+                    //$freeShipping = 8.26;
+                    $freeShipping = 10; // amb IVA
+                    $this->transport = 1;
+                } elseif ($costPriceIVA >= 40) {
+                    //$freeShipping = 6.61;
+                    $freeShipping = 8; //amb IVA
+                    $this->transport = 1;
+                } else {
+                    $this->transport = 0;
+                }
+            }
+            // Preu de venda franquiciat
             if ($provider->id == 5 || $provider->id == 6) {
                 // Obtenemos el precio recomendado y le restamos el 10% que es el precio minimo de venta
                 $default_price = $this->getRecommendedPrice() / 1.10;
@@ -194,10 +270,14 @@ class ProductModel extends Model
                 $default_price = ($costPrice + ($productProvider->cost_price * ($provider->franchise_profit_margin / 100))) * ((TaxModel::find($this->tax)->value / 100) + 1);
             }
             // Actualizamos los precios de los productos
-            $product = ProductModel::find($this->id);
+            $product = $this; //ProductModel::find($this->id);
             $oldCostPrice = $product->cost_price / (1 + $provider->profit_margin / 100);
             $product->cost_price = $costPrice;
             $product->default_price = $default_price;
+            /*if ($provider->id != 5 && $provider->id != 6) {
+                $product->free_shipping = $freeShipping;
+            }*/
+            $product->free_shipping = $freeShipping;
             $product->save();
             $newCostPrice = $product->cost_price / (1 + $provider->profit_margin / 100);
             // Comprobación de que el precio no es el mismo
@@ -273,8 +353,10 @@ class ProductModel extends Model
     public function getImages($images = null, $redirect = true)
     {
         $return = [];
-        if ($images == null)
-            $images = DB::table('product_image')->where('product', $this->id)->orderBy('default', 'desc')->get();
+        if ($images == null) {
+            $images = $this->productImages ?: $this->productImages;
+        }
+        //$images = DB::table('product_image')->where('product', $this->id)->orderBy('default', 'desc')->get();
 
         foreach ($images as $image) {
             if ($redirect) {
@@ -302,8 +384,21 @@ class ProductModel extends Model
      */
     public function getDefaultImage($redirect = true)
     {
-        return $this->getImages(null, $redirect)[0];
-    }
+        // getMainImageAttribute
+        $image = $this->main_image;
+        
+        if ($redirect) {
+            if(empty($image)) {
+                return route('index') . '/cdn/product/default.png';
+            }
+            return  route('index') . '/cdn/' . $image;
+        }
+
+        if(empty($image)) {
+            return config('app.cdn.url') . '/default.png';
+        }
+        return config('app.cdn.url') . $image;
+    }    
 
     /**
      * Función para obtener los ean del producto
@@ -317,7 +412,7 @@ class ProductModel extends Model
     {
         $return = [];
         if ($productProviders == null)
-            $productProviders = ProductProviderModel::where('product', $this->id)->get();
+            $productProviders = ProductProviderModel::where('product', $this->id)->groupBy("ean")->orderBy("id", "ASC")->limit(1)->get();
 
         foreach ($productProviders as $productProvider) {
             $return[] = $productProvider->ean;
@@ -407,21 +502,35 @@ class ProductModel extends Model
                 } else {
                     $rule = 'asc';
                 }
-                $productProvider = ProductProviderModel::join('provider', 'product_provider.provider', '=', 'provider.id');
-                $productProvider->where('product_provider.product', $this->id);
-                $productProvider->where('provider.active', 1);
-                $productProvider->orderBy('product_provider.cost_price', $rule);
-                $productProvider->select('product_provider.*', 'provider.name');
-                $productProvider = $productProvider->first();
+                if ($this->productProvider) {
+                    $productProvider = $this->productProvider;
+                } else {
+                    $productProvider = ProductProviderModel::join('provider', 'product_provider.provider', '=', 'provider.id');
+                    $productProvider->where('product_provider.product', $this->id);
+                    $productProvider->where('provider.active', 1);
+                    /*$productProvider->orderBy('product_provider.cost_price', $rule);
+                    $productProvider->select('product_provider.*', 'provider.name');
+                    $provider = $productProvider->first();*/
+
+                    /*if($this->hasPhysicalStock()){
+                        $productProvider->where('provider.stock_type', config('settings.stock_types.fisico'));
+                    }*/
+                    $productProvider->orderBy('product_provider.cost_price', $rule);
+                    $productProvider->select('product_provider.*', 'provider.name');
+                }
+                $provider = $productProvider->first();
             } else {
                 if (!$cheapest) {
                     $rule = 'desc';
                 } else {
                     $rule = 'asc';
                 }
-                $productProvider = ProductProviderModel::where('product', $this->id)->orderBy('product_provider.cost_price', $rule)->first();
+                if ($this->stock_type == config('settings.stock_types.fisico'))
+                    $provider = ProductStockModel::where('product', $this->id)->orderBy('product_stock.purchase_price', $rule)->first();
+                else
+                    $provider = ProductProviderModel::where('product', $this->id)->orderBy('product_provider.cost_price', $rule)->first();
             }
-            return $productProvider;
+            return $provider;
         } catch (\Exception $e) {
             // report($e);
             return null;
@@ -458,10 +567,23 @@ class ProductModel extends Model
      */
     public function getPublicPriceCost($tax = true)
     {
-        if ($tax) {
-            return ($this->cost_price * $this->getDiscountTarget()) * ($this->getTax() + 1);
+        // cuando es demo y el usuario es diferente de demo@devuelving.com no tiene descuentos
+        if (FranchiseModel::getFranchise() && FranchiseModel::getFranchise()->type == 0 && auth()->user() && auth()->user()->type != 1) {
+            $discount = 1;
         } else {
-            return ($this->cost_price * $this->getDiscountTarget());
+            //info('paso por getDiscountTarget() para producto'.$this->id);
+            $discount = $this->getDiscountTarget();
+        }
+        $cost_price = $this->cost_price * $discount;
+        if ($this->transport == 1 && FranchiseModel::custom('free_transport', true)) {
+            $cost_price = $cost_price + $this->free_shipping;
+        }
+        if ($tax) {
+            //info('paso por getTax()');
+            return $cost_price * ($this->getTax() + 1);
+        } else {
+            //info('paso por Tax null');
+            return $cost_price;
         }
     }
 
@@ -475,12 +597,15 @@ class ProductModel extends Model
     public function getDiscountTarget()
     {
         $discount = 1;
-        if (FranchiseModel::getFranchise()) {
+        $franchise = FranchiseModel::getFranchise();
+        if ($franchise) {
             try {
                 // Comprobamos si la franquicia tiene los descuentos activados
-                if (FranchiseModel::getFranchise()->getCustom('discount') != null) {
-                    $franchiseDiscounts = json_decode(FranchiseModel::getFranchise()->getCustom('discount'));
-                    // Recorremos todos los descuentos de la franquicia
+                $franchise_discount = $franchise->getCustom('discount');
+
+                if ($franchise_discount != null) {
+                    $franchiseDiscounts = json_decode($franchise_discount);
+                    // Recorremos todos los descuentos de la franquicia                 
                     foreach ($franchiseDiscounts as $FranchiseDiscountTarget) {
                         // Obtenemos los datos de los descuentos
                         $discountTarget = DiscountTargetsModel::find($FranchiseDiscountTarget);
@@ -492,7 +617,7 @@ class ProductModel extends Model
                             }
                             // Comprobamos si el descuento es de tipo 2, lo que significa que se aplica un descuento por proveedor
                         } else if ($discountTarget->type == 2) {
-                            if (in_array($this->getProvider()->id, $target)) {
+                            if (in_array($this->getProductProvider()->provider, $target)) {
                                 $discount = 1 - ($discountTarget->discount / 100);
                             }
                         }
@@ -504,7 +629,25 @@ class ProductModel extends Model
         }
         return $discount;
     }
-
+    /**
+     * Función para calcular el número de unidades compradas de un producto para un usuario concreto
+     *     
+     */
+    public function getUnitsPurchased($user = null)
+    {
+        //select sum(order_details.units) from `orders` 
+        //inner join `order_details` on `orders`.`id` = `order_details`.`order` 
+        //inner join `product` on `product`.`id` = `order_details`.`product` 
+        //where `orders`.`customer` = 1 and `orders`.`status` not in (10, 0, 1) and `order_details`.`product` = 38349
+        $unitsPurchased = OrderDetailModel::join('orders', 'order_details.order', '=', 'orders.id')
+            ->join('product', 'product.id', '=', 'order_details.product')
+            ->where('orders.customer', $user)
+            ->whereNotIn('orders.status', [0, 1, 10])
+            ->where('order_details.product', '=', $this->id)
+            ->select('order_details.units')
+            ->sum('order_details.units');
+        return $unitsPurchased;
+    }
     /**
      * Función para obtener el precio de coste sin IVA
      *
@@ -526,8 +669,9 @@ class ProductModel extends Model
      */
     public function getPriceWithoutIva()
     {
-        if ($this->getPrice() != null) {
-            return $this->getPrice();
+        $price = $this->getPrice(7);
+        if ($price != null) {
+            return $price;
         }
         return null;
     }
@@ -582,7 +726,13 @@ class ProductModel extends Model
      */
     public function checkCustomPrice()
     {
-        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->whereNotNull('price')->get();
+        if (!empty($this->productCustoms) && $this->productCustoms->price !== null) {
+            return true;
+        } else {
+            return false;
+        }
+        $franchise = FranchiseModel::getFranchise();
+        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', $franchise->id)->whereNotNull('price')->get();
         if (count($productCustom) == 0) {
             return false;
         } else {
@@ -599,11 +749,10 @@ class ProductModel extends Model
      */
     public function typeCustomPrice()
     {
-        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->whereNotNull('price');
-        if ($productCustom->count() == 0) {
+        $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::getFranchise()->id)->whereNotNull('price')->first();
+        if (empty($productCustom)) {
             return 0;
         } else {
-            $productCustom = $productCustom->first();
             if ($productCustom->price_type == 1) {
                 return 1;
             } else if ($productCustom->price_type == 2) {
@@ -622,16 +771,35 @@ class ProductModel extends Model
      */
     public function checkPromotion($productCustom = null)
     {
-        if ($productCustom == null)
-            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id)->whereNotNull('promotion');
-        else
-            $productCustom->where('promotion', '!=', NULL);
 
+        if (!empty($this->productCustoms) && $this->productCustoms->promotion === 1) {
+            return true;
+        }
+        return false;
+        /*
+        if ($productCustom == null)
+            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id)->whereNotNull('promotion');
+        else
+            $productCustom->where('promotion', '!=', NULL)->where('franchise', FranchiseModel::getFranchise()->id);
         if ($productCustom->count() == 0) {
             return false;
         } else {
             return true;
+        }*/
+    }
+    /** 
+     * Función para comprobar si el producto esta oculto para la franquicia
+     *    
+     * @return boolean
+     * @param $productCustom ProductCustomModel Parametro para controlar si viene del toArray en el frontend
+     */
+    public function checkRemoved($productCustom = null)
+    {
+
+        if (!empty($this->productCustoms) && $this->productCustoms->removed === 1) {
+            return true;
         }
+        return false;
     }
     /**
      * Función para comprobar si el producto se envia a Canarias
@@ -706,8 +874,9 @@ class ProductModel extends Model
     public function getPrice()
     {
         $price = 0;
+        $franchise = FranchiseModel::getFranchise();
         if ($this->checkCustomPrice()) {
-            $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::get('id'))->first();
+            $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', $franchise->id)->first();
             if ($productCustom->price_type == 1) {
                 $price = $productCustom->price;
             } else {
@@ -715,6 +884,10 @@ class ProductModel extends Model
             }
         } else {
             $price = $this->default_price;
+            // 20-01-2022: Que calculi dinamicament el preu quan transport sigui 1.
+            if ($this->transport == 1 && $franchise->custom('free_transport', true)) {
+                $price = $price + $this->free_shipping;
+            }
         }
         return $price;
     }
@@ -740,8 +913,10 @@ class ProductModel extends Model
      */
     public function getProfit()
     {
-        if ($this->getPrice() != null) {
-            return ($this->getPrice() - $this->getPublicPriceCost()) / $this->getPublicPriceCost();
+        $price = $this->getPrice(8);
+        if ($price != null) {
+            $publicprice = $this->getPublicPriceCost();
+            return ($price - $publicprice) / $publicprice;
         }
         return 0;
     }
@@ -756,14 +931,15 @@ class ProductModel extends Model
      */
     public function getProfitMargin($front = false)
     {
-        if ($this->getProfit() != null) {
+        $profit = $this->getProfit();
+        if ($profit != null) {
             if ($front == false) {
-                return round($this->getProfit() * 100);
+                return round($profit * 100);
             } else {
-                if (($this->getProfit() * 100) > $this->getFullPriceMargin()) {
+                if (($profit * 100) > $this->getFullPriceMargin()) {
                     return 0;
                 } else {
-                    return round($this->getProfit() * 100);
+                    return round($profit * 100);
                 }
             }
         }
@@ -777,10 +953,14 @@ class ProductModel extends Model
      * @author David Cortés <david@devuelving.com>
      * @return void
      */
-    public function getPublicMarginProfit()
+    public function getPublicMarginProfit($publicPrice = null)
     {
+        //info('llego a getPublicMarginProfit para el producto #'.$this->id.'//'.$this->name.' con precio de venta '.$publicPrice.' y pvpr '.$this->recommended_price);
         try {
-            $publicPrice = $this->getPrice();
+            if (!$publicPrice) {
+                $publicPrice = $this->getPrice(9);
+            }
+
             $recommendedPrice = $this->getRecommendedPrice();
             return round((($recommendedPrice - $publicPrice) / $recommendedPrice) * 100);
         } catch (\Exception $e) {
@@ -816,13 +996,11 @@ class ProductModel extends Model
      */
     public function productCustom($options = [])
     {
-        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
-        if ($productCustom->count() == 0) {
+        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id)->first();
+        if (empty($productCustom)) {
             $productCustom = new ProductCustomModel();
             $productCustom->product = $this->id;
-            $productCustom->franchise = FranchiseModel::get('id');
-        } else {
-            $productCustom = $productCustom->first();
+            $productCustom->franchise = FranchiseModel::getFranchise()->id;
         }
         if ($options['action'] == 'price') {
             if ($options['price'] == null || $options['price_type'] == null) {
@@ -835,14 +1013,14 @@ class ProductModel extends Model
                 $margin = round((($publicPrice - $costPrice) / $costPrice) * 100);
                 //$discountprice = 
                 $provider = $this->getProductProviderData('provider');
-                //Megaplus tiene una limitación y no se puede tener el precio custom por debajo del 15% de PVPR
-                if ($options['price_type'] == 1){
-                    $price = number_format($options['price'], 2, '.', '');
-                }
-                else{
-                    $price = $costPrice * ((number_format($options['price'], 2, '.', '') / 100) + 1);
-                }
-                $minim_custom_price = $recommendprice - ($recommendprice * 0.15);
+                //Megaplus tiene una limitación y no se puede tener el precio custom por debajo del 10% de PVPR
+                $minim_custom_price_5 = $recommendprice - ($recommendprice * 0.10);
+                $defaultprice = $this->getDefaultPrice();
+                $newPrice = $costPrice  + ($costPrice * ($options['price'] / 100));
+                info('new price: ' . $newPrice);
+                info('minium price: ' . $minim_custom_price_5);
+                info('price type: ' . $options['price_type']);
+                info("request number: " . number_format($options['price'], 2, '.', ''));
                 if ($margin < 1 && $options['price_type'] == 1) {
                     return [
                         'status' => false,
@@ -856,10 +1034,32 @@ class ProductModel extends Model
                         'profit_margin' => $this->getProfitMargin(),
                         'full_price_margin' => $this->getFullPriceMargin(),
                     ];
-                } else if ($provider == 5 && $minim_custom_price > $price && ($options['price_type'] == 1 || $options['price_type'] == 2)) {
+                    // } else if ($provider == 5 && $minim_custom_price_5 > number_format($options['price'], 2, '.', '') && ($options['price_type'] == 1 || $options['price_type'] == 2)) {    
+                    // MEGAPLUS + ARTESANIA AGRICOLA
+                } else if (
+                    ($provider == 5 || $provider == 6)
+                    && (
+                        ($options['price_type'] == 2 && ($newPrice < $minim_custom_price_5)) ||
+                        ($options['price_type'] == 1 && (number_format($options['price'], 2, '.', '') < $minim_custom_price_5)))
+                ) {
                     return [
                         'status' => false,
-                        'message' => 'Condiciones especiales para este proveedor. Descuento máximo sobre PVPR del 15%.',
+                        'message' => 'Condiciones especiales para este proveedor. Descuento máximo sobre PVPR del 10%.',
+                        'custom_price' => $this->checkCustomPrice(),
+                        'type_custom_price' => $this->typeCustomPrice(),
+                        'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
+                        'cost_price_iva' => number_format($this->getPublicPriceCost(), 2, '.', ''),
+                        'recommended_price' => number_format($this->getRecommendedPrice(), 2, '.', ''),
+                        'price' => number_format($this->getPrice(), 2, '.', ''),
+                        'profit_margin' => $this->getProfitMargin(),
+                        'full_price_margin' => $this->getFullPriceMargin(),
+                    ];
+                    // BEMALU
+                } else if ($provider == 4 && (($defaultprice / 1.14 > number_format($publicPrice, 2, '.', '') && $options['price_type'] == 1) ||
+                    ($options['price_type'] == 2 && $defaultprice / 1.14 > (($publicPrice / 100) + 1) * $costPrice))) {
+                    return [
+                        'status' => false,
+                        'message' => 'Precio mínimo para este producto->' . number_format($defaultprice / 1.14, 2, '.', ''),
                         'custom_price' => $this->checkCustomPrice(),
                         'type_custom_price' => $this->typeCustomPrice(),
                         'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
@@ -874,6 +1074,7 @@ class ProductModel extends Model
                     $productCustom->price_type = $options['price_type'];
                 }
             }
+
             $productCustom->save();
             return [
                 'status' => true,
@@ -901,10 +1102,24 @@ class ProductModel extends Model
                     'message' => 'El producto se ha quitado de promociones correctamente'
                 ];
             }
+        } else if ($options['action'] == 'removed') {
+            $productCustom->removed = $options['removed'];
+            $productCustom->save();
+            if ($options['removed'] == 1) {
+                return [
+                    'status' => true,
+                    'message' => 'El producto se ha ocultado correctamente'
+                ];
+            } else {
+                return [
+                    'status' => true,
+                    'message' => 'El producto se ha activado correctamente'
+                ];
+            }
         } else {
             return [
                 'status' => false,
-                'message' => 'No se ha enviado una acción valida'
+                'message' => 'No se ha enviado una acción válida'
             ];
         }
     }
@@ -919,19 +1134,26 @@ class ProductModel extends Model
      */
     public function getName($productCustom = null)
     {
-        if ($productCustom == null)
-            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
 
-        if ($productCustom->count() == 0) {
+        if (!empty($this->productCustoms) && $this->productCustoms->name !== null) {
+            return $this->productCustoms->name;
+        }
+        return $this->name;
+
+        /*
+        if ($productCustom == null)
+            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id)->first();
+
+        if (empty($productCustom)) {
             return $this->name;
         } else {
-            $productCustom = $productCustom->first();
-            if ($productCustom->name != null) {
+            if (isset($productCustom->name) && $productCustom->name != null) {
                 return $productCustom->name;
             } else {
                 return $this->name;
             }
         }
+        */
     }
 
     /**
@@ -944,21 +1166,41 @@ class ProductModel extends Model
      */
     public function getDescription($productCustom = null)
     {
+        if (!empty($this->productCustoms) && $this->productCustoms->description !== null) {
+            return $this->productCustoms->description;
+        }
+        return $this->description;
+        /*
         if ($productCustom == null)
-            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
+            $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id)->first();
 
-        if ($productCustom->count() == 0) {
+        if (empty($productCustom)) {
             return $this->description;
         } else {
-            $productCustom = $productCustom->first();
-            if ($productCustom->description != null) {
+            if (isset($productCustom->description) && $productCustom->description != null) {
                 return $productCustom->description;
             } else {
                 return $this->description;
             }
         }
+        */
     }
 
+    /**
+     * Función para obtener el slug del producto segun la franquicia
+     *
+     * @since 
+     * @author 
+     * @return string
+     */
+    public function getSlug()
+    {
+        if (!empty($this->productCustoms) && $this->productCustoms->slug !== null) {
+            return $this->productCustoms->slug;
+        }
+        return $this->slug;
+    }
+    
     /**
      * Método para obtener la descripción corta
      *
@@ -988,8 +1230,8 @@ class ProductModel extends Model
      */
     public function getMetaData($type)
     {
-        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::get('id'))->where('product', $this->id);
-        if ($productCustom->count() == 0) {
+        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id)->first();
+        if (empty($productCustom)) {
             if ($type == 'meta_title') {
                 return $this->getName();
             } else if ($type == 'meta_description') {
@@ -998,7 +1240,6 @@ class ProductModel extends Model
                 return null;
             }
         } else {
-            $productCustom = $productCustom->first();
             if ($type == 'meta_title') {
                 if ($productCustom->meta_title != null) {
                     return $productCustom->meta_title;
@@ -1030,15 +1271,18 @@ class ProductModel extends Model
      */
     public function getStock($order = 0)
     {
+
         if (!$this->unavailable && !$this->discontinued) {
-            if ($this->stock_type == 1) {
+            if ($this->hasPhysicalStock()) {
                 $additions = ProductStockModel::where('product_stock.type', '=', 2)->where('product_stock.product', '=', $this->id)->sum('stock');
                 $subtractions = ProductStockModel::where('product_stock.type', '=', 1)->where('product_stock.product', '=', $this->id)->sum('stock');
                 $stock = $additions - $subtractions;
                 if ($stock < 0) $stock = 0;
                 return $stock;
-            } else if ($this->stock_type == 3) {
+            } else if ($this->hasDropshippingStock()) {
+                /**/
                 $stock = $this->getProductProvider()->stock;
+
                 $date = Carbon::now()->subDays(2)->toDateString();
                 $reserved = OrderDetailModel::join('orders', 'order_details.order', '=', 'orders.id')
                     ->where('product', $this->id)
@@ -1051,7 +1295,7 @@ class ProductModel extends Model
                     $query->orWhere('orders.status', 2);
                 });
                 return $stock - ($reserved->sum('order_details.units'));
-            } else if ($this->stock_type == 4) {
+            } else if ($this->hasLiquidationStock()) {
                 return $this->getProductProvider()->stock;
             } else {
                 return true;
@@ -1084,11 +1328,22 @@ class ProductModel extends Model
      * @author David Cortés <david@devuelving.com>
      * @return boolean
      */
-    public function visibleDiscounts()
+    public function visibleDiscounts($publicPrice = null)
     {
-        if (((FranchiseModel::get('type') == 0) && ($this->getPublicMarginProfit() < 25)) || ((!(bool) FranchiseModel::custom('visible_discounts', true)) || ($this->getPublicMarginProfit() < 5))) {
+
+        if (!$publicPrice) {
+            $publicPrice = 0;
+            $PublicMarginProfit = $this->getPublicMarginProfit();
+        } else {
+            $PublicMarginProfit = $this->getPublicMarginProfit($publicPrice);
+        }
+        //info('Producto '.$this->name.'//precioventa: '.$publicPrice. '//descuento margen '.$PublicMarginProfit);
+
+        if (((FranchiseModel::getFranchise()->type == 0) && ($PublicMarginProfit < 25)) || (!(bool) FranchiseModel::custom('visible_discounts', true)) || $PublicMarginProfit < 5) {
+            //info('en visible discounts return false');
             return false;
         } else {
+            //info('en visible discounts return true');
             return true;
         }
     }
@@ -1100,9 +1355,65 @@ class ProductModel extends Model
      * @author David Cortés <david@devuelving.com>
      * @return void
      */
-    public function print()
+    public function print($productdata = null)
     {
-        $product = ProductModel::find($this->id);
-        return view('modules.catalog.product', compact('product'));
+        $product = $this; //ProductModel::find($this->id);
+        if (!$productdata) {
+            $productdata = [];
+        }
+        return view('modules.catalog.product', compact('product', 'productdata'));
+    }
+
+
+    public function hasPhysicalStock()
+    {
+        return $this->stock_type == config('settings.stock_types.fisico');
+    }
+
+    public function hasDropshippingStock()
+    {
+        return $this->stock_type == config('settings.stock_types.dropshipping');
+    }
+
+    public function hasLiquidationStock()
+    {
+        return $this->stock_type == config('settings.stock_types.liquidacion');
+    }
+
+    public function getDiscount($franchise)
+    {
+        $discount = 1;
+        if ($franchise) {
+            try {
+                // Comprobamos si la franquicia tiene los descuentos activados
+                // $franchise_discount = $franchise->getCustom('discount');
+                $franchise_discount = FranchiseCustomModel::where('franchise', $franchise->id)->where('var', 'discount')->first(['value']);
+                if ($franchise_discount) {
+                    $franchiseDiscounts = json_decode($franchise_discount->value);
+                    // Recorremos todos los descuentos de la franquicia  
+                    foreach ($franchiseDiscounts as $FranchiseDiscountTarget) {
+                        // Obtenemos los datos de los descuentos
+                        $discountTarget = DiscountTargetsModel::find($FranchiseDiscountTarget);
+                        // Comprobamos si el descuento es de tipo 1, lo que significa que el id del producto esta en los datos del descuento
+                        if (isset($discountTarget)) {
+                            $target = json_decode($discountTarget->target);
+                            if ($discountTarget->type == 1) {
+                                if (in_array($this->id, $target)) {
+                                    $discount = 1 - ($discountTarget->discount / 100);
+                                }
+                                // Comprobamos si el descuento es de tipo 2, lo que significa que se aplica un descuento por proveedor
+                            } else if ($discountTarget->type == 2) {
+                                if (in_array($this->getProvider()->id, $target)) {
+                                    $discount = 1 - ($discountTarget->discount / 100);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                report($e);
+            }
+        }
+        return $discount;
     }
 }
