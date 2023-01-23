@@ -58,6 +58,9 @@ class ExportsModel extends Model
                 $category = 'Todas las categorias';
             } else {
                 $category = CategoryModel::find($filters['category']);
+                if(empty($category)) {
+                    return null;
+                }
                 $category = $category->name;
             }
             if ($filters['tax'] == 0) {

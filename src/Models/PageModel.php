@@ -187,8 +187,9 @@ class PageModel extends Model
                     '<strong>Identidad: </strong>&nbsp;' . $franchiseContactData->name . '<br />' .
                     '<strong>NIF/CIF: </strong>&nbsp;' . $franchiseContactData->nif . '<br />' .
                     '<strong>Dirección postal: </strong>&nbsp;' . $franchiseContactData->address . '&nbsp;' . $franchiseContactData->cp . '&nbsp;' . $franchiseContactData->town . '&nbsp;(' . $franchiseContactData->province . ')&nbsp;-&nbsp;' . $franchiseContactData->country . '<br />' .
-                    '<strong>Correo electrónico: </strong>' . $franchiseContactData->email .'<br />'.
-                    '<strong>Teléfono: </strong>' . $franchiseContactData->phone .'<br />'.
+                    //'<strong>Correo electrónico: </strong>' . $franchiseContactData->email .'<br />'.
+                    //'<strong>Teléfono: </strong>' . $franchiseContactData->phone .'<br />'.
+                    '<strong>Contacta:</strong> <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#contactModal">Contacta con nosotros desde este enlace</button>'.
                     '</td>' .
                 '</tr>' .
                 '</tbody>' .
@@ -205,8 +206,9 @@ class PageModel extends Model
                     '<strong>NIF/CIF: </strong>&nbsp;' . $franchiseContactData->nif . '<br />' .
                     '<strong>Dirección postal: </strong>&nbsp;' . $franchiseContactData->street . '&nbsp;' . $franchiseContactData->number . '&nbsp;' . $franchiseContactData->floor . '&nbsp;' . $franchiseContactData->door . '&nbsp;' .
                     $franchiseContactData->postal_code . '&nbsp;' . $franchiseContactData->town . '&nbsp;(' . $franchiseContactData->province . ')&nbsp;-&nbsp;' . $franchiseContactData->country . '<br />' .
-                    '<strong>Correo electrónico: </strong>' . $franchiseContactData->email .'<br />'.
-                    '<strong>Teléfono: </strong>' . $franchiseContactData->phone .'<br />'.
+                    //'<strong>Correo electrónico: </strong>' . $franchiseContactData->email .'<br />'.
+                   // '<strong>Teléfono: </strong>' . $franchiseContactData->phone .'<br />'.
+                   '<strong>Contacta:</strong>&nbsp;&nbsp;<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#contactModal">Contacta con nosotros desde este enlace</button>'.
                     '</td>' .
                 '</tr>' .
                 '</tbody>' .

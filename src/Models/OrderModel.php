@@ -38,7 +38,7 @@ class OrderModel extends Model
      * @var array
      */
     protected $fillable = [
-        'code', 'customer', 'franchise', 'status', 'volume', 'weight', 'boxes', 'amount', 'is_cost_price', 'franchise_earnings', 'added_taxes', 'payment_method', 'payment_method_cost', 'payment_method_data', 'shipping_costs', 'shipping_costs_customer', 'shipping_costs_franchise', 'delivery_term', 'customer_nif', 'customer_name', 'customer_email', 'customer_phone', 'address_street', 'address_number', 'address_floor', 'address_door', 'address_town', 'address_province', 'address_postal_code', 'address_country', 'comments', 'delivery_bill',
+        'code', 'customer', 'franchise', 'status', 'volume', 'weight', 'boxes', 'amount', 'products_amount', 'discount_coupon_amount', 'gift', 'is_cost_price', 'franchise_earnings', 'added_taxes', 'payment_method', 'payment_method_cost', 'payment_method_data', 'shipping_costs', 'shipping_costs_customer', 'shipping_costs_franchise', 'delivery_term', 'customer_nif', 'customer_name', 'customer_email', 'customer_phone', 'address_street', 'address_number', 'address_floor', 'address_door', 'address_town', 'address_province', 'address_postal_code', 'address_country', 'comments', 'delivery_bill',
     ];
 
     /**
@@ -72,6 +72,7 @@ class OrderModel extends Model
      */
     public function totalAmount()
     {
+        info('paso por totalAmount');
         $order_price = 0;
         $order_details = OrderDetailModel::where('order', $this->id)->get();
         foreach ($order_details as $order_detail) {
@@ -148,16 +149,18 @@ class OrderModel extends Model
     }
 
     /**
-     * Función para obtener el total del pedido sin gastos del método de pago
+     * Función para obtener el total del pedido = total productos + tasas + gastos de envío (no se tienen en cuenta gastos del método de pago)
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
      * @return void
      */
     public function getSubtotal()
-    {
-        if ($this->getShippingCosts() != null) {
-            return $this->totalAmount() + $this->added_taxes + $this->getShippingCosts();
+    {        
+        info('paso por getSubtotal() model');
+        $shippingCostsCustomer = $this->shipping_costs_customer;//$this->getShippingCostsData()['shipping_costs_customer'];
+        if ($shippingCostsCustomer != null) {
+            return $this->totalAmount() + $this->added_taxes + $shippingCostsCustomer;
         }
         return number_format($this->totalAmount() + $this->added_taxes, 2, '.', '');
     }
@@ -169,17 +172,18 @@ class OrderModel extends Model
      */
     public function hasDropshipping()
     {
+        /* 15/12/2022 deprecated. No tenemos carne
         $products = $this->listProducts();
         foreach ($products as $product) {
             if ($product->getProduct()->getProductProviderData('shipping_type') == 3) {
                 return true;
             }
-        }
+        }*/
         return false;
     }
 
     /**
-     * Función para obtener el total del pedido con el vale de descuento restado
+     * Función para obtener el total del pedido = total de productos + gastos de envío + recargoequuivalencia + gastos de método de pago - vale descuento
      *
      * @since 3.0.0
      * @author David Cortés <david@devuelving.com>
@@ -187,14 +191,21 @@ class OrderModel extends Model
      */
     public function getTotal()
     {
-        if ($this->getDiscountCoupon() != null) {
-            $total = ($this->getSubtotal() + $this->getPaymentCost()) - $this->getDiscountCoupon()->discount_value;
+        info('paso por getTotal()');
+        $getDiscountCoupon = $this->getDiscountCoupon();
+        $paymentMethod = $this->getPaymentMethod();
+        $shippingcosts = $this->shipping_costs_customer;//$this->getShippingCostsData()['shipping_costs_customer'];
+        $totalproductes = $this->totalAmount();
+        $subtotal = $totalproductes + $this->added_taxes + $shippingcosts;
+        $paymentmethodcost = ($subtotal * ($paymentMethod->porcentual / 100)) + $paymentMethod->fixed;
+        if ($getDiscountCoupon != null) {
+            $total = $subtotal +  $paymentmethodcost - $getDiscountCoupon->discount_value;
             if ($total <= 0) {
                 $total = 0;
             }
             return number_format($total, 2, '.', '');
         } else {
-            return number_format($this->getSubtotal() + $this->getPaymentCost(), 2, '.', '');
+            return number_format($subtotal + $paymentmethodcost, 2, '.', '');
         }
     }
 
@@ -224,7 +235,8 @@ class OrderModel extends Model
     public function getPaymentCost()
     {
         $paymentMethod = $this->getPaymentMethod();
-        return number_format(($this->getSubtotal() * ($paymentMethod->porcentual / 100)) + $paymentMethod->fixed, 2, '.', '');    
+        //return $paymentMethod;
+        return number_format(($this->getSubtotal() * ($paymentMethod->porcentual / 100)) + $paymentMethod->fixed, 2, '.', '');
     }
 
     /**
@@ -261,7 +273,7 @@ class OrderModel extends Model
     {
         if (!empty($this->address_country)) {
             $total = 0;
-            
+
             $region = RegionModel::where('name', $this->address_province)->where('country', $this->address_country)->first();
             if (!empty($region)) {
                 $shippingFee = ShippingFeeModel::find($region->shipping_fee);
@@ -269,7 +281,7 @@ class OrderModel extends Model
                 $country = CountryModel::where('code', $this->address_country)->first();
                 $shippingFee = ShippingFeeModel::find($country->shipping_fee);
             }
-            info('OrderModel weight: ' . $this->getShippingWeight(true));
+            //info('OrderModel weight: ' . $this->getShippingWeight(true));
             if ($excludeMeat) {
                 // $total = $this->getShippingPrice($shippingFee, $this->getProductWeight(true));
                 $total = $this->getShippingPrice($shippingFee, $this->getShippingWeight(true));
@@ -287,7 +299,7 @@ class OrderModel extends Model
         return null;
     }
 
-     /**
+    /**
      * Returns the amount of free shipping the franchisee is going to give the client
      * 
      * @since 3.0.0
@@ -296,38 +308,124 @@ class OrderModel extends Model
      */
     public function getFreeShipping()
     {
-        if(session('priceCost') == 1){
+        info('paso por getFreeShipping()');
+        $premiumOptions = json_decode(Franchise::getFranchise()->getCustom('premium_options'));
+        $orderDiscountPremium = auth()->user()->type == 3 && (Franchise::services('premium') || Franchise::getFranchise()->type == 3) && !(isset($premiumOptions->free_shipping) && $premiumOptions->free_shipping == true);
+        if (session('priceCost') == 1 || $orderDiscountPremium) {
             return false;
         }
-        
-        $free_shippings = FranchiseCustomModel::where('franchise', $this->franchise)->where('var', 'free_shipping')->first();
-        if ($free_shippings){
-            $orderDiscount = $this->getDiscountCoupon();
-            if(!empty($orderDiscount)){
-                info('descuento a aplicar ->'.$orderDiscount->discount_value);
-                $product_total = number_format($this->totalAmount() - $orderDiscount->discount_value, 2);
-                
-            }else{
-                info('no existe vale descuento');
-                $product_total = $this->totalAmount();
-            }
-            info('product_total->'.$product_total);
+        $free_shippings = Franchise::custom('free_shipping');//FranchiseCustomModel::where('franchise', $this->franchise)->where('var', 'free_shipping')->first();
+        if ($free_shippings) {
+            
             $total = false;
-			$last_amount = 0;
-            $free_shipping_array = json_decode($free_shippings->value);
-            foreach ($free_shipping_array as $free_shipping) {
-                if($product_total >= $free_shipping->amount && $free_shipping->amount > $last_amount) {
-                    info($free_shipping->amount);
-                    $last_amount = $free_shipping->amount;
-                    //$total = number_format($free_shipping->discount, 2, '.', '');
-                    //cambio para coger el valor de pickupsi el pedido se recoge en tienda
-                    if ($this->pickup) {
-                        $total = number_format($free_shipping->discount_pickup, 2, '.', '');
-                    } else {
-                        $total = number_format($free_shipping->discount, 2, '.', '');
+            $last_amount = 0;
+            if(Franchise::getFranchise()->type == 3){                
+                info('Límite de envíos con descuento: '.$premiumOptions->free_shipping_orders. ' para destino '.$premiumOptions->free_shipping_area);
+                $free_shipping_array = json_decode($free_shippings);    
+                if(auth()->user()->getOrdersInMonth($premiumOptions->free_shipping_orders,$premiumOptions->free_shipping_area,$free_shipping_array,$this->address_country,$this->address_postal_code)){
+                    //info($free_shipping_array);
+                    $shipping_nacional = false;
+                    $shipping_local = false;
+                    foreach ($free_shipping_array as $free_shipping) {
+                        if($free_shipping->destination == "nacional"){
+                            $free_shipping_nacionals = $free_shipping->rang;
+                            $type_nacional = $free_shipping->type; 
+                            if($this->address_country == 'es')
+                            $shipping_nacional = true;
+                        }
+                        if($free_shipping->destination == "local" ){                            
+                            $free_shipping_locals = $free_shipping->rang;
+                            $type_local = $free_shipping->type; 
+                            if(in_array($this->address_postal_code, $free_shipping->arraydestination) && $this->address_country == 'es')
+                            $shipping_local = true;
+                        }
+                        /*if ($product_total >= $free_shipping['amount'] && $free_shipping['amount'] > $last_amount) {
+                            //info('free_shipping_amount'.$free_shipping->amount);
+                            $last_amount = $free_shipping['amount'];
+                            //$total = number_format($free_shipping->discount, 2, '.', '');
+                            //cambio para coger el valor de pickupsi el pedido se recoge en tienda
+                            if ($this->pickup) {
+                                $total = number_format($free_shipping['discount_pickup'], 2, '.', '');
+                            } else {
+                                $total = number_format($free_shipping['discount'], 2, '.', '');
+                            }
+                        }*/ 
+
+                    }
+                    //calculamos según el type (genéricamente por total productos)
+                    $orderDiscount=false;
+                    if(!$type_nacional || $type_nacional == 1){
+                        $orderDiscount = $this->discount_coupon_amount;//$this->getDiscountCoupon();
+                        if ($orderDiscount) {
+                            info('descuento a aplicar ->' . $orderDiscount);
+                            $product_total = number_format($this->products_amount - $orderDiscount, 2);
+                        } else {
+                            info('no existe vale descuento');
+                            $product_total = $this->products_amount;
+                        }   
+                    }
+                    /***** TODO: cuando EL DESCUENTO EN LOS GASTOS DE ENVÍO ES POR PESO/volumen del pedido */
+                    if($type_nacional && $type_nacional == 2){
+                        $product_total = $this->getShippingWeight();
+                    }
+                    if($shipping_local){                       
+                                                
+                        foreach ($free_shipping_locals as $free_shipping_local) {
+                            if ($product_total >= $free_shipping_local->amount && $free_shipping_local->amount > $last_amount) {
+                                $last_amount = $free_shipping_local->amount;
+                                if ($this->pickup) {
+                                    $total = number_format($free_shipping_local->discount_pickup, 2, '.', '');
+                                } else {
+                                    $total = number_format($free_shipping_local->discount, 2, '.', '');
+                                }
+                            }
+                        }
+                        
+                    }else if($shipping_nacional){
+                        foreach ($free_shipping_nacionals as $free_shipping_nacional) {
+                            if ($product_total >= $free_shipping_nacional->amount && $free_shipping_nacional->amount > $last_amount) {
+                                $last_amount = $free_shipping_nacional->amount;
+                                if ($this->pickup) {
+                                    $total = number_format($free_shipping_nacional->discount_pickup, 2, '.', '');
+                                } else {
+                                    $total = number_format($free_shipping_nacional->discount, 2, '.', '');
+                                }
+                            }
+                        }
+                    }
+                    $total = number_format($total, 2, '.', '');
+                }else{                    
+                    return 0;
+                }
+                
+            }else{ 
+                
+                $orderDiscount = $this->getDiscountCoupon();
+                if (!empty($orderDiscount)) {
+                    info('descuento a aplicar ->' . $orderDiscount->discount_value);
+                    $product_total = number_format($this->products_amount - $orderDiscount->discount_value, 2);
+                } else {
+                    info('no existe vale descuento');
+                    $product_total = $this->products_amount;
+                }               
+                $free_shipping_array = json_decode($free_shippings);
+                foreach ($free_shipping_array as $free_shipping) {
+                    if ($product_total >= $free_shipping->amount && $free_shipping->amount > $last_amount) {
+                        //info('free_shipping_amount'.$free_shipping->amount);
+                        $last_amount = $free_shipping->amount;
+                        //$total = number_format($free_shipping->discount, 2, '.', '');
+                        //cambio para coger el valor de pickupsi el pedido se recoge en tienda
+                        if ($this->pickup) {
+                            $total = number_format($free_shipping->discount_pickup, 2, '.', '');
+                        } else {
+                            $total = number_format($free_shipping->discount, 2, '.', '');
+                        }
                     }
                 }
             }
+            
+            
+            //info('total_products->' . $product_total.' || total free_shipping->'.$total);
             return $total;
         } else {
             return false;
@@ -450,9 +548,10 @@ class OrderModel extends Model
      */
     public function getResume()
     {
+        info('paso por getResume() OrderModel');
         return [
             'products' => $this->totalAmount(),
-            'payment_method' => $this->getPaymentCost(),
+            'payment_method' => $this->getPaymentCost(), /**$this->payment_method_cost,//** calcula la cantidad que le correspondería pero deberíamos ajustar para que si lo que queremos es obtener la información del pedido se obtuviera lo guardado*/
             'amount' => $this->amount,
             'earnings' => $this->franchise_earnings,
             'cost' => $this->getCost(),
@@ -520,6 +619,7 @@ class OrderModel extends Model
      */
     public function getDiscountCoupon()
     {
+        info('paso por getDiscountCoupon()');
         return OrderDiscountModel::where('order', $this->id)->where('type', 1)->first();
     }
 
@@ -534,7 +634,7 @@ class OrderModel extends Model
     {
         //21/01/2022 cancelo la consulta.
         return null;//OrderDiscountModel::where('order', $this->id)->where('type', '!=', 1)->get();
-        }
+    }
 
     /**
      * Método para obtener el listado de estados de un pedido
@@ -565,7 +665,7 @@ class OrderModel extends Model
         }
         return false;
     }
-    
+
     /**
      * Gets the weight from de order product detail
      *
@@ -584,7 +684,7 @@ class OrderModel extends Model
         return $weight;
     }
 
-     /**
+    /**
      * Rutina per obtenir el pes o el volum (el mes gran)
      *
      * @param bool $excludeMeat
@@ -594,17 +694,18 @@ class OrderModel extends Model
     {
         $weight = 0;
         $volume = 0;
-        $products = $this->listProducts();
+        $orderProducts = $this->listProducts();
         foreach ($orderProducts as $orderProduct) {
             $product = ProductModel::find($orderProduct->product);
-            if (!(($product->getProvider()->id == 11 && $excludeMeat == true) || ($product->transport == 1  && Franchise::custom('free_transport', true)))) {
+            if (!(($product->getProvider()->id == 11 && $excludeMeat == true) ||
+            ($product->transport == 1  && Franchise::custom('free_transport', true) && $this->address_country == 'es' && $this->address_province != 'Islas Baleares'))) {
                 $weight += $product->weight * $orderProduct->units;
                 $volume += $product->volume * $orderProduct->units;
             }
         }
-        if($weight > $volume) {
+        if ($weight > $volume) {
             return $weight;
-        }else {
+        } else {
             return $volume;
         }
     }

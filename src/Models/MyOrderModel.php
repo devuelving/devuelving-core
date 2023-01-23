@@ -66,6 +66,21 @@ class MyOrderModel extends Model
     }
 
     /**
+     * Returns total amount to be paid NOT TAXES
+     *
+     * @return float
+     */
+    public function totalAmountWithOutTaxes()
+    {
+        $order_price = 0;$order_price1 = 0;
+        $order_details = MyOrderDetailModel::where('order', $this->id)->get();
+        foreach ($order_details as $order_detail) {
+            $order_price = $order_price + ($order_detail->units * ($order_detail->unit_price / (1 + ($order_detail->tax / 100))));
+        }
+        return number_format($order_price, 2, '.', '');
+    }
+
+    /**
      * Returns string with the status of the order
      *
      * @return string
@@ -172,8 +187,8 @@ class MyOrderModel extends Model
      */
     public function getPaymentMethod()
     {
-        if (empty($this->payment_method) || !MyPaymentMethodModel::where('franchise', Franchise::get('id'))->where('id', $this->payment_method)->exists()) {
-            $payment_method = MyPaymentMethodModel::where('franchise', Franchise::get('id'))->first();
+        if (empty($this->payment_method) || !MyPaymentMethodModel::where('franchise', Franchise::getFranchise()->id)->where('id', $this->payment_method)->exists()) {
+            $payment_method = MyPaymentMethodModel::where('franchise', Franchise::getFranchise()->id)->first();
             $this->payment_method = $payment_method->id;
             $this->save();
         }
@@ -226,13 +241,18 @@ class MyOrderModel extends Model
     {
         if (!empty($this->address_country)) {
             $total = 0;
-            $country = MyCountryModel::where('franchise', Franchise::get('id'))->where('code', $this->address_country)->first();
+            $country = MyCountryModel::where('franchise', Franchise::getFranchise()->id)->where('code', $this->address_country)->first();
             $shippingFee = MyShippingFeesModel::find($country->shipping_fee);
-            $total = $this->getShippingPrice($shippingFee, $this->weight);
+            $weight =  $this->weight;
+            if( $this->weight <  $this->volume){
+                $weight = $this->volume;
+            }
+            $total = $this->getShippingPrice($shippingFee, $weight);
             if ($this->hasDropshipping()) {
                 $total = $total + $this->getDropshippingPrice();
             }
             $total += $total * (TaxModel::find(1)->value / 100);
+            
             return number_format($total, 2, '.', '');
         }
         return null;
@@ -288,7 +308,7 @@ class MyOrderModel extends Model
             'address_town' => $this->address_town,
             'address_province' => $this->address_province,
             'address_postal_code' => $this->address_postal_code,
-            'address_country' => MyCountryModel::where('code', $this->address_country)->first(),
+            'address_country' => MyCountryModel::where('code', $this->address_country)->where('franchise', Franchise::getFranchise()->id)->first(),
         ];
     }
 

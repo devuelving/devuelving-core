@@ -53,4 +53,12 @@ class OrderDetailModel extends Model
     {
         return ProductModel::find($this->product);
     }
+
+    /**
+     *  Relationship product hasOne
+     */
+    public function productData()
+    {
+        return $this->hasOne('devuelving\core\ProductModel', 'id', 'product');
+    }
 }

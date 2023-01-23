@@ -32,7 +32,7 @@ class CustomerModel extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'surname', 'email', 'password', 'phone', 'nif', 'birthdate', 'gender', 'nationality', 'status', 'advertising', 'image', 'franchise', 'type', 'lang', 'options', 'remember_token'
+        'name', 'surname', 'email', 'password', 'phone', 'nif', 'birthdate', 'gender', 'nationality', 'status', 'verified', 'advertising', 'image', 'franchise', 'type', 'lang', 'options', 'subscription', 'remember_token'
     ];
 
     /**
@@ -89,5 +89,24 @@ class CustomerModel extends Model
         // ->whereRaw(Carbon::now()->between(Carbon::parse($this->payment_date), Carbon::parse($this->expires_date)))
         ->whereRaw('"'.$now.'" between `payment_date` and `expires_date`')
         ->exists();
+    }
+     /**
+     * Método que devuelve la suscripción activa
+     *
+     * @since 3.0.0
+     * @author Eduard Puigdemunt <eduard@devuelving.com>
+     * @return boolean
+     */
+    public function getSubscriptionPaid()
+    {
+        $now = Carbon::now();
+        $subscription_paid = CustomerPaymentsModel::where('customer', $this->id)
+        ->where('status', 1) 
+        ->where('franchise', FranchiseModel::getFranchise()->id) 
+        // ->whereRaw(Carbon::now()->between(Carbon::parse($this->payment_date), Carbon::parse($this->expires_date)))
+        ->whereRaw('"'.$now.'" between `payment_date` and `expires_date`')
+        ->get();
+        
+        return $subscription_paid;
     }
 }

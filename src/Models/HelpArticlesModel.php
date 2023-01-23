@@ -46,16 +46,16 @@ class HelpArticlesModel extends Model
     {
         switch ($this->category) {
             case 0:
-                return __("Sin CategorÃ­a");
+                return __("Sin Categoría");
                 break;
             case 1:
                 return __("General");
                 break;
             case 2:
-                return __("LogÃ­stica");
+                return __("Logística");
                 break;
             case 3:
-                return __("InformÃ¡tica");
+                return __("Informática");
                 break;
             case 4:
                 return __("Funcionamiento");
@@ -63,6 +63,29 @@ class HelpArticlesModel extends Model
             case 5:
                 return __("Marketing");
                 break;            
+        }
+    }
+    public function helpArticleColor()
+    {
+        switch ($this->category) {
+            case 0:
+                return __(" ");
+                break;
+            case 1:
+                return __("red");
+                break;
+            case 2:
+                return __("blue");
+                break;
+            case 3:
+                return __("green");
+                break;
+            case 4:
+                return __("purple");
+                break;
+            case 5:
+                return __("cian");
+                break;
         }
     }
 }
