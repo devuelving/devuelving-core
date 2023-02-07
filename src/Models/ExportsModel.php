@@ -63,7 +63,7 @@ class ExportsModel extends Model
                 }
                 $category = $category->name;
             }
-            if ($filters['tax'] == 0) {
+            if ($filters['tax'] == 0 || $filters['tax'] == 'all') {
                 $tax = 'Todos los tipos de IVA';
             } else {
                 $tax = TaxModel::find($filters['tax']);

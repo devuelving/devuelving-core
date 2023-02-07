@@ -35,9 +35,9 @@ class SlimModel
             return null;
         }
         // If magic quotes enabled
-        if (get_magic_quotes_gpc()) {
+        //if (get_magic_quotes_gpc()) {
             $value = stripslashes($value);
-        }
+        //}
         // The data is posted as a JSON String so to be used it needs to be deserialized first
         $data = json_decode($value);
         // shortcut
