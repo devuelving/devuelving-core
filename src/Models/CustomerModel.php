@@ -105,7 +105,7 @@ class CustomerModel extends Model
         ->where('franchise', FranchiseModel::getFranchise()->id) 
         // ->whereRaw(Carbon::now()->between(Carbon::parse($this->payment_date), Carbon::parse($this->expires_date)))
         ->whereRaw('"'.$now.'" between `payment_date` and `expires_date`')
-        ->get();
+        ->first();
         
         return $subscription_paid;
     }
