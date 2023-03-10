@@ -1355,13 +1355,13 @@ class ProductModel extends Model
      * @author David Cortés <david@devuelving.com>
      * @return void
      */
-    public function print($productdata = null)
+    public function print($productdata = null,$check_smartphone,$check_techno)
     {
         $product = $this; //ProductModel::find($this->id);
         if (!$productdata) {
             $productdata = [];
         }
-        return view('modules.catalog.product', compact('product', 'productdata'));
+        return view('modules.catalog.product', compact('product', 'productdata','check_smartphone','check_techno'));
     }
 
 
