@@ -322,7 +322,7 @@ class OrderModel extends Model
             if(Franchise::getFranchise()->type == 3){                
                 info('Límite de envíos con descuento: '.$premiumOptions->free_shipping_orders. ' para destino '.$premiumOptions->free_shipping_area);
                 $free_shipping_array = json_decode($free_shippings);    
-                if(auth()->user()->getOrdersInMonth($premiumOptions->free_shipping_orders,$premiumOptions->free_shipping_area,$free_shipping_array,$this->address_country,$this->address_postal_code)){
+                if(auth()->user()->getOrdersInMonth($free_shipping_array,$this->address_country,$this->address_postal_code)){
                     //info($free_shipping_array);
                     $shipping_nacional = false;
                     $shipping_local = false;
