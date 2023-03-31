@@ -188,7 +188,7 @@ class MyOrderModel extends Model
     public function getPaymentMethod()
     {
         if (empty($this->payment_method) || !MyPaymentMethodModel::where('franchise', Franchise::getFranchise()->id)->where('id', $this->payment_method)->exists()) {
-            $payment_method = MyPaymentMethodModel::where('franchise', Franchise::getFranchise()->id)->first();
+            $payment_method = MyPaymentMethodModel::where('franchise', Franchise::getFranchise()->id)->where('mode', 1)->first();
             $this->payment_method = $payment_method->id;
             $this->save();
         }
