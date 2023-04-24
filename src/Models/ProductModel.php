@@ -506,7 +506,6 @@ class ProductModel extends Model
                     $productProvider = $this->productProvider;
                     if(count($productProvider)>1){                        
                         foreach($productProvider as $providerData){
-                            info($this->stock_type ."==". $providerData->provider_data->type);
                             if($this->stock_type == $providerData->provider_data->type){
                                 return $providerData;
                             }
