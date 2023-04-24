@@ -62,7 +62,7 @@ class ProductModel extends Model
      *
      * @return array
      */
-    public function sluggable(): array
+    public function sluggable()
     {
         return [
             'slug' => [
@@ -91,7 +91,7 @@ class ProductModel extends Model
      */
     public function productProvider()
     {
-        return $this->hasMany('devuelving\core\ProductProviderModel', 'product', 'id');
+        return $this->hasMany('devuelving\core\ProductProviderModel', 'product', 'id')->with('provider_data');
     }
     /**
      * Relationship product image hasMany
@@ -504,6 +504,16 @@ class ProductModel extends Model
                 }
                 if ($this->productProvider) {
                     $productProvider = $this->productProvider;
+                    if(count($productProvider)>1){                        
+                        foreach($productProvider as $providerData){
+                            info($this->stock_type ."==". $providerData->provider_data->type);
+                            if($this->stock_type == $providerData->provider_data->type){
+                                return $providerData;
+                            }
+                        }
+                    }else{
+                        return $productProvider->first();
+                    }                    
                 } else {
                     $productProvider = ProductProviderModel::join('provider', 'product_provider.provider', '=', 'provider.id');
                     $productProvider->where('product_provider.product', $this->id);

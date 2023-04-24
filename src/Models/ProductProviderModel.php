@@ -78,4 +78,11 @@ class ProductProviderModel extends Model
     {
         return ProviderModel::find($this->provider);
     }
+    /**
+     * Relationship provider hasOne
+     */
+    public function provider_data()
+    {        
+        return $this->hasOne('devuelving\core\ProviderModel', 'id', 'provider');
+    }
 }
