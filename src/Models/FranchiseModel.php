@@ -209,8 +209,7 @@ class FranchiseModel extends Model
      */
     public function countClients()
     {
-        $clients = CustomerModel::where('franchise', $this->id)->get();
-        return count($clients) - 1;
+        return CustomerModel::where('franchise', $this->id)->where('type', '!=', 1)->count();
     }
 
     /**
