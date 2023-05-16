@@ -13,6 +13,7 @@ use devuelving\core\OrderDiscountModel;
 use devuelving\core\PaymentMethodModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class OrderModel extends Model
 {
@@ -318,7 +319,7 @@ class OrderModel extends Model
     {
         //info('paso por getFreeShipping()'); 
         if(Franchise::getFranchise()->type == 3){                
-                info('ENVIOS: Límite mensual '.json_decode(auth()->user()->subscription)->limit_orders.' con descuento: '.json_decode(auth()->user()->subscription)->free_shipping_orders. ' para destino nacionales con descuento de '.json_decode(auth()->user()->subscription)->free_shipping_discount);
+                //info('ENVIOS: Límite mensual '.json_decode(auth()->user()->subscription)->limit_orders.' con descuento: '.json_decode(auth()->user()->subscription)->free_shipping_orders. ' para destino nacionales con descuento de '.json_decode(auth()->user()->subscription)->free_shipping_discount);
                 if(auth()->user()->subscriptionFreeShipping() && $this->address_country == 'es'){
                     return json_decode(auth()->user()->subscription)->free_shipping_discount; 
                 }else{
