@@ -46,16 +46,16 @@ class HelpArticlesModel extends Model
     {
         switch ($this->category) {
             case 0:
-                return __("Sin CategorÌa");
+                return __("Sin Categor√≠a");
                 break;
             case 1:
                 return __("General");
                 break;
             case 2:
-                return __("LogÌstica");
+                return __("Log√≠stica");
                 break;
             case 3:
-                return __("Inform·tica");
+                return __("Inform√°tica");
                 break;
             case 4:
                 return __("Funcionamiento");
