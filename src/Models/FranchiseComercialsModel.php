@@ -37,4 +37,11 @@ class FranchiseComercialsModel extends Model
     protected $hidden = [
         'created_at', 'updated_at',
     ];
+    /**
+     * Relationship comercial customer hasMany
+     */
+    public function comercialCustomer()
+    {
+        return $this->hasMany('devuelving\core\CustomerModel', 'comercial', 'code');
+    }
 }

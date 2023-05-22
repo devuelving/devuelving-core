@@ -114,11 +114,11 @@ class PageModel extends Model
                     <tbody>
                     <tr>
                         <td style="padding:10px;">
-                        <u>Datos identificativos de DEVUELVING</u><br /><br />
-                        <strong>Identidad:</strong>DT TECNOLOGÍA 2007, S.L.<br />
-                        <strong>C.I.F.:</strong> B64503238<br />
-                        <strong>Dirección postal:</strong> Ronda Ibérica nº13 nave B3, C.P 08800, Vilanova i la Geltrú (Barcelona, España)<br />
-                        <strong>Correo electrónico:</strong> info@devuelving.com .<br />
+                        <u>Datos identificativos de DEVUELVING</u><br><br>
+                        <strong>Identidad:</strong>DT TECNOLOGÍA 2007, S.L.<br>
+                        <strong>C.I.F.:</strong> B64503238<br>
+                        <strong>Dirección postal:</strong> Ronda Ibérica nº13 nave B3, C.P 08800, Vilanova i la Geltrú (Barcelona, España)<br>
+                        <strong>Correo electrónico:</strong> info@devuelving.com .<br>
                         </td>
                     </tr>
                     </tbody>
@@ -183,12 +183,12 @@ class PageModel extends Model
             $return = 'www.'.strtoupper($franchise->name).'&nbsp; actúa como encargado del tratamiento de datos.</p>'.
             '<table border="1"><tbody><tr>' .
                     '<td style="padding:10px;">' .
-                    '<u>Datos identificativos de www.' . strtoupper($franchise->name) .'</u><br /><br />' .
-                    '<strong>Identidad: </strong>&nbsp;' . $franchiseContactData->name . '<br />' .
-                    '<strong>NIF/CIF: </strong>&nbsp;' . $franchiseContactData->nif . '<br />' .
-                    '<strong>Dirección postal: </strong>&nbsp;' . $franchiseContactData->address . '&nbsp;' . $franchiseContactData->cp . '&nbsp;' . $franchiseContactData->town . '&nbsp;(' . $franchiseContactData->province . ')&nbsp;-&nbsp;' . $franchiseContactData->country . '<br />' .
-                    //'<strong>Correo electrónico: </strong>' . $franchiseContactData->email .'<br />'.
-                    //'<strong>Teléfono: </strong>' . $franchiseContactData->phone .'<br />'.
+                    '<u>Datos identificativos de www.' . strtoupper($franchise->name) .'</u><br><br>' .
+                    '<strong>Identidad: </strong>&nbsp;' . $franchiseContactData->name . '<br>' .
+                    '<strong>NIF/CIF: </strong>&nbsp;' . $franchiseContactData->nif . '<br>' .
+                    '<strong>Dirección postal: </strong>&nbsp;' . $franchiseContactData->address . '&nbsp;' . $franchiseContactData->cp . '&nbsp;' . $franchiseContactData->town . '&nbsp;(' . $franchiseContactData->province . ')&nbsp;-&nbsp;' . $franchiseContactData->country . '<br>' .
+                    //'<strong>Correo electrónico: </strong>' . $franchiseContactData->email .'<br>'.
+                    //'<strong>Teléfono: </strong>' . $franchiseContactData->phone .'<br>'.
                     '<strong>Contacta:</strong> <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#contactModal">Contacta con nosotros desde este enlace</button>'.
                     '</td>' .
                 '</tr>' .
@@ -201,13 +201,13 @@ class PageModel extends Model
                 '<tbody>' .
                 '<tr>' .
                     '<td style="padding:10px;">' .
-                    '<u>Datos identificativos de www.' . strtoupper($franchise->name) .'</u><br /><br />' .
-                    '<strong>Identidad: </strong>&nbsp;' . $franchiseContactData->name . '&nbsp;' . $franchiseContactData->surname . '<br />' .
-                    '<strong>NIF/CIF: </strong>&nbsp;' . $franchiseContactData->nif . '<br />' .
+                    '<u>Datos identificativos de www.' . strtoupper($franchise->name) .'</u><br><br>' .
+                    '<strong>Identidad: </strong>&nbsp;' . $franchiseContactData->name . '&nbsp;' . $franchiseContactData->surname . '<br>' .
+                    '<strong>NIF/CIF: </strong>&nbsp;' . $franchiseContactData->nif . '<br>' .
                     '<strong>Dirección postal: </strong>&nbsp;' . $franchiseContactData->street . '&nbsp;' . $franchiseContactData->number . '&nbsp;' . $franchiseContactData->floor . '&nbsp;' . $franchiseContactData->door . '&nbsp;' .
-                    $franchiseContactData->postal_code . '&nbsp;' . $franchiseContactData->town . '&nbsp;(' . $franchiseContactData->province . ')&nbsp;-&nbsp;' . $franchiseContactData->country . '<br />' .
-                    //'<strong>Correo electrónico: </strong>' . $franchiseContactData->email .'<br />'.
-                   // '<strong>Teléfono: </strong>' . $franchiseContactData->phone .'<br />'.
+                    $franchiseContactData->postal_code . '&nbsp;' . $franchiseContactData->town . '&nbsp;(' . $franchiseContactData->province . ')&nbsp;-&nbsp;' . $franchiseContactData->country . '<br>' .
+                    //'<strong>Correo electrónico: </strong>' . $franchiseContactData->email .'<br>'.
+                   // '<strong>Teléfono: </strong>' . $franchiseContactData->phone .'<br>'.
                    '<strong>Contacta:</strong>&nbsp;&nbsp;<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#contactModal">Contacta con nosotros desde este enlace</button>'.
                     '</td>' .
                 '</tr>' .

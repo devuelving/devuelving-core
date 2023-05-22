@@ -50,7 +50,41 @@ class OrderModel extends Model
     protected $hidden = [
         'id', 'created_at', 'updated_at', 'deleted_at',
     ];
-
+    /**
+    * Get the franchise that owns the phone.
+    */
+    public function orderFranchise()
+    {
+        return $this->belongsTo('devuelving\core\FranchiseModel', 'franchise', 'id');
+    }
+    /**
+    * Get the user that owns the phone.
+    */
+    public function orderCustomer()
+    {
+        return $this->belongsTo('devuelving\core\CustomerModel', 'customer', 'id');
+    } 
+    /**
+     * Relationship order order_details hasMany
+     */
+    public function orderDetails()
+    {
+        return $this->hasMany('devuelving\core\OrderDetailModel', 'order', 'id');
+    }
+    /**
+     * Relationship order order_notes hasMany
+     */
+    public function orderNotes()
+    {
+        return $this->hasMany('devuelving\core\OrderNotesModel', 'order', 'id');
+    }
+    /**
+     * Relationship order order_notes hasOne
+     */
+    public function orderWithBill()
+    {
+        return $this->hasOne('devuelving\core\OrderBillsModel', 'order', 'id');
+    }
     /**
      * Returns true if order has incidents
      *

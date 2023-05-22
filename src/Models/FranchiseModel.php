@@ -175,7 +175,7 @@ class FranchiseModel extends Model
         if(!$franchise) {
             $franchise = FranchiseModel::getFranchise()->id;
         }
-        return FranchiseContactDataModel::where('franchise', $franchise)->first();
+        return FranchiseContactDataModel::where('franchise', $franchise)->where('type',1)->first();
     }
 
     /**
