@@ -381,4 +381,28 @@ class FranchiseModel extends Model
         }
         return $callAppointments;
     }
+
+    /**
+     * Método para asignar una variable customizada a la franqui DUPLICAMOS LA FUNCION TRAIDA DE HERENCIA
+     *
+     * @param string $var
+     * @param string $value
+     * @return void
+     */
+    public function setCustom($var, $value)
+    {
+        if (FranchiseModel::custom($var, null) != null) {
+            $custom = FranchiseCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('var', $var)->first();
+        } else {
+            $custom = new FranchiseCustomModel();
+            $custom->franchise = FranchiseModel::getFranchise()->id;
+            $custom->var = $var;
+        }
+        $custom->value = $value;
+        if ($custom->save()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
