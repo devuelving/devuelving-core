@@ -62,7 +62,7 @@ class ProductModel extends Model
      *
      * @return array
      */
-    public function sluggable()
+    public function sluggable(): array
     {
         return [
             'slug' => [
@@ -106,8 +106,9 @@ class ProductModel extends Model
      */
     public function productImages()
     {
-        return $this->hasMany('devuelving\core\ProductImageModel', 'product', 'id')->where(function ($query) {
-            $query->whereNull('franchise')->orWhere('franchise', 0)->orWhere('franchise', FranchiseModel::getFranchise()->id);
+        $id = isset(FranchiseModel::getFranchise()->id) ? FranchiseModel::getFranchise()->id : 0;
+        return $this->hasMany('devuelving\core\ProductImageModel', 'product', 'id')->where(function ($query) use ($id) {
+            $query->whereNull('franchise')->orWhere('franchise', 0)->orWhere('franchise', $id);
         })->orderBy("franchise")->orderBy("id");
     }
 
@@ -134,7 +135,7 @@ class ProductModel extends Model
      */
     public function getMainImageAttribute()
     {   
-        $model = $this->relationLoaded('productImages') ? $this->productImages->first() : $this->productImages()->first();
+        $model = $this->relationLoaded('productImages') ? $this->productImages->first() : $this->defaultImages()->first();
         if(empty($model) || empty($model->image)) {
             return '/product/default.png';
         }
@@ -1364,7 +1365,7 @@ class ProductModel extends Model
      * @author David Cortés <david@devuelving.com>
      * @return void
      */
-    public function print($productdata = null,$check_smartphone,$check_techno)
+    public function print($productdata = null, $check_smartphone = false, $check_techno = false)
     {
         $product = $this; //ProductModel::find($this->id);
         if (!$productdata) {

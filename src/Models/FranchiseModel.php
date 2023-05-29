@@ -61,6 +61,14 @@ class FranchiseModel extends Model
     static protected $services;
     
     /**
+     * Relationship hasMany
+     */
+    public function franchiseContactData()
+    {
+        return $this->hasMany('devuelving\core\FranchiseContactDataModel', 'franchise', 'id');
+    }
+    
+    /**
      * Método para obtener el logo de la franquicia
      *
      * @return void
