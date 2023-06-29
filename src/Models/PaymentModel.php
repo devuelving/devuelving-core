@@ -37,4 +37,11 @@ class PaymentModel extends Model
     protected $hidden = [
         'created_at', 'updated_at',
     ];
+    /**
+     * Relationship payment hasOne paymentType
+     */
+    public function paymentType()
+    {
+        return $this->hasOne('devuelving\core\PaymentTypesModel', 'id', 'type');
+    }
 }
