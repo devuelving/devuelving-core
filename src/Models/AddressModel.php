@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AddressModel extends Model
 {
+    use SoftDeletes;
     /**
      * The table associated with the model.
      *
@@ -36,6 +37,6 @@ class AddressModel extends Model
      * @var array
      */
     protected $hidden = [
-        'created_at', 'updated_at',
+        'created_at', 'updated_at', 'deleted_at',
     ];
 }
