@@ -30,7 +30,7 @@ class MyOrderDetailModel extends Model
      * @var array
      */
     protected $fillable = [
-        'type', 'status', 'order', 'product', 'variation', 'units', 'unit_price', 'tax', 'tax_value',
+        'type', 'status', 'order', 'product', 'name', 'variation', 'units', 'unit_price', 'tax', 'tax_value',
     ];
 
     /**
@@ -41,7 +41,13 @@ class MyOrderDetailModel extends Model
     protected $hidden = [
         'id', 'created_at', 'updated_at', 'deleted_at',
     ];
-
+    /**
+     *  Relationship product hasOne
+     */
+    public function productData()
+    {
+        return $this->hasOne('devuelving\core\ProductModel', 'id', 'product');
+    }
     /**
      * Función para obtener los detalles de un producto
      *

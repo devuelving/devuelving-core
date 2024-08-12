@@ -61,6 +61,14 @@ class FranchiseModel extends Model
     static protected $services;
     
     /**
+     * Relationship hasMany
+     */
+    public function franchiseContactData()
+    {
+        return $this->hasMany('devuelving\core\FranchiseContactDataModel', 'franchise', 'id');
+    }
+    
+    /**
      * Método para obtener el logo de la franquicia
      *
      * @return void
@@ -86,7 +94,33 @@ class FranchiseModel extends Model
             return asset('images/app/brand/logo.png');
         }
     }
-
+/**
+     * Método para obtener el logo de la franquicia
+     *
+     * @return void
+     */
+    public static function getLogoSmall($redirect = true)
+    {
+        try {
+            $franchise = new FranchiseModel();
+            $franchiseLogo = $franchise->getCustom('logo-small');
+            if($franchiseLogo == null) $franchiseLogo = $franchise->getCustom('logo');
+            if ($franchiseLogo != null) {
+                // return config('app.cdn.url') . $franchise->getCustom('logo');
+                // return '/cdn/' . $franchise->getCustom('logo');
+                if ($redirect){
+                return route('index') . '/cdn/' . $franchiseLogo;
+                }
+                else
+                {
+                return config('app.cdn.url') . $franchiseLogo;
+                }
+            } 
+            return asset('images/app/brand/logo.png');
+        } catch (\Exception $e) {
+            return asset('images/app/brand/logo.png');
+        }
+    }
     /**
      * Método para obtener el icono de la franquicia
      *
@@ -175,7 +209,7 @@ class FranchiseModel extends Model
         if(!$franchise) {
             $franchise = FranchiseModel::getFranchise()->id;
         }
-        return FranchiseContactDataModel::where('franchise', $franchise)->first();
+        return FranchiseContactDataModel::where('franchise', $franchise)->where('type',1)->first();
     }
 
     /**
@@ -209,8 +243,7 @@ class FranchiseModel extends Model
      */
     public function countClients()
     {
-        $clients = CustomerModel::where('franchise', $this->id)->get();
-        return count($clients) - 1;
+        return CustomerModel::where('franchise', $this->id)->where('type', '!=', 1)->count();
     }
 
     /**
@@ -373,5 +406,29 @@ class FranchiseModel extends Model
             return $return;
         }
         return $callAppointments;
+    }
+
+    /**
+     * Método para asignar una variable customizada a la franqui DUPLICAMOS LA FUNCION TRAIDA DE HERENCIA
+     *
+     * @param string $var
+     * @param string $value
+     * @return void
+     */
+    public function setCustom($var, $value)
+    {
+        if (FranchiseModel::custom($var, null) != null) {
+            $custom = FranchiseCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('var', $var)->first();
+        } else {
+            $custom = new FranchiseCustomModel();
+            $custom->franchise = FranchiseModel::getFranchise()->id;
+            $custom->var = $var;
+        }
+        $custom->value = $value;
+        if ($custom->save()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

@@ -26,7 +26,7 @@ class OrderShipmentModel extends Model
      * @var array
      */
     protected $fillable = [
-        'order', 'type', 'franchise_cost', 'customer_cost', 'status', 'shipping_company', 'shipping_tracking', 'shipping_notification'
+        'order', 'type', 'franchise_cost', 'customer_cost', 'status', 'shipping_company', 'shipping_tracking', 'shipping_URL', 'shipping_notification', 'provider'
     ];
 
     /**

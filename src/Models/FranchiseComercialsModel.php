@@ -26,7 +26,7 @@ class FranchiseComercialsModel extends Model
      * @var array
      */
     protected $fillable = [
-        'franchise', 'name', 'code', 'id', 'commission', 'type_commission', 
+        'franchise', 'name', 'code', 'id', 'commission', 'type_commission', 'promo_days', 'options', 'email', 'status', 'supervisor', 'parent', 'phone'
     ];
 
     /**
@@ -37,4 +37,11 @@ class FranchiseComercialsModel extends Model
     protected $hidden = [
         'created_at', 'updated_at',
     ];
+    /**
+     * Relationship comercial customer hasMany
+     */
+    public function comercialCustomer()
+    {
+        return $this->hasMany('devuelving\core\CustomerModel', 'comercial', 'code');
+    }
 }

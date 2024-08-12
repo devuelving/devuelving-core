@@ -37,4 +37,11 @@ class PaymentBillModel extends Model
     protected $hidden = [
         'created_at', 'updated_at',
     ];
+     /**
+     * Relationship paymentbill hasMany payments
+     */
+    public function payments()
+    {
+        return $this->hasMany('devuelving\core\PaymentModel', 'code', 'id');
+    }
 }

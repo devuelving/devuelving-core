@@ -52,7 +52,7 @@ class ExportsModel extends Model
      */
     public function getFilters()
     {
-        if ($this->type = 2) {
+        if ($this->type == 2) {
             $filters = json_decode($this->filters, true);
             if ($filters['category'] == 0) {
                 $category = 'Todas las categorias';

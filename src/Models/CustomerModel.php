@@ -45,6 +45,38 @@ class CustomerModel extends Model
     ];
 
     /**
+     * Relationship order customer hasMany
+     */
+    public function orders()
+    {
+        return $this->hasMany('devuelving\core\OrderModel', 'customer', 'id');
+    }
+    
+    /**
+     * Relationship order customer hasMany
+     */
+    public function address()
+    {
+        return $this->hasMany('devuelving\core\AddressModel', 'customer', 'id');
+    }
+    
+    /**
+     * Relationship customer customer_payments hasMany
+     */
+    public function payments()
+    {
+        return $this->hasMany('devuelving\core\CustomerPaymentsModel', 'customer', 'id');
+    }
+    
+    /**
+    * Get the customer that owns the comercial.
+    */
+    public function comercial()
+    {
+        return $this->belongsTo('devuelving\core\FranchiseComercialsModel', 'code', 'comercial');
+    } 
+
+    /**
      * Función para obtener los datos de un cliente
      *
      * @since 3.0.0
@@ -105,7 +137,7 @@ class CustomerModel extends Model
         ->where('franchise', FranchiseModel::getFranchise()->id) 
         // ->whereRaw(Carbon::now()->between(Carbon::parse($this->payment_date), Carbon::parse($this->expires_date)))
         ->whereRaw('"'.$now.'" between `payment_date` and `expires_date`')
-        ->get();
+        ->first();
         
         return $subscription_paid;
     }

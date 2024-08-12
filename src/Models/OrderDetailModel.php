@@ -30,7 +30,7 @@ class OrderDetailModel extends Model
      * @var array
      */
     protected $fillable = [
-        'type', 'status', 'order', 'product', 'variation', 'units', 'unit_price', 'tax', 'tax_value', 'franchise_earning',
+        'type', 'status', 'order', 'product', 'variation', 'units', 'units_prepared', 'unit_price', 'tax', 'tax_value', 'franchise_earning',
     ];
 
     /**
@@ -60,5 +60,21 @@ class OrderDetailModel extends Model
     public function productData()
     {
         return $this->hasOne('devuelving\core\ProductModel', 'id', 'product');
+    }
+    
+    /**
+     *  Relationship order box hasOne
+     */
+    public function orderBoxData()
+    {
+        return $this->hasOne('devuelving\core\OrderBoxActionModel', 'product', 'product')->where('order', $this->order);
+    }
+
+    /**
+     *  Relationship product hasOne
+     */
+    public function productMainImage()
+    {
+        return null;//$this->hasOne('devuelving\core\ProductModel', 'id', 'product');
     }
 }

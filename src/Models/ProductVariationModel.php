@@ -3,9 +3,12 @@
 namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductVariationModel extends Model
 {
+    use SoftDeletes;
+    
     /**
      * The table associated with the model.
      *
@@ -26,7 +29,7 @@ class ProductVariationModel extends Model
      * @var array
      */
     protected $fillable = [
-        'product', 'variation', 'price', 'related_image', 'ean', 'status',
+        'name', 'product', 'variation', 'stock', 'cost_price', 'recommended_price', 'price', 'related_image', 'ean', 'status',
     ];
 
     /**

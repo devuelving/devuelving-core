@@ -4,21 +4,21 @@ namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
 
-class FranchiseServicesModel extends Model
+class CustomerSocialiteModel extends Model
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'franchise_services';
+    protected $table = 'customer_socialite';
 
     /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
-    public $timestamps = true;
+    public $timestamps = false;
 
     /**
      * The attributes that are mass assignable.
@@ -26,15 +26,6 @@ class FranchiseServicesModel extends Model
      * @var array
      */
     protected $fillable = [
-        'service', 'value', 'franchise', 'start', 'finish', 'data'
-    ];
-
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'id', 'created_at', 'updated_at'
+        'customer', 'franchise', 'provider', 'provider_user_id'
     ];
 }

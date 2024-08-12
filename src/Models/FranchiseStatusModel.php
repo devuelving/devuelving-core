@@ -2,16 +2,18 @@
 
 namespace devuelving\core;
 
+use App\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class AdminModel extends Model
+class FranchiseStatusModel extends Model
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'admin';
+    protected $table = 'franchise_status';
 
     /**
      * Indicates if the model should be timestamped.
@@ -26,7 +28,7 @@ class AdminModel extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'phone', 'password', 'role', 'supervisor', 'headquarter', 'remember_token'
+        'id', 'name', 'description',
     ];
 
     /**
@@ -35,6 +37,7 @@ class AdminModel extends Model
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token', 'created_at', 'updated_at',
+        'created_at', 'updated_at',
     ];
+
 }

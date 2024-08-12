@@ -18,6 +18,7 @@ use devuelving\core\FranchiseCustomModel;
 use devuelving\core\ProductCategoryModel;
 use devuelving\core\ProductProviderModel;
 use Cviebrock\EloquentSluggable\Sluggable;
+use devuelving\core\ProductVariationModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductModel extends Model
@@ -79,6 +80,13 @@ class ProductModel extends Model
         return $this->hasOne('devuelving\core\BrandModel', 'id', 'brand');
     }
     /**
+     *  Relationship tax hasOne
+     */
+    public function productTax()
+    {
+        return $this->hasOne('devuelving\core\TaxModel', 'id', 'tax');
+    }
+    /**
      * Relationship product custom hasOne
      */
     public function productCustoms()
@@ -91,8 +99,17 @@ class ProductModel extends Model
      */
     public function productProvider()
     {
-        return $this->hasMany('devuelving\core\ProductProviderModel', 'product', 'id');
+        return $this->hasMany('devuelving\core\ProductProviderModel', 'product', 'id')->with('provider_data');
     }
+    
+    /**
+     * Relationship product provider hasMany
+     */
+    public function allCustom()
+    {
+        return $this->hasMany('devuelving\core\ProductCustomModel', 'product', 'id');
+    }
+
     /**
      * Relationship product image hasMany
      */
@@ -106,8 +123,9 @@ class ProductModel extends Model
      */
     public function productImages()
     {
-        return $this->hasMany('devuelving\core\ProductImageModel', 'product', 'id')->where(function ($query) {
-            $query->whereNull('franchise')->orWhere('franchise', 0)->orWhere('franchise', FranchiseModel::getFranchise()->id);
+        $id = isset(FranchiseModel::getFranchise()->id) ? FranchiseModel::getFranchise()->id : 0;
+        return $this->hasMany('devuelving\core\ProductImageModel', 'product', 'id')->where(function ($query) use ($id) {
+            $query->whereNull('franchise')->orWhere('franchise', 0)->orWhere('franchise', $id);
         })->orderBy("franchise")->orderBy("id");
     }
 
@@ -134,7 +152,7 @@ class ProductModel extends Model
      */
     public function getMainImageAttribute()
     {   
-        $model = $this->relationLoaded('productImages') ? $this->productImages->first() : $this->productImages()->first();
+        $model = $this->relationLoaded('productImages') ? $this->productImages->first() : $this->defaultImages()->first();
         if(empty($model) || empty($model->image)) {
             return '/product/default.png';
         }
@@ -148,7 +166,13 @@ class ProductModel extends Model
     {
         return $this->belongsToMany('devuelving\core\CategoryModel', 'product_category', 'product', 'category');
     }    
-
+    /**
+     * Relationship product hasMany variations
+     */
+    public function productVariation()
+    {
+        return $this->hasMany('devuelving\core\ProductVariationModel', 'product', 'id');
+    }
     public function getUnitNameAttribute()
     {
         switch ($this->unit) {
@@ -504,6 +528,15 @@ class ProductModel extends Model
                 }
                 if ($this->productProvider) {
                     $productProvider = $this->productProvider;
+                    if(count($productProvider)>1){                        
+                        foreach($productProvider as $providerData){
+                            if($this->stock_type == $providerData->provider_data->type){
+                                return $providerData;
+                            }
+                        }
+                    }else{
+                        return $productProvider->first();
+                    }                    
                 } else {
                     $productProvider = ProductProviderModel::join('provider', 'product_provider.provider', '=', 'provider.id');
                     $productProvider->where('product_provider.product', $this->id);
@@ -598,7 +631,7 @@ class ProductModel extends Model
     {
         $discount = 1;
         $franchise = FranchiseModel::getFranchise();
-        if ($franchise) {
+        if ($franchise && !$this->franchise) {
             try {
                 // Comprobamos si la franquicia tiene los descuentos activados
                 $franchise_discount = $franchise->getCustom('discount');
@@ -615,11 +648,20 @@ class ProductModel extends Model
                             if (in_array($this->id, $target)) {
                                 $discount = 1 - ($discountTarget->discount / 100);
                             }
-                            // Comprobamos si el descuento es de tipo 2, lo que significa que se aplica un descuento por proveedor
+                        // Comprobamos si el descuento es de tipo 2, lo que significa que se aplica un descuento por proveedor
                         } else if ($discountTarget->type == 2) {
                             if (in_array($this->getProductProvider()->provider, $target)) {
                                 $discount = 1 - ($discountTarget->discount / 100);
                             }
+                        // Comprobamos si el descuento es de tipo 3, que se aplica por franja de precio
+                        }else if ($discountTarget->type == 3) {
+                            foreach ($target as $target_discount) {                                
+                                if($target_discount->price_min < $this->cost_price && $target_discount->price_max > $this->price_cost){
+                                    //info('product->'.$this->id.' | '.$target_discount->price_min. ' | '. $this->cost_price.' | ' .$target_discount->price_max.' | '.$target_discount->discount);
+                                    $discount = 1 - ($target_discount->discount / 100);
+                                }
+                            }
+                            
                         }
                     }
                 }
@@ -658,6 +700,7 @@ class ProductModel extends Model
     public function getPublicPriceCostWithoutIva()
     {
         return $this->getPublicPriceCost(false);
+        
     }
 
     /**
@@ -748,7 +791,16 @@ class ProductModel extends Model
      * @return void
      */
     public function typeCustomPrice()
-    {
+    {        
+        if (!empty($this->productCustoms) && $this->productCustoms->price !== null) {
+            if ($this->productCustoms->price_type == 1) {
+                return 1;
+            } else if ($this->productCustoms->price_type == 2) {
+                return 2;
+            }
+        } else {
+            return false;
+        }
         $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', FranchiseModel::getFranchise()->id)->whereNotNull('price')->first();
         if (empty($productCustom)) {
             return 0;
@@ -759,6 +811,29 @@ class ProductModel extends Model
                 return 2;
             }
         }
+    }
+    /**
+     * Función para comprobar el %
+     *
+     * @since 3.0.0
+     * @return void
+     */
+    public function marginCustomPrice()
+    {
+        if (!empty($this->productCustoms) && $this->productCustoms->price !== null) {
+            if ($this->productCustoms->price_type == 1) {
+                $pmv = $this->getPMV();
+                $margin_custom_price = ($this->productCustoms->price - $pmv) * 100 /$pmv;
+                return $margin_custom_price;
+            } else if ($this->productCustoms->price_type == 2) {
+                return $this->productCustoms->price;
+            }
+        } else {
+            $pmv = $this->getPMV();
+            $margin_custom_price = ($this->default_price - $pmv) * 100 /$pmv;
+            return $margin_custom_price;
+        }
+        
     }
 
     /**
@@ -871,24 +946,35 @@ class ProductModel extends Model
      * @author David Cortés <david@devuelving.com>
      * @return void
      */
-    public function getPrice()
+    public function getPrice($call = null,$check_techno = null,$product_variation=null)
     {
+        //info('ProductModel@getPrice() call->'.$call. ' para el producto ' . $this->id.' variación:'.$product_variation);
         $price = 0;
         $franchise = FranchiseModel::getFranchise();
-        if ($this->checkCustomPrice()) {
-            $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', $franchise->id)->first();
-            if ($productCustom->price_type == 1) {
-                $price = $productCustom->price;
-            } else {
-                $price = $this->getPublicPriceCost() * (($productCustom->price / 100) + 1);
+        if($product_variation){
+            
+            foreach($this->productVariation as $product_variation_item){
+                if($product_variation_item->id == $product_variation)
+                    $price = $product_variation_item->price;
             }
-        } else {
-            $price = $this->default_price;
-            // 20-01-2022: Que calculi dinamicament el preu quan transport sigui 1.
-            if ($this->transport == 1 && $franchise->custom('free_transport', true)) {
-                $price = $price + $this->free_shipping;
+        }else{
+            if ($this->checkCustomPrice()) {
+                $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', $franchise->id)->first();
+                if ($productCustom->price_type == 1) {
+                    $price = $productCustom->price;
+                } else {
+                    $price = $this->getPMV() * (($productCustom->price / 100) + 1);
+                }
+            } else {
+                $price = $this->default_price;
+                // 20-01-2022: Que calculi dinamicament el preu quan transport sigui 1.
+                if ($this->transport == 1 && $franchise->custom('free_transport', true)) {
+                    $price = $price + $this->free_shipping;
+                }
             }
         }
+
+        
         return $price;
     }
 
@@ -911,9 +997,14 @@ class ProductModel extends Model
      * @author David Cortés <david@devuelving.com>
      * @return void
      */
-    public function getProfit()
+    public function getProfit($price = null)
     {
-        $price = $this->getPrice(8);
+        info('getprofit(price) '.$price);
+        if(!$price){
+            $price = $this->getPrice(8);
+            info('getprofit() '.$price);
+        }
+        
         if ($price != null) {
             $publicprice = $this->getPublicPriceCost();
             return ($price - $publicprice) / $publicprice;
@@ -929,17 +1020,19 @@ class ProductModel extends Model
      * @param boolean $front
      * @return void
      */
-    public function getProfitMargin($front = false)
+    public function getProfitMargin($price = false,$front = false)
     {
-        $profit = $this->getProfit();
+        info('getProfitMargin() '.$price);
+        $profit = $this->getProfit($price);
+        info('getProfitMargin->getprofit  '.$profit);
         if ($profit != null) {
             if ($front == false) {
-                return round($profit * 100);
+                return ($profit * 100);
             } else {
                 if (($profit * 100) > $this->getFullPriceMargin()) {
                     return 0;
                 } else {
-                    return round($profit * 100);
+                    return ($profit * 100);
                 }
             }
         }
@@ -987,140 +1080,150 @@ class ProductModel extends Model
     }
 
     /**
-     * Función para poner la unidad customizada al producto para la franquicia
+     * Función para añadir custom (precio,promotion,removed) al producto para la franquicia
      *
      * @since 3.0.0
-     * @author David Cortés <david@devuelving.com>
+     * @author Soporte
      * @param array $options
-     * @return void
+     * @return boolean
      */
     public function productCustom($options = [])
     {
-        $productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id)->first();
-        if (empty($productCustom)) {
+        //$productCustom = ProductCustomModel::where('franchise', FranchiseModel::getFranchise()->id)->where('product', $this->id)->first();        
+        //if (empty($productCustom)) {
+        if(empty($this->productCustoms)){
+            info('sin custom');
             $productCustom = new ProductCustomModel();
             $productCustom->product = $this->id;
             $productCustom->franchise = FranchiseModel::getFranchise()->id;
+        }else{
+            info('con custom');
+            $productCustom = $this->productCustoms;
         }
-        if ($options['action'] == 'price') {
-            if ($options['price'] == null || $options['price_type'] == null) {
-                $productCustom->price = null;
-                $productCustom->price_type = null;
-            } else {
-                $publicPrice = $options['price'];
-                $costPrice = $this->getPublicPriceCost();
-                $recommendprice = $this->getRecommendedPrice();
-                $margin = round((($publicPrice - $costPrice) / $costPrice) * 100);
-                //$discountprice = 
-                $provider = $this->getProductProviderData('provider');
-                //Megaplus tiene una limitación y no se puede tener el precio custom por debajo del 10% de PVPR
-                $minim_custom_price_5 = $recommendprice - ($recommendprice * 0.10);
-                $defaultprice = $this->getDefaultPrice();
-                $newPrice = $costPrice  + ($costPrice * ($options['price'] / 100));
-                info('new price: ' . $newPrice);
-                info('minium price: ' . $minim_custom_price_5);
-                info('price type: ' . $options['price_type']);
-                info("request number: " . number_format($options['price'], 2, '.', ''));
-                if ($margin < 1 && $options['price_type'] == 1) {
+        switch ($options['action']) {
+            case 'price':
+                $status = false;
+                $newPrice = 0;
+                $pmv = 0;
+                
+                $tax = $this->productTax->value/100;
+                
+                $pmv = $this->getPMV();  //obtenemos el precio mínimo de venta para el producto con iva incluido  
+                
+                if ($this->transport == 1 && FranchiseModel::custom('free_transport', true)) {
+                    $costPrice = ($this->cost_price + $this->free_shipping) * ($tax + 1) ;
+                } else {
+                    $costPrice = $this->cost_price * ($tax + 1);
+                }
+                
+                $productPriceCost = $this->getPublicPriceCostWithoutIva();
+                
+                $productPriceCostTax = $productPriceCost * ($tax + 1);
+                /*
+                $costPrice = $productPriceCostTax;//$this->getPublicPriceCost();
+                */
+                
+                if ($options['price'] == null || $options['price_type'] == null) {
+                    $productCustom->price = null;
+                    $productCustom->price_type = null;
+                    $status = true;
+                    $message = 'Precio actualizado correctamente';
+                } else {
+                    $provider = $this->productProvider->first()->provider;//$this->getProductProviderData('provider');
+                    $defaultprice = $this->default_price;
+
+                    if($options['price_type'] == 1){
+                        $newPrice = $options['price'];
+                    }
+                    if($options['price_type'] == 2){
+                        if ($provider == 5 || $provider == 6){
+                            $newPrice = $pmv  + ($pmv * ($options['price'] / 100));
+                        }else{
+                            $newPrice = $costPrice  + ($costPrice * ($options['price'] / 100));
+                        }
+                        
+                    }
+                   
+                    
+                    
+                                   
+                    if($newPrice < $pmv){
+                        if ($provider == 5 || $provider == 6){
+                            $status = false;
+                            $message = 'Condiciones especiales para este proveedor. Descuento máximo sobre PVPR del 10%.';                        
+
+                        }else{
+                            $status = false;
+                            $message = 'El precio debe ser mayor que el precio mínimo de venta (PMV)'; 
+                        }
+
+                    }else{
+                        $productCustom->price = number_format($options['price'], 2, '.', '');
+                        $productCustom->price_type = $options['price_type'];
+                        $status = true;
+                        $message = 'Precio actualizado correctamente'; 
+                    }
+
+                }
+                info('id: '.$this->id.' new price: ' . $newPrice .' pmv: ' . $pmv.' status'.$status. ' price type: ' . $options['price_type'].' request number: ' . number_format($options['price'], 2, '.', ''));
+                $custom_price = false;
+                if($status){
+                    $productCustom->save();
+                    $custom_price = true;
+                }
+                
+                return [
+                    'status' => $status,
+                    'message' => $message,
+                    'custom_price' => $custom_price,//$this->checkCustomPrice(),
+                    'type_custom_price' => $productCustom->price_type ?? false,
+                    'cost_price' => number_format($productPriceCost, 2, '.', ''),
+                    'cost_price_iva' => number_format($productPriceCostTax, 2, '.', ''),
+                    'price' => number_format($productCustom->price, 2, '.', ''),
+                    /*
+                    'recommended_price' => number_format($this->recommended_price, 2, '.', ''),
+                    'price' => number_format($this->getPrice(), 2, '.', ''),
+                    'profit_margin' => $this->getProfitMargin(),
+                    'full_price_margin' => $this->getFullPriceMargin(),
+                    */
+                ];
+                break;
+            case 'promotion':
+                $productCustom->promotion = $options['promotion'];
+                $productCustom->save();
+                if ($options['promotion'] == 1) {
                     return [
-                        'status' => false,
-                        'message' => 'El precio tiene que tener un beneficio minimo de un 1%',
-                        'custom_price' => $this->checkCustomPrice(),
-                        'type_custom_price' => $this->typeCustomPrice(),
-                        'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
-                        'cost_price_iva' => number_format($this->getPublicPriceCost(), 2, '.', ''),
-                        'recommended_price' => number_format($this->getRecommendedPrice(), 2, '.', ''),
-                        'price' => number_format($this->getPrice(), 2, '.', ''),
-                        'profit_margin' => $this->getProfitMargin(),
-                        'full_price_margin' => $this->getFullPriceMargin(),
-                    ];
-                    // } else if ($provider == 5 && $minim_custom_price_5 > number_format($options['price'], 2, '.', '') && ($options['price_type'] == 1 || $options['price_type'] == 2)) {    
-                    // MEGAPLUS + ARTESANIA AGRICOLA
-                } else if (
-                    ($provider == 5 || $provider == 6)
-                    && (
-                        ($options['price_type'] == 2 && ($newPrice < $minim_custom_price_5)) ||
-                        ($options['price_type'] == 1 && (number_format($options['price'], 2, '.', '') < $minim_custom_price_5)))
-                ) {
-                    return [
-                        'status' => false,
-                        'message' => 'Condiciones especiales para este proveedor. Descuento máximo sobre PVPR del 10%.',
-                        'custom_price' => $this->checkCustomPrice(),
-                        'type_custom_price' => $this->typeCustomPrice(),
-                        'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
-                        'cost_price_iva' => number_format($this->getPublicPriceCost(), 2, '.', ''),
-                        'recommended_price' => number_format($this->getRecommendedPrice(), 2, '.', ''),
-                        'price' => number_format($this->getPrice(), 2, '.', ''),
-                        'profit_margin' => $this->getProfitMargin(),
-                        'full_price_margin' => $this->getFullPriceMargin(),
-                    ];
-                    // BEMALU
-                } else if ($provider == 4 && (($defaultprice / 1.14 > number_format($publicPrice, 2, '.', '') && $options['price_type'] == 1) ||
-                    ($options['price_type'] == 2 && $defaultprice / 1.14 > (($publicPrice / 100) + 1) * $costPrice))) {
-                    return [
-                        'status' => false,
-                        'message' => 'Precio mínimo para este producto->' . number_format($defaultprice / 1.14, 2, '.', ''),
-                        'custom_price' => $this->checkCustomPrice(),
-                        'type_custom_price' => $this->typeCustomPrice(),
-                        'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
-                        'cost_price_iva' => number_format($this->getPublicPriceCost(), 2, '.', ''),
-                        'recommended_price' => number_format($this->getRecommendedPrice(), 2, '.', ''),
-                        'price' => number_format($this->getPrice(), 2, '.', ''),
-                        'profit_margin' => $this->getProfitMargin(),
-                        'full_price_margin' => $this->getFullPriceMargin(),
+                        'status' => true,
+                        'message' => 'El producto se ha añadido a promociones correctamente'
                     ];
                 } else {
-                    $productCustom->price = number_format($options['price'], 2, '.', '');
-                    $productCustom->price_type = $options['price_type'];
+                    return [
+                        'status' => true,
+                        'message' => 'El producto se ha quitado de promociones correctamente'
+                    ];
                 }
-            }
-
-            $productCustom->save();
-            return [
-                'status' => true,
-                'message' => 'Se ha actualizado el precio correctamente',
-                'custom_price' => $this->checkCustomPrice(),
-                'type_custom_price' => $this->typeCustomPrice(),
-                'cost_price' => number_format($this->getPublicPriceCostWithoutIva(), 2, '.', ''),
-                'cost_price_iva' => number_format($this->getPublicPriceCost(), 2, '.', ''),
-                'recommended_price' => number_format($this->getRecommendedPrice(), 2, '.', ''),
-                'price' => number_format($this->getPrice(), 2, '.', ''),
-                'profit_margin' => $this->getProfitMargin(),
-                'full_price_margin' => $this->getFullPriceMargin(),
-            ];
-        } else if ($options['action'] == 'promotion') {
-            $productCustom->promotion = $options['promotion'];
-            $productCustom->save();
-            if ($options['promotion'] == 1) {
+                break;
+            case 'removed':
+                $productCustom->removed = $options['removed'];
+                $productCustom->save();
+                if ($options['removed'] == 1) {
+                    return [
+                        'status' => true,
+                        'message' => 'El producto se ha ocultado correctamente'
+                    ];
+                } else {
+                    return [
+                        'status' => true,
+                        'message' => 'El producto se ha activado correctamente'
+                    ];
+                }
+                break;
+            default:
                 return [
-                    'status' => true,
-                    'message' => 'El producto se ha añadido a promociones correctamente'
-                ];
-            } else {
-                return [
-                    'status' => true,
-                    'message' => 'El producto se ha quitado de promociones correctamente'
-                ];
-            }
-        } else if ($options['action'] == 'removed') {
-            $productCustom->removed = $options['removed'];
-            $productCustom->save();
-            if ($options['removed'] == 1) {
-                return [
-                    'status' => true,
-                    'message' => 'El producto se ha ocultado correctamente'
-                ];
-            } else {
-                return [
-                    'status' => true,
-                    'message' => 'El producto se ha activado correctamente'
-                ];
-            }
-        } else {
-            return [
                 'status' => false,
                 'message' => 'No se ha enviado una acción válida'
-            ];
+            ];    
+            
         }
     }
 
@@ -1132,11 +1235,16 @@ class ProductModel extends Model
      * @return string
      * @param $productCustom ProductCustomModel Parametro para controlar si viene del toArray en el frontend
      */
-    public function getName($productCustom = null)
+    public function getName($productCustom = null, $variation = null)
     {
-
+        //info('producto '.$this->id.'  variación  '.$variation);
         if (!empty($this->productCustoms) && $this->productCustoms->name !== null) {
             return $this->productCustoms->name;
+        }
+        if($variation){
+            $product_variation = ProductVariationModel::where('product',$this->id)->where('id', $variation)->first();
+            $variation_type = json_decode($this->variations);//DB::table('variation')->where('id', $this->variations)->first();
+            return $this->name. ' '. $variation_type->name. ' '.$product_variation->name;
         }
         return $this->name;
 
@@ -1269,19 +1377,29 @@ class ProductModel extends Model
      * @author Aaron Bujalance <aaron@devuelving.com>
      * @return boolean
      */
-    public function getStock($order = 0)
+    public function getStock($order = 0, $variation = null)
     {
 
         if (!$this->unavailable && !$this->discontinued) {
-            if ($this->hasPhysicalStock()) {
+            if ($this->hasPhysicalStock()) { //stock type 1
                 $additions = ProductStockModel::where('product_stock.type', '=', 2)->where('product_stock.product', '=', $this->id)->sum('stock');
                 $subtractions = ProductStockModel::where('product_stock.type', '=', 1)->where('product_stock.product', '=', $this->id)->sum('stock');
                 $stock = $additions - $subtractions;
                 if ($stock < 0) $stock = 0;
                 return $stock;
-            } else if ($this->hasDropshippingStock()) {
+            } else if ($this->hasDropshippingStock()) { //stock type 3
                 /**/
-                $stock = $this->getProductProvider()->stock;
+                if($variation){
+                    
+                    //$this->productVariation->filter(function ('variation', $variation) {return $value > 2;});
+                    foreach($this->productVariation as $productvariation){
+                        if($variation == $productvariation->id) $stock = $productvariation->stock;
+                    }
+                    info($stock.' de stock para variación '. $variation);
+                }else{
+                    $stock = $this->getProductProvider()->stock;
+                }
+                //$stock = $this->getProductProvider()->stock;
 
                 $date = Carbon::now()->subDays(2)->toDateString();
                 $reserved = OrderDetailModel::join('orders', 'order_details.order', '=', 'orders.id')
@@ -1355,13 +1473,13 @@ class ProductModel extends Model
      * @author David Cortés <david@devuelving.com>
      * @return void
      */
-    public function print($productdata = null)
+    public function print($productdata = null, $check_smartphone = false, $check_techno = false)
     {
         $product = $this; //ProductModel::find($this->id);
         if (!$productdata) {
             $productdata = [];
         }
-        return view('modules.catalog.product', compact('product', 'productdata'));
+        return view('modules.catalog.product', compact('product', 'productdata','check_smartphone','check_techno'));
     }
 
 
@@ -1416,4 +1534,60 @@ class ProductModel extends Model
         }
         return $discount;
     }
+     /**
+     * Obtiene precio por defecto del producto 
+     *
+     * @since 3.0.0
+     * @author <soporte@devuelving.com>
+     * @return void
+     */
+    public function getDefaultPrice()
+    {
+        if($this->id){
+            $defaultprice = $this->default_price;
+        }else {
+            $defaultprice = Product::find($this->id);
+            $defaultprice = $defaultprice->default_price;
+        }
+        
+        return $defaultprice;
+    }
+    /**
+     * Obtiene el precio mínimo de venta
+     *
+     * @since 3.0.0
+     * @author <soporte@devuelving.com>
+     * @return void
+     */
+    public function getPMV()
+    {
+        /*
+        if($this->productProvider){
+            $productProvider = $this->productProvider->first();
+            if($productProvider->provider == 5 || $productProvider->provider == 6){
+                $pmv = $this->recommended_price - ($this->recommended_price * 0.10);;
+            }else{
+                $pmv = $this->cost_price * (($this->productTax->value/100) + 1);
+            }
+        }else{
+           $pmv = $this->cost_price * (($this->productTax->value/100) + 1); 
+        }
+        return $pmv;*/
+        if($this->productProvider){
+            $productProvider = $this->productProvider->first();
+            if ($this->transport == 1 && FranchiseModel::custom('free_transport', true)) {
+                $pmv = ($this->cost_price + $this->free_shipping) * (($this->productTax->value/100) + 1) ;
+            } else {
+                if($productProvider->provider == 5 || $productProvider->provider == 6){
+                    $pmv = $this->recommended_price - ($this->recommended_price * 0.10);
+                } else {
+                    $pmv = $this->cost_price * (($this->productTax->value/100) + 1);
+                }
+            }
+        }else{
+           $pmv = $this->cost_price * (($this->productTax->value/100) + 1); 
+        }
+        return $pmv;
+    }
+    
 }

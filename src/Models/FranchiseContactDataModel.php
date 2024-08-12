@@ -26,7 +26,7 @@ class FranchiseContactDataModel extends Model
      * @var array
      */
     protected $fillable = [
-        'franchise', 'type', 'name', 'surname', 'nif', 'street', 'number', 'floor', 'door', 'town', 'province', 'postal_code', 'country', 'phone', 'email', 'notes',
+        'franchise', 'type', 'name', 'surname', 'type_if', 'nif', 'street', 'number', 'floor', 'door', 'town', 'province', 'postal_code', 'country', 'phone', 'email', 'notes',
     ];
 
     /**

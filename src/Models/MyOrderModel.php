@@ -188,9 +188,10 @@ class MyOrderModel extends Model
     public function getPaymentMethod()
     {
         if (empty($this->payment_method) || !MyPaymentMethodModel::where('franchise', Franchise::getFranchise()->id)->where('id', $this->payment_method)->exists()) {
-            $payment_method = MyPaymentMethodModel::where('franchise', Franchise::getFranchise()->id)->first();
+            $payment_method = MyPaymentMethodModel::where('franchise', Franchise::getFranchise()->id)->where('status', 1)->first();
             $this->payment_method = $payment_method->id;
             $this->save();
+            return $payment_method;
         }
         return MyPaymentMethodModel::find($this->payment_method);
     }
@@ -384,11 +385,11 @@ class MyOrderModel extends Model
     public function getResume()
     {
         return [
-            'products' => $this->totalAmount(),
-            'payment_method' => $this->getPaymentCost(),
-            'amount' => $this->getTotal(),
+            'products' => $this->totalAmount(), // calcula suma del total de precio de venta de productos sum(units*unit_price)
+            'payment_method' => $this->getPaymentCost(), //calcula los gastos de gestión del método de pago
+            'amount' => $this->getTotal(),//calcula getsubtotal ($this->totalAmount() + $this->added_taxes + $this->getShippingCosts()) + getPaymentCost - getDiscountCoupon
             'earnings' => $this->franchise_earnings,
-            'cost' => $this->getCost(),
+            'cost' => $this->getCost(), //suma del total de precio de coste de productos sum(units*unit_price)
         ];
     }
 

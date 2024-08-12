@@ -60,9 +60,11 @@ class ProductProviderModel extends Model
         });
 
         self::updated(function ($productProvider) {
-            $product = ProductModel::find($productProvider->product);
-            if (!$product->franchise){
-                $product->updatePrice();
+            if ($productProvider->isDirty('cost_price')) {
+                $product = ProductModel::find($productProvider->product);
+                if (!$product->franchise){
+                    $product->updatePrice();
+                }
             }
         });
     }
@@ -77,5 +79,12 @@ class ProductProviderModel extends Model
     public function getProvider()
     {
         return ProviderModel::find($this->provider);
+    }
+    /**
+     * Relationship provider hasOne
+     */
+    public function provider_data()
+    {        
+        return $this->hasOne('devuelving\core\ProviderModel', 'id', 'provider');
     }
 }

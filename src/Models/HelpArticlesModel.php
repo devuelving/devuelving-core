@@ -3,9 +3,11 @@
 namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class HelpArticlesModel extends Model
 {
+    use SoftDeletes;
     /**
      * The table associated with the model.
      *
@@ -46,23 +48,26 @@ class HelpArticlesModel extends Model
     {
         switch ($this->category) {
             case 0:
-                return __("Sin CategorÌa");
+                return __("Sin Categor√≠a");
                 break;
             case 1:
                 return __("General");
                 break;
             case 2:
-                return __("LogÌstica");
+                return __("Log√≠stica");
                 break;
             case 3:
-                return __("Inform·tica");
+                return __("Inform√°tica");
                 break;
             case 4:
                 return __("Funcionamiento");
                 break;
             case 5:
                 return __("Marketing");
-                break;            
+                break; 
+             case 6:
+                return __("Estrategia y Formaci√≥n");
+                break;             
         }
     }
     public function helpArticleColor()
@@ -85,6 +90,9 @@ class HelpArticlesModel extends Model
                 break;
             case 5:
                 return __("cian");
+                break;
+            case 6:
+                return __("coral");
                 break;
         }
     }

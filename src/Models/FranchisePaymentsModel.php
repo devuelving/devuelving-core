@@ -26,7 +26,7 @@ class FranchisePaymentsModel extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'amount', 'nif', 'status', 'franchise'
+        'name', 'email', 'amount', 'nif', 'status', 'franchise','payment_data','payment_date','paymente_expires_date'
     ];
 
     /**
