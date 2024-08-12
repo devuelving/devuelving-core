@@ -97,21 +97,6 @@ class OrderModel extends Model
         return $this->hasMany('devuelving\core\OrderShipment', 'order', 'id');
     }
 
-     /**
-     * Relationship order order_shipment hasMany
-     * Returns only if order is one Provider
-     * 
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function orderShipmentOneProvider()
-    {
-        if ($this->getProvidersID()->count() == 1){
-            return $this->orderShipment();
-        }
-        else{
-            return $this->hasMany('devuelving\core\OrderShipmentModel', 'order', 'id')->whereNull('id');
-        }
-    }
 
     /**
      * Returns true if order has incidents
@@ -675,7 +660,7 @@ class OrderModel extends Model
     public function getProvidersID(): \Illuminate\Database\Eloquent\Collection 
     {
         $providers = OrderDetailModel::where('order', $this->id)->groupBy('provider')->get();
-        info($providers); // Illuminate\Database\Eloquent\Collection 
+        info("providers: "  . $providers); // Illuminate\Database\Eloquent\Collection 
         return $providers;
     }
 
