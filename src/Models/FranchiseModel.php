@@ -69,6 +69,14 @@ class FranchiseModel extends Model
     }
     
     /**
+     * Relationship hasMany
+     */
+    public function franchisePaymentsData()
+    {
+        return $this->hasMany('devuelving\core\FranchisePaymentsModel', 'franchise', 'id');
+    }
+
+    /**
      * Método para obtener el logo de la franquicia
      *
      * @return void
