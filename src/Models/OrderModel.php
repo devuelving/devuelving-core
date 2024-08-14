@@ -7,6 +7,7 @@ use devuelving\core\TaxModel;
 use devuelving\core\RegionModel;
 use devuelving\core\CountryModel;
 use devuelving\core\ProductModel;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use devuelving\core\IncidentsModel;
 use devuelving\core\OrderDetailModel;
@@ -652,15 +653,28 @@ class OrderModel extends Model
 
     }
 
+
+    /**
+     * Devuelve el shipment del pedido solo si tiene un unico proveedor
+     *
+     */
+    public function getOrderShipment()
+    {
+        if($this->getProvidersID()->count() <= 1){
+            $orderShipment = OrderShipmentModel::where('order',$this->id)->first();
+            if ($orderShipment){
+                return $orderShipment->shipping_URL;
+            }
+        }
+    }
    
     /**
      * Función para comprobar si todos los productos son del mismo proveedor
      *
      */
-    public function getProvidersID(): \Illuminate\Database\Eloquent\Collection 
+    public function getProvidersID()
     {
-        $providers = OrderDetailModel::where('order', $this->id)->groupBy('provider')->get();
-        info("providers: "  . $providers); // Illuminate\Database\Eloquent\Collection 
+        $providers = OrderDetailModel::where('order', $this->id)->groupBy('provider')->get('provider');
         return $providers;
     }
 
@@ -669,7 +683,6 @@ class OrderModel extends Model
      * Gets the weight from de order product detail
      *
      * @param bool $excludeMeat
-     * @return void
      */
     public function getProductWeight($excludeMeat = false)
     {
