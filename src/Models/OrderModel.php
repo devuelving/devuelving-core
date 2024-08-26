@@ -95,9 +95,17 @@ class OrderModel extends Model
      */
     public function orderShipment()
     {
-        return $this->hasMany('devuelving\core\OrderShipment', 'order', 'id');
+        return $this->hasMany('devuelving\core\OrderShipmentModel', 'order', 'id');
     }
 
+    /**
+     * Relationship customer customer_payments hasMany
+     */
+    public function misuperbox()
+    {
+        return $this->hasOne('App\MiSuperFavoritoBoxModel', 'order', 'id');
+    }
+    
 
     /**
      * Returns true if order has incidents
