@@ -631,12 +631,14 @@ class ProductModel extends Model
     {
         $discount = 1;
         $franchise = FranchiseModel::getFranchise();
+        //return $discount;
         if ($franchise && !$this->franchise) {
             try {
                 // Comprobamos si la franquicia tiene los descuentos activados
                 $franchise_discount = $franchise->getCustom('discount');
 
                 if ($franchise_discount != null) {
+                    //info('hola, estic a getDiscountTarget()  '.$this->id);
                     $franchiseDiscounts = json_decode($franchise_discount);
                     // Recorremos todos los descuentos de la franquicia                 
                     foreach ($franchiseDiscounts as $FranchiseDiscountTarget) {
@@ -957,6 +959,14 @@ class ProductModel extends Model
                 if($product_variation_item->id == $product_variation)
                     $price = $product_variation_item->price;
             }
+        /*03/09/2024 Siscu: amplio casuísticas para premium,  pendiente de validar    */        
+        }else if ($franchise->type == 0 && $check_techno){  
+            $price = $this->productProvider->pluck('cost_price')[0];
+        }else if ($franchise->type == 1 && auth()->user() && auth()->user()->type == 3 && auth()->user()->premium && $franchise->getServices('premium')){
+            $price = $this->getPMV();
+        }else if (($this->highlight != 1 && ($franchise->type == 0 || $franchise->type == 3))
+            || (auth()->user() && auth()->user()->type == 3 && auth()->user()->premium && $franchise->getServices('premium'))){
+            $price = $this->getPublicPriceCost();  
         }else{
             if ($this->checkCustomPrice()) {
                 $productCustom = ProductCustomModel::where('product', $this->id)->where('franchise', $franchise->id)->first();
@@ -973,8 +983,6 @@ class ProductModel extends Model
                 }
             }
         }
-
-        
         return $price;
     }
 
@@ -1379,13 +1387,20 @@ class ProductModel extends Model
      */
     public function getStock($order = 0, $variation = null)
     {
-
+        
         if (!$this->unavailable && !$this->discontinued) {
             if ($this->hasPhysicalStock()) { //stock type 1
                 $additions = ProductStockModel::where('product_stock.type', '=', 2)->where('product_stock.product', '=', $this->id)->sum('stock');
                 $subtractions = ProductStockModel::where('product_stock.type', '=', 1)->where('product_stock.product', '=', $this->id)->sum('stock');
                 $stock = $additions - $subtractions;
+                /*
+                $stockb = ProductStockModel::selectRaw( 'product, IF(type = 2) sum(stock) as entradas, sum(IF(type =1, stock, 0)) as salidas, sum(IF(type < 2, stock*-1, stock)) as result')
+                ->where('product_stock.product', '=', $this->id)
+                ->groupBy ('product')->get();
+                */
+
                 if ($stock < 0) $stock = 0;
+                //info('getStock-->  '.$this->id. '  stock-> '.$stock . '  stockB-> '.print_r($stockb,true));
                 return $stock;
             } else if ($this->hasDropshippingStock()) { //stock type 3
                 /**/
@@ -1412,6 +1427,7 @@ class ProductModel extends Model
                     $query->orWhereNotNull('orders.payment_date');
                     $query->orWhere('orders.status', 2);
                 });
+                //info('getStock-->  '.$this->id. '  stock-> '.$stock);
                 return $stock - ($reserved->sum('order_details.units'));
             } else if ($this->hasLiquidationStock()) {
                 return $this->getProductProvider()->stock;

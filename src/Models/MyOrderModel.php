@@ -252,6 +252,7 @@ class MyOrderModel extends Model
             if ($this->hasDropshipping()) {
                 $total = $total + $this->getDropshippingPrice();
             }
+            if(Franchise::getFranchise()->id <> 1874)//excepción para macart
             $total += $total * (TaxModel::find(1)->value / 100);
             
             return number_format($total, 2, '.', '');
