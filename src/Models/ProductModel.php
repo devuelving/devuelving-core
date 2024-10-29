@@ -960,8 +960,8 @@ class ProductModel extends Model
                     $price = $product_variation_item->price;
             }
         /*03/09/2024 Siscu: amplio casuísticas para premium,  pendiente de validar    */        
-        }else if ($franchise->type == 0 && $check_techno){  
-            $price = $this->productProvider->pluck('cost_price')[0];
+        //}else if ($franchise->type == 0 && $check_techno){  
+        //    $price = $this->productProvider->pluck('cost_price')[0];
         }else if ($franchise->type == 1 && auth()->user() && auth()->user()->type == 3 && auth()->user()->premium && $franchise->getServices('premium')){
             $price = $this->getPMV();
         }else if (($this->highlight != 1 && ($franchise->type == 0 || $franchise->type == 3))
