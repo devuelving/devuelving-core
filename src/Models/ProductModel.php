@@ -111,6 +111,14 @@ class ProductModel extends Model
     }
 
     /**
+     * Relationship
+     */
+    public function favorite()
+    {
+        return $this->hasOne('devuelving\core\FavoritesModel')->where("customer", auth()->user()?->id);
+    }
+    
+    /**
      * Relationship product image hasMany
      */
     public function productImage()
@@ -217,9 +225,9 @@ class ProductModel extends Model
                     $productStatusUpdate->product = $product->id;
                     // Depending on the change, we inform the user one way or another through the .rss feed
                     if ($product->discontinued > 0) {
-                        $productStatusUpdate->status = "El producto ha sido descatalogado";
+                        $productStatusUpdate->status = "El producto no está disponible";
                     } else {
-                        $productStatusUpdate->status = "Producto añadido al catalogo de nuevo";
+                        $productStatusUpdate->status = "Producto añadido al catálogo de nuevo";
                     }
                     $productStatusUpdate->save();
                     // We only let the users know that the status have changed if the product is not discontinued

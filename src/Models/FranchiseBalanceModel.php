@@ -26,7 +26,7 @@ class FranchiseBalanceModel extends Model
      * @var array
      */
     protected $fillable = [
-        'type', 'amount', 'franchises',
+        'type', 'amount', 'franchise','detail',
     ];
 
     /**

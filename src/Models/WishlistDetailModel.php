@@ -4,6 +4,11 @@ namespace devuelving\core;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\Product;
+
+use devuelving\core\WishlistModel;
+use devuelving\core\FavoritesModel;
+
 class WishlistDetailModel extends Model
 {
     /**
@@ -11,7 +16,7 @@ class WishlistDetailModel extends Model
      *
      * @var string
      */
-    protected $table = 'wishlists';
+    protected $table = 'wishlist_details';
 
     /**
      * Indicates if the model should be timestamped.
@@ -26,7 +31,7 @@ class WishlistDetailModel extends Model
      * @var array
      */
     protected $fillable = [
-        'wishlist', 'product', 'units',
+        'wishlist_id', 'product_id', 'units',
     ];
 
     /**
@@ -37,4 +42,30 @@ class WishlistDetailModel extends Model
     protected $hidden = [
         'id', 'created_at', 'updated_at',
     ];
+
+    /**
+     * Relationship belongs to favorite
+     */
+    public function favorite()
+    {
+        return $this->hasOne(FavoritesModel::class, 'product_id', 'product_id' )->where( 'customer', auth()->user()->id );
+    }
+
+    /**
+     * Relationship belongs to product
+     */
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * Relationship belongs to wishlist
+     */
+    public function wishlist()
+    {
+        return $this->belongsTo(WishlistModel::class);
+    }
+    
+    
 }
