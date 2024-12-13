@@ -27,7 +27,7 @@ class CustomerPaymentsModel extends Model
      * @var array
      */
     protected $fillable = [
-        'customer', 'amount', 'status', 'type', 'type_payment', 'payment_method', 'payment_method_cost', 'payment_method_data', 'payment_date', 'expires_date'
+        'customer', 'amount', 'status', 'type', 'type_payment', 'payment_method', 'payment_method_cost', 'payment_method_data', 'payment_info', 'payment_date', 'expires_date'
     ];
 
     /**
