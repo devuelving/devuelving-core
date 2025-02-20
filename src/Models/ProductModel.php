@@ -313,7 +313,9 @@ class ProductModel extends Model
             $product->save();
             $newCostPrice = $product->cost_price / (1 + $provider->profit_margin / 100);
             // Comprobación de que el precio no es el mismo
-            if (number_format($newCostPrice, 1) != number_format($oldCostPrice, 1)) {
+            //if (number_format($newCostPrice, 1) != number_format($oldCostPrice, 1)) {
+            info($newCostPrice . ' != ' . $oldCostPrice);
+            if ($newCostPrice != $oldCostPrice) {
                 // Añadimos el registro de la nueva actualización del precio
                 $this->addUpdatePrice($newCostPrice, $oldCostPrice);
             }
