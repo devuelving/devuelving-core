@@ -33,7 +33,7 @@ class ProductCustomModel extends Model
      * @var array
      */
     protected $fillable = [
-        'product', 'franchise', 'promotion', 'free_shipping', 'price', 'price_type', 'slug', 'name', 'description', 'meta_title', 'meta_description', 'meta_keywords', 'removed',
+        'product', 'franchise', 'promotion', 'free_shipping', 'discount', 'price', 'price_type', 'slug', 'name', 'description', 'meta_title', 'meta_description', 'meta_keywords', 'removed',
     ];
 
     /**
@@ -124,7 +124,7 @@ class ProductCustomModel extends Model
      */
     protected function checkClear()
     {
-        if ($this->promotion == null && $this->free_shipping == null && $this->price == null && $this->price_type == null && $this->name == null && $this->description == null && $this->meta_title == null && $this->meta_description == null && $this->meta_keywords == null && $this->slug == null && $this->removed == 0 && $this->tags == null) {
+        if ($this->discount == null && $this->promotion == null && $this->free_shipping == null && $this->price == null && $this->price_type == null && $this->name == null && $this->description == null && $this->meta_title == null && $this->meta_description == null && $this->meta_keywords == null && $this->slug == null && $this->removed == 0 && $this->tags == null) {
             $this->delete();
         }
     }

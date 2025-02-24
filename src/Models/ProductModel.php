@@ -888,6 +888,22 @@ class ProductModel extends Model
         }
         return false;
     }
+
+
+    /** 
+     * Función para comprobar si el producto tiene el descuento visible
+     *    
+     * @return boolean
+     * @param $productCustom ProductCustomModel Parametro para controlar si viene del toArray en el frontend
+     */
+    public function checkDiscount($productCustom = null)
+    {
+        //info($this->id.' checkDiscount()-> '.$this->productCustoms->discount);
+        if (!empty($this->productCustoms) && $this->productCustoms->discount === 1) {
+            return true;
+        }
+        return false;
+    }
     /**
      * Función para comprobar si el producto se envia a Canarias
      *
@@ -1221,6 +1237,21 @@ class ProductModel extends Model
                     ];
                 }
                 break;
+            case 'discount':
+                $productCustom->discount = $options['discount'];
+                $productCustom->save();
+                if ($options['discount'] == 1) {
+                    return [
+                        'status' => true,
+                        'message' => 'Activados descuentos en el producto'
+                    ];
+                } else {
+                    return [
+                        'status' => true,
+                        'message' => 'Desactivados descuentos en el producto'
+                    ];
+                }
+                break;
             case 'removed':
                 $productCustom->removed = $options['removed'];
                 $productCustom->save();
@@ -1482,8 +1513,8 @@ class ProductModel extends Model
             $PublicMarginProfit = $this->getPublicMarginProfit($publicPrice);
         }
         //info('Producto '.$this->name.'//precioventa: '.$publicPrice. '//descuento margen '.$PublicMarginProfit);
-
-        if (((FranchiseModel::getFranchise()->type == 0) && ($PublicMarginProfit < 25)) || (!(bool) FranchiseModel::custom('visible_discounts', true)) || $PublicMarginProfit < 5) {
+        //if($this->id == 27682 || $this->id == 36354 ) info($this->id.' visibleDiscounts-> '.$this->productCustoms->discount); 
+        if (((FranchiseModel::getFranchise()->type == 0) && ($PublicMarginProfit < 25)) || (!(bool) FranchiseModel::custom('visible_discounts', true) && !$this->checkDiscount() ) || $PublicMarginProfit < 5) {
             //info('en visible discounts return false');
             return false;
         } else {
