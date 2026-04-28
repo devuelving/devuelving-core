@@ -37,4 +37,11 @@ class CartModel extends Model
     protected $hidden = [
         'id', 'created_at', 'updated_at',
     ];
+    /**
+     * Relationship order order_notes hasOne
+     */
+    public function productCart()
+    {
+        return $this->hasOne('devuelving\core\ProductModel', 'id', 'product');
+    }
 }

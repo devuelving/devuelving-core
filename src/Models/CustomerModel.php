@@ -32,7 +32,7 @@ class CustomerModel extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'surname', 'email', 'password', 'phone', 'nif', 'birthdate', 'gender', 'nationality', 'status', 'verified', 'advertising', 'image', 'franchise', 'type', 'lang', 'options', 'subscription', 'remember_token'
+        'name', 'surname', 'email', 'password', 'phone', 'nif', 'birthdate', 'gender', 'nationality', 'status', 'verified', 'fake', 'advertising', 'image', 'franchise', 'type', 'premium', 'vip', 'lang', 'options', 'subscription', 'remember_token'
     ];
 
     /**
@@ -43,6 +43,38 @@ class CustomerModel extends Model
     protected $hidden = [
         'password', 'remember_token', 'created_at', 'updated_at', 'deleted_at',
     ];
+
+    /**
+     * Relationship order customer hasMany
+     */
+    public function orders()
+    {
+        return $this->hasMany('devuelving\core\OrderModel', 'customer', 'id');
+    }
+    
+    /**
+     * Relationship order customer hasMany
+     */
+    public function address()
+    {
+        return $this->hasMany('devuelving\core\AddressModel', 'customer', 'id');
+    }
+    
+    /**
+     * Relationship customer customer_payments hasMany
+     */
+    public function payments()
+    {
+        return $this->hasMany('devuelving\core\CustomerPaymentsModel', 'customer', 'id');
+    }
+    
+    /**
+    * Get the customer that owns the comercial.
+    */
+    public function comercial()
+    {
+        return $this->belongsTo('devuelving\core\FranchiseComercialsModel', 'code', 'comercial');
+    } 
 
     /**
      * Función para obtener los datos de un cliente
@@ -97,15 +129,18 @@ class CustomerModel extends Model
      * @author Eduard Puigdemunt <eduard@devuelving.com>
      * @return boolean
      */
-    public function getSubscriptionPaid()
+    public function getSubscriptionPaid($type = null)
     {
+        
         $now = Carbon::now();
         $subscription_paid = CustomerPaymentsModel::where('customer', $this->id)
         ->where('status', 1) 
         ->where('franchise', FranchiseModel::getFranchise()->id) 
         // ->whereRaw(Carbon::now()->between(Carbon::parse($this->payment_date), Carbon::parse($this->expires_date)))
-        ->whereRaw('"'.$now.'" between `payment_date` and `expires_date`')
-        ->first();
+        ->whereRaw('"'.$now.'" between `payment_date` and `expires_date`');
+        if($type) $subscription_paid = $subscription_paid->where('type', $type);
+
+        $subscription_paid = $subscription_paid->first();
         
         return $subscription_paid;
     }
